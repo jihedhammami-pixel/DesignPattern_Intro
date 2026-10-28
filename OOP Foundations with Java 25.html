@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OOP Foundations with Java 25</title>
+<style>
+:root{--bg1:#e0f2fe;--bg2:#fce7f3;--bg3:#ede9fe;--card:#ffffffcc;--tx:#1e293b;--mut:#475569;--ac:#6366f1;--ac2:#06b6d4;--ok:#16a34a;--no:#dc2626;--code:#0f172a;--codetx:#e2e8f0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg1:#1e293b;--bg2:#2e1f3a;--bg3:#1e1b4b;--card:#0f172acc;--tx:#e2e8f0;--mut:#94a3b8}}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+body{margin:0;font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--tx);background:linear-gradient(135deg,var(--bg1),var(--bg2) 50%,var(--bg3));background-attachment:fixed;min-height:100vh}
+main{max-width:960px;margin:auto;padding:16px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:6px;overflow-x:auto;padding:8px;background:var(--card);backdrop-filter:blur(8px);border-radius:14px;margin-bottom:12px}
+nav a{white-space:nowrap;padding:6px 12px;border-radius:99px;color:var(--tx);text-decoration:none;font-size:14px}nav a:hover{background:var(--ac);color:#fff}
+.hero{text-align:center;padding:30px 10px 10px}
+h1{font-size:clamp(28px,6vw,48px);margin:0;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{margin:0 0 10px}section{background:var(--card);border-radius:20px;padding:22px;margin:18px 0;box-shadow:0 8px 30px #6366f122;animation:rise .6s both}
+@keyframes rise{from{opacity:0;transform:translateY(20px)}}
+.scene{perspective:700px;height:190px;display:flex;justify-content:center;align-items:center}
+.cube{width:110px;height:110px;position:relative;transform-style:preserve-3d;animation:spin 14s linear infinite}
+.cube div{position:absolute;width:110px;height:110px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;font-size:13px;color:#fff;border-radius:10px;opacity:.93}
+.cube div:nth-child(1){transform:translateZ(55px);background:#6366f1}.cube div:nth-child(2){transform:rotateY(90deg) translateZ(55px);background:#06b6d4}
+.cube div:nth-child(3){transform:rotateY(180deg) translateZ(55px);background:#ec4899}.cube div:nth-child(4){transform:rotateY(-90deg) translateZ(55px);background:#f59e0b}
+.cube div:nth-child(5){transform:rotateX(90deg) translateZ(55px);background:#10b981}.cube div:nth-child(6){transform:rotateX(-90deg) translateZ(55px);background:#8b5cf6}
+@keyframes spin{to{transform:rotateX(360deg) rotateY(360deg)}}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:8px 14px;background:#fff;color:#1e293b;box-shadow:0 1px 4px #0002}
+button.on,button.pri{background:linear-gradient(90deg,var(--ac),var(--ac2));color:#fff}
+pre{background:var(--code);color:var(--codetx);padding:14px;border-radius:12px;overflow-x:auto;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;margin:10px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.box{background:#ffffff99;border-radius:14px;padding:12px}@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .box{background:#ffffff14}}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:7px;border-bottom:1px solid #94a3b855;text-align:left;vertical-align:top}th{color:var(--ac)}
+.wrap{overflow-x:auto}svg{max-width:100%;height:auto;display:block;margin:auto}
+.q{margin:12px 0;padding:12px;border-radius:12px;background:#ffffff77}@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .q{background:#ffffff10}}
+.fb{margin-top:6px;font-size:14px}.good{color:var(--ok)}.bad{color:var(--no)}
+textarea{width:100%;min-height:110px;border-radius:10px;border:1px solid #94a3b8;padding:8px;font:13px ui-monospace,Menlo,monospace;background:#fff;color:#0f172a}
+.f{animation:float 3s ease-in-out infinite}@keyframes float{50%{transform:translateY(-6px)}}
+.pop{animation:pop 3s ease-in-out infinite}@keyframes pop{50%{transform:scale(1.08)}}
+.dash{stroke-dasharray:6 5;animation:dash 1s linear infinite}@keyframes dash{to{stroke-dashoffset:-11}}
+footer{text-align:center;color:var(--mut);font-size:13px;padding:16px}
+</style></head><body><main>
+<nav><a href="#learn">Pillars</a><a href="#class">Class &amp; Object</a><a href="#diff">Differences</a><a href="#yn">Yes / No</a><a href="#quiz">Quiz</a><a href="#code">Coding</a></nav>
+<div class="hero"><div class="scene"><div class="cube"><div>Class</div><div>Object</div><div>Encapsulation</div><div>Abstraction</div><div>Inheritance</div><div>Polymorphism</div></div></div>
+<h1>OOP Foundations with Java 25</h1><p style="color:var(--mut)">Four pillars, key differences, quizzes and hands-on exercises. Java 25 is a long-term-support release.</p></div>
+
+<section id="class"><h2>1. Class &amp; Object</h2>
+<p>A <b>class</b> is a blueprint that defines state (fields) and behavior (methods). An <b>object</b> is an instance of a class, created with <code>new</code>; each object has its own field values.</p>
+<svg viewBox="0 0 640 190" width="640" role="img" aria-label="One class blueprint producing three car objects">
+<rect x="10" y="40" width="170" height="110" rx="12" fill="#c7d2fe" stroke="#6366f1" stroke-width="2" class="pop"/><text x="95" y="68" text-anchor="middle" font-weight="700" fill="#1e293b">class Car</text><text x="95" y="95" text-anchor="middle" font-size="13" fill="#1e293b">String color</text><text x="95" y="115" text-anchor="middle" font-size="13" fill="#1e293b">void drive()</text>
+<g class="dash" stroke="#6366f1" fill="none" stroke-width="2"><path d="M180 70 C 240 40,260 30,320 40"/><path d="M180 95 L320 95"/><path d="M180 120 C 240 150,260 160,320 150"/></g>
+<g class="f"><rect x="320" y="20" width="150" height="40" rx="10" fill="#fca5a5"/><text x="395" y="45" text-anchor="middle" fill="#1e293b" font-size="14">c1 : color="red"</text></g>
+<g class="f" style="animation-delay:.5s"><rect x="320" y="75" width="150" height="40" rx="10" fill="#93c5fd"/><text x="395" y="100" text-anchor="middle" fill="#1e293b" font-size="14">c2 : color="blue"</text></g>
+<g class="f" style="animation-delay:1s"><rect x="320" y="130" width="150" height="40" rx="10" fill="#86efac"/><text x="395" y="155" text-anchor="middle" fill="#1e293b" font-size="14">c3 : color="green"</text></g></svg>
+<pre id="c0"></pre></section>
+
+<section id="learn"><h2>2. The Four Pillars</h2><div class="tabs" id="tabs"></div><div class="grid"><div class="box" id="ptxt"></div><div class="box" id="pimg"></div></div><pre id="pcode"></pre></section>
+
+<section id="diff"><h2>3. Concepts That Get Confused</h2><div id="diffs"></div></section>
+<section id="yn"><h2>4. Yes or No?</h2><p>Answer each statement, then see why.</p><div id="ynl"></div></section>
+<section id="quiz"><h2>5. Quiz</h2><div id="ql"></div><button class="pri" id="qb">Show my score</button> <b id="qs"></b></section>
+<section id="code"><h2>6. Coding Exercises</h2><p>Write your answer in your own IDE or here, then reveal the reference solution. Run single files with <code>java Main.java</code>.</p><div id="ex"></div></section>
+<footer>Code targets Java 25 (JDK 25, LTS).</footer></main>
+<script>
+const $=id=>document.getElementById(id);
+$('c0').textContent=`public class Car {
+    private final String color;          // state
+    public Car(String color) { this.color = color; }   // constructor
+    public void drive() { System.out.println(color + " car is driving"); } // behavior
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Car c1 = new Car("red");    // two independent objects
+        Car c2 = new Car("blue");   // of the same class
+        c1.drive();
+        c2.drive();
+    }
+}`;
+const svg={
+enc:`<svg viewBox="0 0 260 170" width="260"><rect x="50" y="20" width="160" height="130" rx="30" fill="#bae6fd" stroke="#0284c7" stroke-width="3" class="pop"/><text x="130" y="60" text-anchor="middle" fill="#1e293b" font-size="13">private balance</text><text x="130" y="100" text-anchor="middle" fill="#1e293b" font-size="13">deposit() / getBalance()</text><g class="dash" stroke="#0284c7" stroke-width="2"><path d="M10 100 H50"/><path d="M210 100 H250"/></g></svg>`,
+abs:`<svg viewBox="0 0 260 170" width="260"><rect x="20" y="20" width="220" height="45" rx="10" fill="#fbcfe8"/><text x="130" y="48" text-anchor="middle" fill="#1e293b">Remote: press power()</text><g class="f"><rect x="20" y="95" width="220" height="55" rx="10" fill="#e5e7eb" stroke-dasharray="5"/><text x="130" y="127" text-anchor="middle" fill="#475569" font-size="13">hidden: circuits, signals</text></g></svg>`,
+inh:`<svg viewBox="0 0 260 170" width="260"><rect x="85" y="10" width="90" height="34" rx="8" fill="#fde68a"/><text x="130" y="32" text-anchor="middle" fill="#1e293b">Animal</text><g class="dash" stroke="#b45309" stroke-width="2" fill="none"><path d="M70 125 L110 44"/><path d="M190 125 L150 44"/></g><g class="f"><rect x="25" y="125" width="90" height="34" rx="8" fill="#fed7aa"/><text x="70" y="147" text-anchor="middle" fill="#1e293b">Dog</text><rect x="145" y="125" width="90" height="34" rx="8" fill="#fed7aa"/><text x="190" y="147" text-anchor="middle" fill="#1e293b">Cat</text></g></svg>`,
+pol:`<svg viewBox="0 0 260 170" width="260"><text x="130" y="25" text-anchor="middle" fill="#1e293b">shape.area()</text><g class="pop"><circle cx="50" cy="95" r="30" fill="#a7f3d0"/></g><g class="pop" style="animation-delay:.6s"><rect x="100" y="65" width="60" height="60" fill="#c4b5fd"/></g><g class="pop" style="animation-delay:1.2s"><polygon points="215,125 185,70 245,70" fill="#fda4af" transform="translate(-5 0)"/></g></svg>`};
+const P={
+enc:{n:'Encapsulation',t:'Bundle state with the methods that operate on it, and restrict direct access (private fields). The class guards its own invariants, so outside code cannot put the object into an invalid state.',c:`public class BankAccount {
+    private double balance;                       // hidden state
+
+    public void deposit(double amount) {
+        if (amount <= 0) throw new IllegalArgumentException("must be positive");
+        balance += amount;                        // invariant protected
+    }
+    public double getBalance() { return balance; }
+}`},
+abs:{n:'Abstraction',t:'Expose what an object does through a simple contract and hide how it does it. In Java, abstract classes and interfaces express contracts; callers depend on the contract, not the implementation.',c:`interface PaymentMethod {
+    void pay(double amount);                      // WHAT, not HOW
+}
+class CreditCard implements PaymentMethod {
+    public void pay(double amount) { System.out.println("Card: " + amount); }
+}
+class Paypal implements PaymentMethod {
+    public void pay(double amount) { System.out.println("PayPal: " + amount); }
+}`},
+inh:{n:'Inheritance',t:'A subclass reuses and extends a superclass ("is-a" relationship) using extends. Java allows one superclass per class. Java 25 (flexible constructor bodies, JEP 513) lets you run statements, such as validation, before super(...), as long as they do not use this.',c:`class Person {
+    final String name;
+    Person(String name) { this.name = name; }
+}
+class Employee extends Person {
+    final int age;
+    Employee(String name, int age) {
+        if (age < 18) throw new IllegalArgumentException("too young"); // Java 25: before super()
+        super(name);
+        this.age = age;
+    }
+}`},
+pol:{n:'Polymorphism',t:'One reference type, many runtime behaviors. A call to an overridden instance method is resolved at runtime from the actual object type (dynamic dispatch), so the same code works for new subclasses without change.',c:`abstract class Animal {
+    abstract String sound();
+}
+class Dog extends Animal { String sound() { return "Woof"; } }
+class Cat extends Animal { String sound() { return "Meow"; } }
+
+public class Main {
+    public static void main(String[] args) {
+        Animal[] zoo = { new Dog(), new Cat() };
+        for (Animal a : zoo) System.out.println(a.sound()); // Woof, Meow
+    }
+}`}};
+function show(k){for(const b of $('tabs').children)b.classList.toggle('on',b.dataset.k===k);$('ptxt').innerHTML='<h3 style="margin-top:0">'+P[k].n+'</h3><p>'+P[k].t+'</p>';$('pimg').innerHTML=svg[k];$('pcode').textContent=P[k].c}
+for(const k in P){const b=document.createElement('button');b.textContent=P[k].n;b.dataset.k=k;b.onclick=()=>show(k);$('tabs').append(b)}show('enc');
+
+const D=[
+['Abstract class vs Interface',['Abstract class','Interface'],[['Instance fields / state','Yes','No (only public static final constants)'],['Constructors','Yes (called via super)','No'],['Inheritance','A class extends only one','A class can implement many'],['Method bodies','Abstract and concrete methods','Abstract, plus default, static and private methods'],['Use when','Closely related classes share state and code','Unrelated types share a capability (e.g. Comparable)'],['Instantiate directly?','No','No']]],
+['Encapsulation vs Abstraction',['Encapsulation','Abstraction'],[['Question answered','How do I protect data?','What does the user need to see?'],['Level','Implementation: private fields, controlled access','Design: contracts via interfaces / abstract classes'],['Goal','Protect invariants','Reduce complexity, allow substitution']]],
+['Overloading vs Overriding',['Overloading','Overriding'],[['Signature','Same name, different parameters','Same name and parameters, return type compatible'],['Where','Same class (or inherited)','Subclass redefines superclass/interface method'],['Resolved','Compile time (static)','Runtime (dynamic dispatch)'],['Not allowed for','','private, static, final methods']]],
+['Inheritance vs Composition',['Inheritance (is-a)','Composition (has-a)'],[['Example','Dog is an Animal','Car has an Engine'],['Coupling','Tight to superclass','Looser, held via a field'],['Flexibility','Fixed at compile time','Can swap parts at runtime'],['Guideline','Use for true substitutable subtypes','Preferred by default']]],
+['Class vs Object',['Class','Object'],[['Nature','Blueprint / type','Instance of that type'],['Memory of fields','Defines them (static ones are shared)','Holds its own instance values'],['Created','Declared once','With new, many times']]]];
+$('diffs').innerHTML=D.map(d=>`<h3>${d[0]}</h3><div class="wrap"><table><tr><th></th><th>${d[1][0]}</th><th>${d[1][1]}</th></tr>${d[2].map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</table></div>`).join('')+'<p><b>Remember:</b> fields and static methods are not polymorphic; they are hidden, not overridden.</p>';
+
+const Y=[
+['Can you create an object of an abstract class with new?',0,'An abstract class cannot be instantiated directly; only concrete subclasses can.'],
+['Can a class implement more than one interface?',1,'Yes. Multiple interface implementation is allowed.'],
+['Can a Java class extend two classes?',0,'No. Java has single class inheritance.'],
+['Can an interface declare instance fields?',0,'No. Interface fields are implicitly public static final.'],
+['Can an abstract class have a constructor?',1,'Yes. It runs when a subclass constructor calls super(...).'],
+['Is a call to an overridden instance method resolved at runtime?',1,'Yes, via dynamic dispatch on the actual object type.'],
+['Can a subclass directly access a private field of its superclass?',0,'No. Use a protected/public accessor instead.'],
+['Can interfaces contain default methods with bodies?',1,'Yes, since Java 8.'],
+['Can a constructor declare a return type?',0,'No. Adding a return type turns it into an ordinary method.'],
+['Are instance fields chosen by the runtime type, like overridden methods?',0,'No. Field access is resolved by the reference type at compile time.']];
+$('ynl').innerHTML=Y.map((y,i)=>`<div class="q"><b>${i+1}.</b> ${y[0]} <div class="tabs"><button onclick="yn(${i},1)">Yes</button><button onclick="yn(${i},0)">No</button></div><div class="fb" id="y${i}"></div></div>`).join('');
+function yn(i,a){const ok=a===Y[i][1];$('y'+i).innerHTML=`<span class="${ok?'good':'bad'}">${ok?'Correct.':'Not quite.'}</span> Answer: <b>${Y[i][1]?'Yes':'No'}</b>. ${Y[i][2]}`}
+
+const Q=[
+['Which pillar is mainly about hiding fields behind controlled methods?',['Polymorphism','Encapsulation','Inheritance'],1,'Encapsulation protects state with private fields and controlled access.'],
+['Which is true of overloading?',['Resolved at compile time by parameter types','Resolved at runtime by object type','Requires a subclass'],0,'Overloads are chosen at compile time; overriding uses runtime dispatch.'],
+['You need shared state and a constructor for related classes. Choose:',['Interface','Abstract class','Enum only'],1,'Only abstract classes can hold instance state and constructors.'],
+['Animal a = new Dog(); a.sound(); runs which version?',['Animal’s, because of the reference type','Dog’s, because of the actual object','It fails to compile'],1,'Overridden instance methods dispatch on the runtime type.'],
+['"Car has an Engine" is best modeled with:',['Inheritance','Composition','Overloading'],1,'Has-a relationships use composition (a field).'],
+['Which keyword makes a class inherit from another?',['implements','extends','super'],1,'extends is used for class inheritance; implements is for interfaces.']];
+$('ql').innerHTML=Q.map((q,i)=>`<div class="q"><b>${i+1}.</b> ${q[0]}<div class="tabs">${q[1].map((o,j)=>`<button onclick="qa(${i},${j},this)">${o}</button>`).join('')}</div><div class="fb" id="q${i}"></div></div>`).join('');
+const ans={};
+function qa(i,j,b){ans[i]=j;for(const x of b.parentNode.children)x.classList.remove('on');b.classList.add('on');$('q'+i).innerHTML=''}
+$('qb').onclick=()=>{let s=0;Q.forEach((q,i)=>{const ok=ans[i]===q[2];if(ok)s++;$('q'+i).innerHTML=`<span class="${ok?'good':'bad'}">${ok?'Correct.':'Incorrect.'}</span> ${q[3]}`});$('qs').textContent=`Score: ${s}/${Q.length}`};
+
+const E=[
+['Exercise 1: Encapsulation','Create BankAccount with a private balance, deposit(amount) that rejects non-positive amounts, and getBalance().',`public class BankAccount {
+    private double balance;
+    public void deposit(double amount) {
+        if (amount <= 0) throw new IllegalArgumentException("Amount must be positive");
+        balance += amount;
+    }
+    public double getBalance() { return balance; }
+}`],
+['Exercise 2: Inheritance + Polymorphism','Create abstract class Shape with abstract double area(), subclasses Circle and Rectangle, and print the areas of both through a Shape[] array.',`abstract class Shape { abstract double area(); }
+class Circle extends Shape {
+    private final double r;
+    Circle(double r) { this.r = r; }
+    double area() { return Math.PI * r * r; }
+}
+class Rectangle extends Shape {
+    private final double w, h;
+    Rectangle(double w, double h) { this.w = w; this.h = h; }
+    double area() { return w * h; }
+}
+public class Main {
+    public static void main(String[] args) {
+        Shape[] shapes = { new Circle(2), new Rectangle(3, 4) };
+        for (Shape s : shapes) System.out.println(s.area());
+    }
+}`],
+['Exercise 3: Interface + Composition','Define interface Engine with start(). Write ElectricEngine implementing it, and a Car that has an Engine (passed to its constructor) and whose start() delegates to it.',`interface Engine { void start(); }
+class ElectricEngine implements Engine {
+    public void start() { System.out.println("Silent start"); }
+}
+class Car {
+    private final Engine engine;          // has-a
+    Car(Engine engine) { this.engine = engine; }
+    void start() { engine.start(); }
+}
+public class Main {
+    public static void main(String[] args) {
+        new Car(new ElectricEngine()).start();
+    }
+}`]];
+$('ex').innerHTML=E.map((e,i)=>`<div class="q"><h3 style="margin:0">${e[0]}</h3><p>${e[1]}</p><textarea placeholder="Write your Java here..." spellcheck="false"></textarea><br><button onclick="sol(${i})">Show solution</button><pre id="s${i}" hidden></pre></div>`).join('');
+function sol(i){const p=$('s'+i);p.textContent=E[i][2];p.hidden=!p.hidden}
+</script></body></html>
