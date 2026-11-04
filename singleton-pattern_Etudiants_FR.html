@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Le patron Singleton en Java 25</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Chapitre interactif sur le patron de conception Singleton en Java 25 : six implémentations, courses de threads, attaques par réflexion et sérialisation, testabilité, notes d’expert, compromis, simulateurs, oui/non, quiz et exercices progressifs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<script>try{var t=localStorage.getItem('sg-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<style>
+/* Layout: one reading column of chapter panels in four parts; simulators split into a stage and controls; exercises are a ladder of levels */
+:root{
+  --bg:#f6f3fc; --surface:#ffffff; --surface-2:#efe9fa; --ink:#1a1230; --muted:#5c5274; --line:#e0d7f1; --edge:#352a52;
+  --g1:#7c3aed; --g2:#c026d3; --g3:#d97706;
+  --h1:#2e1065; --h2:#581c87; --h3:#831843;
+  --hd-a:#7c3aed; --hd-b:#c026d3; --cls-line:#7c3aed;
+  --t1:#2563eb; --t2:#db2777; --t3:#059669;
+  --code:#130d22; --codetx:#f3e8ff;
+  --ok:#15803d; --ok-bg:#dcfce7; --no:#dc2626; --no-bg:#fee2e2; --warn:#b45309; --warn-bg:#fef3c7;
+  --f-display:"Syne","Segoe UI",system-ui,sans-serif;
+  --f-body:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d0918; --surface:#161026; --surface-2:#211836; --ink:#f1eafd; --muted:#ab9fc6; --line:#33284d; --edge:#c7bbe2;
+  --g1:#a78bfa; --g2:#e879f9; --g3:#fbbf24;
+  --h1:#2e1065; --h2:#4c1d95; --h3:#701a43;
+  --hd-a:#6d28d9; --hd-b:#a21caf; --cls-line:#a78bfa;
+  --t1:#60a5fa; --t2:#f472b6; --t3:#34d399;
+  --code:#07040e; --codetx:#f3e8ff;
+  --ok:#4ade80; --ok-bg:#12341f; --no:#f87171; --no-bg:#3d1717; --warn:#fbbf24; --warn-bg:#3a2a0b;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d0918; --surface:#161026; --surface-2:#211836; --ink:#f1eafd; --muted:#ab9fc6; --line:#33284d; --edge:#c7bbe2;
+  --g1:#a78bfa; --g2:#e879f9; --g3:#fbbf24;
+  --h1:#2e1065; --h2:#4c1d95; --h3:#701a43;
+  --hd-a:#6d28d9; --hd-b:#a21caf; --cls-line:#a78bfa;
+  --t1:#60a5fa; --t2:#f472b6; --t3:#34d399;
+  --code:#07040e; --codetx:#f3e8ff;
+  --ok:#4ade80; --ok-bg:#12341f; --no:#f87171; --no-bg:#3d1717; --warn:#fbbf24; --warn-bg:#3a2a0b;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(70px + env(safe-area-inset-top,0px))}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.62 var(--f-body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--surface)}
+a{color:var(--g1)}
+code{font:500 .84em var(--f-mono);background:var(--surface-2);padding:1px 6px;border-radius:6px}
+h1,h2{font-family:var(--f-display);text-wrap:balance;line-height:1.08;margin:0}
+h3,h4{font-family:var(--f-body);font-weight:700;text-wrap:balance;line-height:1.2;margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;padding-block:9px}
+.brand{display:flex;align-items:center;gap:9px;font:800 16px var(--f-display);color:var(--ink);text-decoration:none;white-space:nowrap}
+.brand i{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 0 14%,var(--g2) 15% 45%,var(--g1) 46%);box-shadow:0 0 0 3px color-mix(in srgb,var(--g3) 60%,transparent)}
+.toc{display:flex;gap:2px;overflow-x:auto;flex:1;scrollbar-width:none;min-width:0}.toc::-webkit-scrollbar{display:none}
+.toc a{white-space:nowrap;padding:6px 11px;border-radius:99px;color:var(--muted);text-decoration:none;font-size:15px;font-weight:700}
+.toc a:hover{color:var(--ink);background:var(--surface-2)}
+.toc a.act{color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2))}
+@media(max-width:640px){.brand span{display:none}}
+
+/* hero */
+.hero{position:relative;overflow:hidden;color:#fff;background:radial-gradient(120% 90% at 75% 40%,var(--h2),var(--h1) 60%),linear-gradient(125deg,var(--h1),var(--h3))}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(125deg,transparent 40%,color-mix(in srgb,var(--h3) 70%,transparent));pointer-events:none}
+.stars{position:absolute;inset:0;background-image:radial-gradient(#ffffff55 1px,transparent 1.5px),radial-gradient(#ffffff33 1px,transparent 1.5px);background-size:60px 60px,23px 23px;background-position:0 0,11px 7px;opacity:.6;animation:twinkle 8s linear infinite}
+@keyframes twinkle{to{background-position:60px 30px,34px 30px}}
+.hero .wrap{position:relative;z-index:1;display:grid;grid-template-columns:1.05fr .95fr;gap:20px;align-items:center;padding-block:46px 50px}
+@media(max-width:880px){.hero .wrap{grid-template-columns:1fr;padding-block:32px 36px}}
+.eyebrow{font:600 12px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;opacity:.92}
+.hero h1{font-size:clamp(42px,7.2vw,84px);font-weight:800;margin:10px 0 12px;letter-spacing:-.02em}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,#fde68a,#f5d0fe);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{font-size:19px;max-width:32em;margin:0 0 22px;opacity:.96}
+.cta{display:flex;flex-wrap:wrap;gap:10px}
+.btn.light{background:#fff;color:#4c1d95;box-shadow:none}
+.btn.glass{background:#ffffff26;color:#fff;box-shadow:inset 0 0 0 1px #ffffff70}
+
+/* 3D: one instance, many clients */
+.scene3d{perspective:1000px;height:330px;display:grid;place-items:center;overflow:hidden}
+.world{position:relative;width:10px;height:10px;transform-style:preserve-3d;transform:rotateX(-16deg)}
+.core{position:absolute;left:-55px;top:-55px;width:110px;height:110px;transform-style:preserve-3d;animation:spin 14s linear infinite}
+.core i{position:absolute;inset:0;display:grid;place-items:center;font:700 13px var(--f-mono);color:#3b0764;background:linear-gradient(135deg,#fde68a,#f0abfc);border:2px solid #fff8;box-shadow:inset 0 0 24px #fff9}
+.core i:nth-child(1){transform:translateZ(55px)}.core i:nth-child(2){transform:rotateY(180deg) translateZ(55px)}
+.core i:nth-child(3){transform:rotateY(90deg) translateZ(55px)}.core i:nth-child(4){transform:rotateY(-90deg) translateZ(55px)}
+.core i:nth-child(5){transform:rotateX(90deg) translateZ(55px)}.core i:nth-child(6){transform:rotateX(-90deg) translateZ(55px)}
+@keyframes spin{to{transform:rotateX(360deg) rotateY(360deg)}}
+.halo{position:absolute;left:-95px;top:-95px;width:190px;height:190px;border-radius:50%;background:radial-gradient(circle,#fde68a66,transparent 65%);transform:translateZ(-60px);animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{50%{transform:translateZ(-60px) scale(1.15)}}
+.orbit{position:absolute;left:0;top:0;transform-style:preserve-3d;animation:orbit 18s linear infinite}
+@keyframes orbit{to{transform:rotateY(360deg)}}
+.cli{position:absolute;left:-22px;top:-16px;width:44px;height:32px;border-radius:8px;display:grid;place-items:center;font:700 11px var(--f-mono);color:#fff;background:linear-gradient(135deg,var(--c),#0006);box-shadow:0 0 14px var(--c);transform:rotateY(var(--a)) translateZ(160px) rotateY(calc(-1 * var(--a)))}
+.beam{position:absolute;left:0;top:-1px;width:150px;height:2px;transform-origin:0 50%;transform:rotateY(calc(90deg - var(--a)));background:linear-gradient(90deg,#fde68a00,#fde68a);animation:beam 2.4s ease-in-out infinite;animation-delay:var(--dl)}
+@keyframes beam{0%,100%{filter:brightness(.4)}50%{filter:brightness(1.6)}}
+.label3d{position:absolute;left:-80px;top:80px;width:160px;text-align:center;font:600 12px var(--f-mono);transform:translateZ(80px);color:#fde68a}
+@media(max-width:560px){.scene3d{height:270px}.world{scale:.75}}
+
+main{padding-block:26px 10px}
+.part{margin:44px 0 4px;display:flex;align-items:center;gap:12px;font:600 12px var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--g1)}
+.part::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,var(--g1),transparent)}
+.part b{color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2));padding:3px 10px;border-radius:99px}
+.ch{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:28px;margin:22px 0;position:relative;overflow:hidden}
+.ch::before{content:"";position:absolute;inset:0 0 auto;height:5px;background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3))}
+@media(max-width:600px){.ch{padding:22px 16px;border-radius:20px}}
+.chh{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.num{flex:none;width:50px;height:50px;border-radius:50%;display:grid;place-items:center;color:#fff;font:800 19px var(--f-display);background:radial-gradient(circle at 35% 30%,#ffffff66,transparent 40%),linear-gradient(135deg,var(--g1),var(--g2));box-shadow:0 10px 20px -8px var(--g2),0 0 0 3px color-mix(in srgb,var(--g3) 55%,transparent)}
+.ch h2{font-size:clamp(24px,3.4vw,32px);font-weight:800}
+.sub{margin:4px 0 0;color:var(--muted);font-size:16px}
+.ch h3{font-size:21px;margin:26px 0 8px}
+.ch p{max-width:70ch}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.grid>*{min-width:0}
+.tile{background:var(--surface-2);border-radius:16px;padding:16px}
+.tile h4{margin:0 0 4px;font-size:17px}
+.tile p{margin:0;font-size:16px;color:var(--muted)}
+.callout{border-radius:16px;padding:14px 16px;margin:16px 0;background:linear-gradient(135deg,color-mix(in srgb,var(--g1) 13%,var(--surface)),color-mix(in srgb,var(--g3) 12%,var(--surface)))}
+.callout b.t{font-weight:800}
+.callout.warn{background:var(--warn-bg)}
+blockquote{margin:14px 0;padding:14px 18px;border-radius:16px;background:var(--surface-2);font-size:19px;font-style:italic;border-left:5px solid var(--g2)}
+blockquote cite{display:block;font:600 13px var(--f-mono);font-style:normal;color:var(--muted);margin-top:6px}
+.fig{background:var(--surface-2);border-radius:18px;padding:12px;margin:14px 0;overflow-x:auto}
+.fig figcaption{font-size:14px;color:var(--muted);text-align:center;margin-top:6px}
+figure{margin:0}
+.vs{width:100%;border-collapse:collapse;font-size:16px}
+.vs th,.vs td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.vs th{font:600 13px var(--f-mono);color:var(--g1);letter-spacing:.03em}
+.vs td.y{color:var(--ok);font-weight:700}.vs td.n{color:var(--no);font-weight:700}.vs td.m{color:var(--warn);font-weight:700}
+.scroll{overflow-x:auto}
+.tag{display:inline-block;font:600 11px var(--f-mono);padding:2px 8px;border-radius:99px;color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2));vertical-align:2px}
+.tag.pv{background:linear-gradient(100deg,#d97706,#b45309)}
+
+.btn{font:700 15px var(--f-body);border:0;border-radius:12px;padding:9px 16px;cursor:pointer;color:var(--ink);background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);transition:transform .15s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{transform:translateY(-1px)}.btn:active{transform:translateY(1px)}
+.btn.pri{color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2));box-shadow:0 6px 16px -8px var(--g2)}
+.btn.t1{color:#fff;background:var(--t1)}.btn.t2{color:#fff;background:var(--t2)}.btn.t3{color:#fff;background:var(--t3)}
+.btn.sm{padding:6px 12px;font-size:14px}
+.btn:disabled{opacity:.4;cursor:default;transform:none}
+.btn:focus-visible,.opt:focus-visible,.toc a:focus-visible,.seg button:focus-visible,.flip:focus-visible,.mb:focus-visible,.chip:focus-visible,.lv:focus-visible,.panel3d:focus-visible{outline:3px solid var(--g3);outline-offset:2px}
+.seg{display:inline-flex;flex-wrap:wrap;gap:4px;background:var(--surface-2);padding:4px;border-radius:12px}
+.seg button{font:700 14px var(--f-body);border:0;cursor:pointer;padding:6px 12px;border-radius:9px;background:transparent;color:var(--muted)}
+.seg button.on{background:linear-gradient(100deg,var(--g1),var(--g2));color:#fff}
+.row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:10px 0}
+.lbl{font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;min-width:100px}
+label.chk{display:inline-flex;gap:6px;align-items:center;font-size:15px;font-weight:600}
+
+pre.code{background:var(--code);color:var(--codetx);padding:13px 15px;border-radius:14px;overflow-x:auto;font:13px/1.6 var(--f-mono);margin:10px 0;tab-size:4;position:relative}
+pre.code .k{color:#c4b5fd;font-weight:600}pre.code .s{color:#86efac}pre.code .c{color:#a99cc3;font-style:italic}pre.code .n{color:#fcd34d}pre.code .t{color:#7dd3fc}pre.code .a{color:#f9a8d4}
+.copy{position:absolute;top:8px;right:8px;font:600 12px var(--f-body);padding:3px 9px;background:#ffffff1f;color:#f3e8ff;border:0;border-radius:8px;cursor:pointer;opacity:.8}
+.ln{display:block;padding:0 6px;margin:0 -6px;border-radius:6px}
+.ln.on{background:#7c3aed55;box-shadow:inset 3px 0 0 #c4b5fd}
+
+/* class diagram */
+svg{display:block;max-width:100%;height:auto}
+svg text{font-family:var(--f-body)}
+.cls .body{fill:var(--surface);stroke:var(--cls-line);stroke-width:1.6}
+.cls .sep{stroke:var(--cls-line);stroke-width:1.2}
+.cls .hd{fill:url(#gHd)}
+.cn{fill:#fff;font:700 14px var(--f-body)}
+.cs{fill:#ffffffd9;font:600 11px var(--f-mono)}
+.cm{fill:var(--ink);font:500 12px var(--f-mono)}
+.rel .ln{fill:none;stroke:var(--edge);stroke-width:1.8;stroke-linejoin:round}
+.rel.k-dep .ln,.rel.k-nav .ln{marker-end:url(#mOpen)}.rel.k-dep .ln,.rel.k-note .ln{stroke-dasharray:7 5}
+.alab{fill:var(--ink);font:700 12px var(--f-body);paint-order:stroke;stroke:var(--surface-2);stroke-width:4px}
+.mult{fill:var(--g2);font:600 12px var(--f-mono);paint-order:stroke;stroke:var(--surface-2);stroke-width:4px}
+.note path{fill:#fef9c3;stroke:#ca8a04;stroke-width:1.4}.note text{fill:#3f2e05;font:600 12px var(--f-mono)}
+.popin{animation:popin .45s both}@keyframes popin{from{opacity:0;transform:scale(.94)}}
+
+/* flip cards */
+.flips{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.flip{perspective:1000px;height:220px;border:0;background:none;padding:0;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.flip .in{position:relative;height:100%;transition:transform .75s cubic-bezier(.2,.7,.2,1);transform-style:preserve-3d}
+.flip:hover .in{transform:rotateY(10deg) rotateX(4deg)}
+.flip.on .in{transform:rotateY(180deg)}.flip.on:hover .in{transform:rotateY(172deg) rotateX(4deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.front{background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
+.front .ico{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;color:#fff;font:800 18px var(--f-display);background:radial-gradient(circle at 35% 30%,#ffffff66,transparent 40%),linear-gradient(135deg,var(--g1),var(--g2));box-shadow:0 10px 18px -10px var(--g2)}
+.front h4{font-size:18px}.front .k{font:600 12px var(--f-mono);color:var(--g2)}
+.front .hint{margin-top:auto;font-size:13px;color:var(--muted)}
+.back{transform:rotateY(180deg);color:#fff;background:linear-gradient(150deg,var(--h1),var(--h2) 55%,var(--h3));font-size:15px;line-height:1.5}
+.back h4{font-size:17px}
+
+/* 3D carousel */
+.car{perspective:1200px;height:260px;display:grid;place-items:center;overflow:hidden;margin:10px 0}
+.ring{position:relative;width:240px;height:180px;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.2,.7,.2,1)}
+@media(max-width:560px){.ring{scale:.72}}
+.panel3d{position:absolute;inset:0;border:0;border-radius:18px;padding:16px;cursor:pointer;text-align:left;font:inherit;color:#fff;background:linear-gradient(150deg,var(--h1),var(--h2) 55%,var(--h3));box-shadow:0 18px 30px -16px #0009,inset 0 0 0 1px #ffffff40;display:flex;flex-direction:column;gap:6px;backface-visibility:hidden;transition:filter .5s}
+.panel3d h4{font-size:19px}.panel3d small{font:600 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;opacity:.85}.panel3d p{margin:0;font-size:14px;opacity:.95}
+.panel3d .verdict{margin-top:auto;font:700 12px var(--f-mono);padding:3px 8px;border-radius:99px;align-self:flex-start;background:#ffffff26}
+.panel3d.dim{filter:saturate(.5) brightness(.75)}
+.car-detail{background:var(--surface-2);border-radius:18px;padding:16px;animation:popin .4s both}
+.car-detail h4{font-size:20px;margin-bottom:6px}
+.props{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.props span{font:600 12px var(--f-mono);padding:4px 10px;border-radius:99px}
+.props .y{background:var(--ok-bg);color:var(--ok)}.props .n{background:var(--no-bg);color:var(--no)}.props .m{background:var(--warn-bg);color:var(--warn)}
+
+/* simulators */
+.sim{border-radius:20px;margin:18px 0;padding:3px;background:linear-gradient(135deg,var(--g1),var(--g2),var(--g3))}
+.sim-in{background:var(--surface);border-radius:17px;padding:16px}
+.sim-head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:10px}
+.sim-head h4{font-size:18px;display:flex;align-items:center;gap:8px}
+.live{font:600 11px var(--f-mono);color:#fff;background:var(--g2);padding:3px 8px;border-radius:99px;letter-spacing:.08em}
+.two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px;overflow-x:auto}
+.say{background:var(--surface-2);border-radius:14px;padding:12px 14px;font-size:16px}
+.out{font:500 13px/1.6 var(--f-mono);background:var(--code);color:var(--codetx);border-radius:14px;padding:12px 14px;min-height:96px;white-space:pre-wrap;max-height:260px;overflow:auto}
+.out div{animation:popin .35s both}
+.result{border-radius:12px;padding:10px 14px;font-weight:700;margin-top:8px;font-size:15px}
+.result.ok{background:var(--ok-bg);color:var(--ok)}.result.err{background:var(--no-bg);color:var(--no)}.result.warn{background:var(--warn-bg);color:var(--warn)}
+/* race lanes */
+.lanes{display:flex;flex-direction:column;gap:10px}
+.lane{display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:start}
+.lane .who{font:700 13px var(--f-mono);color:#fff;border-radius:10px;padding:8px 0;text-align:center}
+.ops{display:flex;flex-wrap:wrap;gap:5px}
+.op{font:500 12px var(--f-mono);padding:5px 8px;border-radius:8px;background:var(--surface-2);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line);transition:all .3s}
+.op.cur{color:#fff;background:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 35%,transparent);transform:translateY(-2px)}
+.op.done{color:var(--ink);background:color-mix(in srgb,var(--c) 18%,var(--surface))}
+.op.skip{text-decoration:line-through;opacity:.45}
+.op.blocked{animation:shake .5s}
+.mem{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:12px 0}
+.cell{background:var(--surface-2);border-radius:12px;padding:8px 10px}
+.cell small{display:block;font:600 11px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.cell b{font:600 14px var(--f-mono)}
+.flash{animation:flash .8s}@keyframes flash{0%{background:var(--g3);color:#fff}}
+/* attack lab */
+.lab-vis{display:grid;place-items:center;min-height:200px}
+/* init timeline */
+.ibox{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.istat{background:var(--surface-2);border-radius:14px;padding:10px 12px}
+.istat h4{font-size:15px;margin-bottom:6px;font-family:var(--f-mono)}
+.light{display:flex;align-items:center;gap:8px;font-size:14px;margin:3px 0}
+.light i{width:14px;height:14px;border-radius:50%;background:var(--line);transition:background .4s,box-shadow .4s}
+.light.on i{background:var(--ok);box-shadow:0 0 10px var(--ok)}
+/* testing sim */
+.tests{display:flex;flex-direction:column;gap:6px}
+.trow{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--surface-2);border-radius:10px;padding:8px 12px;font:500 14px var(--f-mono)}
+.badge{font:700 12px var(--f-mono);padding:3px 10px;border-radius:99px}
+.badge.pass{background:var(--ok-bg);color:var(--ok)}.badge.fail{background:var(--no-bg);color:var(--no)}.badge.idle{background:var(--line);color:var(--muted)}
+.wq{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:16px}
+.wq .seg button{padding:5px 10px}
+
+.xp{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.xpc{background:var(--surface-2);border-radius:16px;padding:14px 16px;position:relative}
+.xpc h4{font-size:17px;margin:0 0 6px;padding-right:72px}
+.xpc .lvlx{position:absolute;top:12px;right:12px;font:600 11px var(--f-mono);color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2));padding:3px 8px;border-radius:99px}
+.xpc p{margin:0;font-size:16px}
+.rule{background:var(--surface-2);border-radius:16px;padding:14px 16px}
+.rule h4{margin:0 0 6px;font-size:17px}
+.rule .bad,.rule .good{display:block;font:500 13px var(--f-mono);padding:4px 8px;border-radius:8px;margin-top:5px}
+.rule .bad{background:var(--no-bg);color:var(--no)}.rule .good{background:var(--ok-bg);color:var(--ok)}
+
+/* practice */
+.score{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px;font-size:16px}
+.meter{flex:1;min-width:120px;height:10px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3));transition:width .5s}
+.q{border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0}
+.qh{display:flex;gap:10px;align-items:flex-start}
+.qn{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:800 13px var(--f-display);color:#fff;background:linear-gradient(135deg,var(--g1),var(--g2))}
+.qt{padding-top:2px;min-width:0}
+.qcode{margin:10px 0 0 38px}
+.opts{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0 38px}
+.opt{font:700 15px var(--f-body);border:0;cursor:pointer;border-radius:10px;padding:8px 13px;background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);text-align:left}
+.opt:hover:not(:disabled){box-shadow:inset 0 0 0 2px var(--g1)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok);color:#fff;box-shadow:none}.opt.wrong{background:var(--no);color:#fff;box-shadow:none}
+.fb{margin:8px 0 0 38px;font-size:16px}.fb:empty{display:none}
+@media(max-width:520px){.opts,.fb,.qcode{margin-left:0}}
+.good{color:var(--ok)}.bad{color:var(--no)}
+.shake{animation:shake .4s}@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.ladder{display:flex;gap:6px;overflow-x:auto;padding:6px 2px 10px;scrollbar-width:thin}
+.lv{flex:none;border:0;cursor:pointer;border-radius:14px;padding:8px 12px;background:var(--surface-2);color:var(--muted);font:700 13px var(--f-body);text-align:left;min-width:112px;transition:transform .2s}
+.lv b{display:block;font:800 15px var(--f-display);color:var(--ink)}
+.lv small{display:block;color:var(--g2);letter-spacing:.05em}
+.lv.on{background:linear-gradient(140deg,var(--g1),var(--g2) 70%,var(--g3));color:#ffffffd8;transform:translateY(-3px)}
+.lv.on b,.lv.on small{color:#fff}
+.lv.done::after{content:"✓";float:right;color:var(--ok);font-weight:900}.lv.on.done::after{color:#fff}
+.lvhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:8px 0}
+.lvnav{display:flex;justify-content:space-between;gap:8px;margin-top:14px;flex-wrap:wrap}
+.stars-b{font:600 12px var(--f-mono);padding:3px 8px;border-radius:99px;background:linear-gradient(100deg,var(--g1),var(--g2));color:#fff}
+.match{display:grid;grid-template-columns:1fr 1.7fr;gap:10px}
+@media(max-width:600px){.match{grid-template-columns:1fr}}
+.match .col{display:flex;flex-direction:column;gap:6px}
+.mb{font:600 15px var(--f-body);border:0;cursor:pointer;text-align:left;padding:8px 12px;border-radius:10px;background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.mb.mono{font:600 14px var(--f-mono)}
+.mb.sel{box-shadow:inset 0 0 0 3px var(--g1)}.mb.ok{background:var(--ok);color:#fff;opacity:.85;box-shadow:none}.mb.bad{background:var(--no);color:#fff}
+.ord{border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}
+.ord h4{margin:0 0 8px;font-size:17px}
+.pool,.ans{display:flex;flex-wrap:wrap;gap:8px;min-height:46px;padding:8px;border-radius:12px}
+.pool{background:var(--surface-2)}
+.ans{border:2px dashed var(--line);counter-reset:o;flex-direction:column;align-items:flex-start}
+.ans:empty::after{content:"Cliquez sur les étapes dans le bon ordre";color:var(--muted);font-size:15px}
+.chip{font:600 14px var(--f-body);border:0;cursor:pointer;padding:7px 12px;border-radius:10px;background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1px var(--g1);text-align:left}
+.ans .chip{counter-increment:o}.ans .chip::before{content:counter(o) ". ";color:var(--g2);font-weight:800}
+.ans .chip.okc{box-shadow:inset 0 0 0 2px var(--ok)}.ans .chip.noc{box-shadow:inset 0 0 0 2px var(--no)}
+.task{border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+.task h4{font-size:18px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.task .scen{background:var(--surface-2);border-radius:12px;padding:12px 14px;margin:8px 0}
+.task ul{margin:6px 0;padding-left:20px}
+textarea{width:100%;min-height:130px;border-radius:12px;border:1px solid var(--line);padding:10px;font:13px/1.5 var(--f-mono);background:var(--surface);color:var(--ink);resize:vertical}
+.hint{background:#fef3c7;color:#713f12;border-radius:10px;padding:8px 12px;font-size:15px;margin:8px 0}
+footer{text-align:center;color:var(--muted);font-size:14px;padding:26px 16px 44px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+
+/* ===== level colour worlds ===== */
+.lv1{--g1:#047857;--g2:#0f766e;--g3:#65a30d;--h1:#064e3b;--h2:#115e59;--h3:#3f6212;--hd-a:#047857;--hd-b:#0f766e;--cls-line:#047857}
+.lv2{--g1:#1d4ed8;--g2:#0e7490;--g3:#4f46e5;--h1:#172554;--h2:#1e3a8a;--h3:#164e63;--hd-a:#1d4ed8;--hd-b:#0e7490;--cls-line:#1d4ed8}
+.lv3{--g1:#7c3aed;--g2:#c026d3;--g3:#db2777;--h1:#2e1065;--h2:#581c87;--h3:#831843;--hd-a:#7c3aed;--hd-b:#c026d3;--cls-line:#7c3aed}
+.lv4{--g1:#be185d;--g2:#a21caf;--g3:#d97706;--h1:#500724;--h2:#701a75;--h3:#78350f;--hd-a:#be185d;--hd-b:#a21caf;--cls-line:#be185d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  .lv1{--g1:#10b981;--g2:#14b8a6;--g3:#84cc16;--h1:#022c22;--h2:#134e4a;--h3:#365314;--hd-a:#047857;--hd-b:#0f766e;--cls-line:#34d399}
+  .lv2{--g1:#3b82f6;--g2:#06b6d4;--g3:#818cf8;--h1:#0b1a3d;--h2:#1e3a8a;--h3:#164e63;--hd-a:#1d4ed8;--hd-b:#0e7490;--cls-line:#60a5fa}
+  .lv3{--g1:#a78bfa;--g2:#e879f9;--g3:#f472b6;--h1:#2e1065;--h2:#4c1d95;--h3:#701a43;--hd-a:#6d28d9;--hd-b:#a21caf;--cls-line:#a78bfa}
+  .lv4{--g1:#f472b6;--g2:#e879f9;--g3:#fbbf24;--h1:#3f0618;--h2:#581c64;--h3:#713f12;--hd-a:#be185d;--hd-b:#a21caf;--cls-line:#f472b6}}}
+:root[data-theme="dark"] .lv1{--g1:#10b981;--g2:#14b8a6;--g3:#84cc16;--h1:#022c22;--h2:#134e4a;--h3:#365314;--hd-a:#047857;--hd-b:#0f766e;--cls-line:#34d399}
+:root[data-theme="dark"] .lv2{--g1:#3b82f6;--g2:#06b6d4;--g3:#818cf8;--h1:#0b1a3d;--h2:#1e3a8a;--h3:#164e63;--hd-a:#1d4ed8;--hd-b:#0e7490;--cls-line:#60a5fa}
+:root[data-theme="dark"] .lv3{--g1:#a78bfa;--g2:#e879f9;--g3:#f472b6;--h1:#2e1065;--h2:#4c1d95;--h3:#701a43;--hd-a:#6d28d9;--hd-b:#a21caf;--cls-line:#a78bfa}
+:root[data-theme="dark"] .lv4{--g1:#f472b6;--g2:#e879f9;--g3:#fbbf24;--h1:#3f0618;--h2:#581c64;--h3:#713f12;--hd-a:#be185d;--hd-b:#a21caf;--cls-line:#f472b6}
+
+.level{position:relative;margin:40px 0 10px}
+.level::before{content:"";position:absolute;inset:-20px 0;z-index:-1;pointer-events:none;background:radial-gradient(60% 40% at 15% 0%,color-mix(in srgb,var(--g1) 14%,transparent),transparent 70%),radial-gradient(50% 35% at 95% 30%,color-mix(in srgb,var(--g3) 10%,transparent),transparent 70%)}
+.wrap{position:relative;z-index:0}
+.lvl-banner{position:relative;overflow:hidden;display:flex;gap:22px;align-items:center;color:#fff;border-radius:26px;padding:26px 28px;background:linear-gradient(120deg,var(--h1),var(--h2) 45%,var(--h3),var(--h1));background-size:250% 100%;animation:bannerflow 14s ease-in-out infinite alternate;box-shadow:0 24px 50px -28px var(--h2)}
+.lvl-banner::after{content:"";position:absolute;inset:0;background-image:radial-gradient(#ffffff40 1px,transparent 1.6px);background-size:28px 28px;opacity:.45;pointer-events:none}
+@keyframes bannerflow{to{background-position:100% 0}}
+.lvl-banner>div:last-child{position:relative;z-index:1;min-width:0}
+.lvl-banner small{font:600 12px var(--f-mono);letter-spacing:.16em;text-transform:uppercase;opacity:.85}
+.lvl-banner h2{font:800 clamp(26px,4vw,38px)/1.1 var(--f-display);margin:4px 0 6px}
+.lvl-banner p{margin:0;max-width:60ch;opacity:.92}
+.goals{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.goals span{font-size:14px;font-weight:700;padding:4px 11px;border-radius:99px;background:#ffffff22;box-shadow:inset 0 0 0 1px #ffffff40}
+.goals code{background:none;color:inherit}
+@media(max-width:600px){.lvl-banner{flex-direction:column;align-items:flex-start;padding:22px 18px;gap:14px}}
+/* 3D coin */
+.coin{flex:none;position:relative;z-index:1;width:96px;height:96px;transform-style:preserve-3d;animation:coin 6s cubic-bezier(.5,0,.5,1) infinite}
+.coin>div{position:absolute;inset:0;border-radius:50%;display:grid;place-items:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;font:800 44px var(--f-display);color:#fff;background:radial-gradient(circle at 32% 28%,#ffffffaa,transparent 38%),conic-gradient(from 200deg,var(--g1),var(--g3),var(--g2),var(--g1));box-shadow:inset 0 0 0 5px #ffffff55,inset 0 -8px 14px #0004,0 16px 26px -12px #000a}
+.coin .cb2{transform:rotateY(180deg);font-size:42px}
+@keyframes coin{0%,30%{transform:rotateY(0) translateY(0)}45%{transform:rotateY(180deg) translateY(-8px)}55%,80%{transform:rotateY(180deg) translateY(0)}95%,100%{transform:rotateY(360deg)}}
+@media(max-width:600px){.coin{width:72px;height:72px}.coin>div{font-size:32px}}
+
+/* ===== learning path ===== */
+.path{background:linear-gradient(160deg,var(--surface),color-mix(in srgb,var(--g1) 6%,var(--surface)))}
+.road{perspective:1100px;display:grid;place-items:center;padding:20px 0 8px;overflow:hidden}
+.stair{position:relative;display:flex;align-items:flex-end;gap:14px;transform-style:preserve-3d;transform:rotateX(-14deg) rotateY(-24deg);padding:40px 30px 10px}
+.stp{--w:118px;--d:70px;position:relative;width:var(--w);height:var(--hgt);transform-style:preserve-3d;border:0;background:none;padding:0;cursor:pointer;font:inherit;color:#fff;transition:transform .35s cubic-bezier(.2,.7,.2,1)}
+.stp:hover,.stp:focus-visible{transform:translateY(-8px)}
+.stp:focus-visible{outline:none}.stp:focus-visible .fc{outline:3px solid var(--g3);outline-offset:2px}
+.stp>i{position:absolute;display:block}
+.stp .fc{inset:0;transform:translateZ(calc(var(--d)/2));border-radius:6px;background:linear-gradient(170deg,var(--g1),var(--g2));display:flex;flex-direction:column;justify-content:flex-end;padding:10px;font-style:normal;text-align:left;box-shadow:inset 0 0 0 1px #ffffff40}
+.stp .fc b{font:800 26px/1 var(--f-display)}.stp .fc span{font:700 13px var(--f-body);opacity:.95}
+.stp .tp{left:0;top:0;width:var(--w);height:var(--d);transform-origin:top;transform:translateZ(calc(var(--d)/2)) rotateX(-90deg);background:linear-gradient(135deg,color-mix(in srgb,var(--g3) 60%,#fff),var(--g3));border-radius:4px}
+.stp .sd{top:0;left:var(--w);width:var(--d);height:100%;transform-origin:left;transform:translateZ(calc(var(--d)/2)) rotateY(90deg);background:linear-gradient(180deg,color-mix(in srgb,var(--g2) 70%,#000),color-mix(in srgb,var(--g1) 55%,#000));border-radius:4px}
+.stp .cl{left:50%;top:-34px;transform:translateX(-50%) translateZ(calc(var(--d)/2));font:800 13px var(--f-mono);font-style:normal;background:var(--ok);color:#fff;border-radius:99px;padding:2px 8px;white-space:nowrap;scale:0;transition:scale .4s cubic-bezier(.3,1.6,.5,1)}
+.stp.cleared .cl{scale:1}
+.token{position:absolute;left:0;top:0;width:34px;height:34px;border-radius:50%;pointer-events:none;background:radial-gradient(circle at 35% 30%,#fff,#fde68a 30%,#f59e0b 70%);box-shadow:0 8px 14px -4px #0008;transition:transform .9s cubic-bezier(.4,1.5,.5,1);animation:tbob 1.6s ease-in-out infinite}
+.token::after{content:"you";position:absolute;top:-20px;left:50%;transform:translateX(-50%);font:700 11px var(--f-mono);color:var(--ink)}
+@keyframes tbob{50%{margin-bottom:8px}}
+@media(max-width:600px){.stair{gap:8px;padding:40px 10px 10px;transform:rotateX(-12deg) rotateY(-16deg)}.stp{--w:68px;--d:40px}.stp .fc{padding:6px}.stp .fc b{font-size:20px}.stp .fc span{font-size:10px}.token{width:26px;height:26px}}
+.pathcards{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));margin-top:14px}
+.pcard{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:var(--ink);border-radius:16px;padding:14px 16px;background:var(--surface-2);position:relative;overflow:hidden;transition:transform .2s}
+.pcard::before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:linear-gradient(180deg,var(--g1),var(--g3))}
+.pcard:hover{transform:translateY(-3px)}
+.pcard b{font:800 17px var(--f-display);color:var(--g1)}.pcard span{font-size:15px;color:var(--muted)}
+.pcard.p1{--g1:#047857;--g3:#65a30d}.pcard.p2{--g1:#1d4ed8;--g3:#4f46e5}.pcard.p3{--g1:#7c3aed;--g3:#db2777}.pcard.p4{--g1:#be185d;--g3:#d97706}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pcard.p1{--g1:#34d399}:root:not([data-theme="light"]) .pcard.p2{--g1:#60a5fa}:root:not([data-theme="light"]) .pcard.p3{--g1:#c4b5fd}:root:not([data-theme="light"]) .pcard.p4{--g1:#f9a8d4}}
+:root[data-theme="dark"] .pcard.p1{--g1:#34d399}:root[data-theme="dark"] .pcard.p2{--g1:#60a5fa}:root[data-theme="dark"] .pcard.p3{--g1:#c4b5fd}:root[data-theme="dark"] .pcard.p4{--g1:#f9a8d4}
+
+/* level pill in the top bar */
+.lvpill{flex:none;font:700 13px var(--f-body);color:#fff;padding:5px 11px;border-radius:99px;background:linear-gradient(100deg,var(--g1),var(--g2));white-space:nowrap;transition:background .4s}
+.lvpill.none{display:none}
+@media(max-width:640px){.lvpill .lt{display:none}}
+.toc a i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:1px;background:linear-gradient(135deg,var(--g1),var(--g3))}
+.toc a.act i{background:#fff}
+
+/* ===== beginner simulators ===== */
+.worlds{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:10px 0}
+.world-box{border-radius:16px;padding:12px;background:var(--surface-2);min-width:0}
+.world-box h4{font-size:16px;margin-bottom:8px}
+.bad-w{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--no) 45%,transparent)}.good-w{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--ok) 50%,transparent)}
+.wl{display:flex;flex-direction:column;gap:10px;min-height:120px}
+.scr-row{display:flex;flex-wrap:wrap;gap:8px}
+.scr{width:86px;border-radius:10px;padding:6px;background:#fff;color:#1a1230;box-shadow:0 8px 16px -10px #0007,inset 0 0 0 1px #0002;font:700 11px var(--f-mono);transform:perspective(500px) rotateY(-12deg) rotateX(6deg);transition:background .5s,color .5s;animation:drop .5s cubic-bezier(.3,1.5,.5,1) both}
+.scr::before{content:"";display:block;height:6px;border-radius:3px;margin-bottom:5px;background:linear-gradient(90deg,var(--g1),var(--g2))}
+.scr.dark{background:#1e1b2e;color:#e9e3ff}
+.scr small{display:block;font-weight:500;opacity:.75}
+@keyframes drop{from{transform:perspective(500px) translateY(-24px) rotateY(-40deg)}}
+.obj-row{display:flex;flex-wrap:wrap;gap:16px;align-items:center;padding:6px 4px}
+.cube-w{display:flex;flex-direction:column;align-items:center;gap:6px;font:600 11px var(--f-mono);color:var(--muted)}
+.cube{--s:40px;width:var(--s);height:var(--s);position:relative;transform-style:preserve-3d;animation:cspin 7s linear infinite;margin:6px}
+.cube.big{--s:56px}
+.cube i{position:absolute;inset:0;border-radius:6px;background:linear-gradient(135deg,var(--g1),var(--g2));box-shadow:inset 0 0 0 1px #ffffff55;display:grid;place-items:center;color:#fff;font:800 12px var(--f-mono);font-style:normal}
+.cube i:nth-child(1){transform:translateZ(calc(var(--s)/2))}.cube i:nth-child(2){transform:rotateY(180deg) translateZ(calc(var(--s)/2))}
+.cube i:nth-child(3){transform:rotateY(90deg) translateZ(calc(var(--s)/2));background:linear-gradient(135deg,var(--g2),var(--g3))}.cube i:nth-child(4){transform:rotateY(-90deg) translateZ(calc(var(--s)/2));background:linear-gradient(135deg,var(--g2),var(--g3))}
+.cube i:nth-child(5){transform:rotateX(90deg) translateZ(calc(var(--s)/2));background:var(--g3)}.cube i:nth-child(6){transform:rotateX(-90deg) translateZ(calc(var(--s)/2));background:var(--g1)}
+.cube.dark i{background:linear-gradient(135deg,#1e1b2e,#3b3355)!important}
+@keyframes cspin{from{transform:rotateX(-20deg) rotateY(0)}to{transform:rotateX(-20deg) rotateY(360deg)}}
+.cube-pop{animation:popin .5s both}
+.wcount{font:700 14px var(--f-mono);margin-top:6px}
+.wcount .bad{color:var(--no)}.wcount .good{color:var(--ok)}
+/* static demo */
+.st-cls{display:inline-flex;gap:10px;align-items:center;padding:10px 14px;border-radius:14px;color:#fff;background:linear-gradient(120deg,var(--h1),var(--h2));font:700 14px var(--f-mono);box-shadow:0 10px 20px -12px var(--h2)}
+.st-cls b{font-size:20px;color:#fde68a;display:inline-block}
+.st-cls b.bump{animation:bump .5s}
+@keyframes bump{40%{transform:scale(1.6) rotate(-8deg)}}
+.st-objs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.st-o{font:600 13px var(--f-mono);padding:8px 10px;border-radius:12px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);animation:drop .5s both}
+.st-o small{display:block;color:var(--muted);font-size:11px}
+/* locked door */
+.door-scene{display:flex;align-items:center;justify-content:center;gap:18px;padding:10px;min-height:160px;perspective:700px}
+.frame{position:relative;width:92px;height:136px;border-radius:10px 10px 0 0;background:linear-gradient(180deg,var(--h1),var(--h2));box-shadow:inset 0 0 0 4px color-mix(in srgb,var(--g3) 70%,#fff);transform-style:preserve-3d}
+.frame .inside{position:absolute;inset:10px;display:grid;place-items:center}
+.door{position:absolute;inset:4px;border-radius:7px 7px 0 0;transform-origin:left;transition:transform .9s cubic-bezier(.3,1.3,.5,1);background:linear-gradient(135deg,var(--g1),var(--g2));box-shadow:inset 0 0 0 2px #ffffff40;display:grid;place-items:center;color:#fff;font-size:30px}
+.door::after{content:"";position:absolute;right:10px;top:52%;width:9px;height:9px;border-radius:50%;background:#fde68a}
+.door.open{transform:rotateY(-78deg)}
+.door.rattle{animation:rattle .5s}
+@keyframes rattle{20%,60%{transform:rotateY(-6deg)}40%,80%{transform:rotateY(3deg)}}
+.caller{font:700 12px var(--f-mono);padding:8px 10px;border-radius:12px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);text-align:center}
+/* first singleton builder */
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}
+.stepb{border:0;cursor:pointer;font:700 14px var(--f-body);padding:8px 14px;border-radius:99px;background:var(--surface-2);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
+.stepb.on{color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2));box-shadow:0 6px 14px -8px var(--g2)}
+.stepb.past{color:var(--g1);box-shadow:inset 0 0 0 2px var(--g1)}
+.build3d{height:190px;perspective:900px;display:grid;place-items:center;overflow:hidden}
+.b3{position:relative;width:200px;height:110px;transform-style:preserve-3d;transform:rotateX(56deg) rotateZ(-38deg);transition:transform 1s}
+.b3:hover{transform:rotateX(50deg) rotateZ(-20deg)}
+.slab{position:absolute;inset:0;border-radius:14px;display:grid;place-items:center;color:#fff;font:700 13px var(--f-mono);text-align:center;padding:6px;transition:transform .8s cubic-bezier(.3,1.4,.5,1),box-shadow .8s}
+.slab.base{background:var(--surface-2);color:var(--muted);box-shadow:inset 0 0 0 2px var(--line),0 0 0 #0000}
+.slab.l{transform:translateZ(0) scale3d(.6,.6,1);background:transparent;color:transparent;outline:2px dashed var(--line);outline-offset:-2px}
+.slab.l.on{color:#fff;outline:0;box-shadow:inset 0 0 0 1px #ffffff50,-14px 16px 22px -10px #0007}
+.slab.l1.on{background:linear-gradient(135deg,#047857,#0f766e);transform:translateZ(26px)}
+.slab.l2.on{background:linear-gradient(135deg,#0f766e,#65a30d);transform:translateZ(52px) scale3d(.86,.86,1)}
+.slab.l3.on{background:linear-gradient(135deg,#65a30d,#ca8a04);transform:translateZ(78px) scale3d(.72,.72,1)}
+/* checkpoints */
+.checkpoint{position:relative;margin-top:22px;border-radius:20px;padding:16px;background:linear-gradient(150deg,color-mix(in srgb,var(--g1) 10%,var(--surface)),color-mix(in srgb,var(--g3) 9%,var(--surface)));box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--g1) 35%,transparent);overflow:hidden}
+.cp-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:6px;font-size:17px}
+.cp-badge{font:700 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:#fff;padding:4px 10px;border-radius:99px;background:linear-gradient(100deg,var(--g1),var(--g2))}
+.burst{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.burst i{position:absolute;top:40%;left:50%;width:10px;height:14px;border-radius:3px;animation:conf 1.4s cubic-bezier(.2,.7,.4,1) forwards}
+@keyframes conf{from{transform:translate(0,0) rotate(0)}to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+.cp-win{margin-top:10px;font-weight:800;color:var(--ok)}
+.qtag{display:inline-block;font:700 11px var(--f-mono);letter-spacing:.04em;padding:2px 8px;border-radius:99px;color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2));margin-right:8px;vertical-align:2px}
+.lv .grp{display:inline-block;font:700 10px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;padding:1px 6px;border-radius:99px;color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2));margin-bottom:2px}
+.lv.on .grp{background:#ffffff30}
+/* fill in the blanks */
+.blank-code select{font:600 13px var(--f-mono);border-radius:6px;border:0;padding:1px 4px;background:#fde68a;color:#3f2e05;cursor:pointer}
+.blank-code select.ok{background:#86efac;color:#052e16}.blank-code select.bad{background:#fca5a5;color:#450a0a}
+.tile.lv1,.tile.lv2,.tile.lv3,.tile.lv4{box-shadow:inset 4px 0 0 var(--g1)}
+.face.front .hint{background:none;padding:0;margin:auto 0 0;border-radius:0;color:var(--muted);font-size:13px}
+.grid>.sim>.sim-in{height:100%}
+.road{padding-bottom:26px}
+.stp .cl{top:8px;left:auto;right:8px;transform:translateZ(calc(var(--d)/2 + 2px))}
+.frame{flex:none}.door-scene{flex-wrap:wrap;gap:12px}.caller{max-width:120px;font-size:11px}
+.slab{font-size:14px}
+.stp .cl{width:24px;height:24px;padding:0;display:grid;place-items:center;font-size:14px;box-shadow:0 0 0 3px #ffffff80}
+</style>
+</head>
+<body>
+
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="mOpen" viewBox="0 0 14 14" refX="13" refY="7" markerWidth="14" markerHeight="14" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M1 1 L13 7 L1 13" style="fill:none;stroke:var(--edge);stroke-width:1.8"/></marker>
+    <linearGradient id="gHd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--hd-a)"/><stop offset="1" style="stop-color:var(--hd-b)"/></linearGradient>
+    <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fde68a"/><stop offset="1" stop-color="#f0abfc"/></linearGradient>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#start"><i></i><span>Singleton</span></a>
+    <nav class="toc" id="toc" aria-label="Chapitres">
+      <a href="#path">Parcours</a><a href="#idea" class="lv1"><i></i>L’idée</a><a href="#newproblem" class="lv1"><i></i>new vs getInstance</a><a href="#tools" class="lv1"><i></i>static &amp; private</a><a href="#first" class="lv1"><i></i>Premier singleton</a><a href="#intent" class="lv2"><i></i>Intention</a><a href="#structure" class="lv2"><i></i>Structure</a><a href="#init" class="lv2"><i></i>Paresseux ou immédiat</a><a href="#jdk" class="lv2"><i></i>Dans le JDK</a><a href="#race" class="lv3"><i></i>Course de threads</a><a href="#impls" class="lv3"><i></i>6 implémentations</a><a href="#attacks" class="lv3"><i></i>Le casser</a><a href="#testing" class="lv4"><i></i>Tests</a><a href="#expert" class="lv4"><i></i>Notes d’expert</a><a href="#tradeoffs" class="lv4"><i></i>Compromis</a><a href="#rules" class="lv4"><i></i>Pièges</a><a href="#yn">Oui / Non</a><a href="#quiz">Quiz</a><a href="#levels">Exercices</a><a href="#cheat">Aide-mémoire</a>
+    </nav>
+    <button class="btn sm" id="theme" type="button" aria-label="Basculer entre thème clair et sombre"><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 2a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
+  </div>
+</header>
+
+<section class="hero" id="start">
+  <div class="stars"></div>
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">Patrons de conception · Création · Java 25</div>
+      <h1>Le patron <em>Singleton</em></h1>
+      <p class="lead">Un seul objet, partagé par tous ceux qui le demandent. Partez d’une idée du quotidien et de deux mots-clés Java, construisez votre premier singleton en trois étapes, puis montez niveau par niveau jusqu’aux courses de threads, aux attaques et aux compromis débattus par les experts.</p>
+      <div class="cta"><a class="btn light" href="#path">Commencer au niveau 1 🌱</a><a class="btn glass" href="#levels">Aller aux exercices</a></div>
+    </div>
+    <div class="scene3d" aria-hidden="true">
+      <div class="world">
+        <div class="halo"></div>
+        <div class="orbit">
+          <i class="beam" style="--a:0deg;--dl:0s"></i><i class="beam" style="--a:60deg;--dl:.4s"></i><i class="beam" style="--a:120deg;--dl:.8s"></i><i class="beam" style="--a:180deg;--dl:1.2s"></i><i class="beam" style="--a:240deg;--dl:1.6s"></i><i class="beam" style="--a:300deg;--dl:2s"></i>
+          <span class="cli" style="--a:0deg;--c:#3b82f6">T1</span><span class="cli" style="--a:60deg;--c:#ec4899">T2</span><span class="cli" style="--a:120deg;--c:#10b981">T3</span><span class="cli" style="--a:180deg;--c:#f59e0b">T4</span><span class="cli" style="--a:240deg;--c:#8b5cf6">T5</span><span class="cli" style="--a:300deg;--c:#06b6d4">T6</span>
+        </div>
+        <div class="core"><i>INSTANCE</i><i>INSTANCE</i><i>getInstance()</i><i>getInstance()</i><i>1</i><i>1</i></div>
+        <div class="label3d">le même objet pour chaque thread</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+
+<!-- ================= LEARNING PATH ================= -->
+<section class="ch path" id="path">
+  <div class="chh"><div class="num">★</div><div><h2>Votre parcours d’apprentissage</h2><p class="sub">Quatre niveaux, de « c’est quoi ? » aux détails dont débattent les experts. Cliquez sur une marche pour y aller.</p></div></div>
+  <div class="road" id="road"></div>
+  <div class="pathcards">
+    <a class="pcard p1" href="#level-1"><b>Niveau 1 · Débutant</b><span>L’idée, des exemples du quotidien, <code>static</code> et <code>private</code>, votre premier singleton en 3 étapes.</span></a>
+    <a class="pcard p2" href="#level-2"><b>Niveau 2 · Intermédiaire</b><span>UML, paresseux ou immédiat, où Java lui-même utilise des singletons.</span></a>
+    <a class="pcard p3" href="#level-3"><b>Niveau 3 · Avancé</b><span>Threads et courses, six implémentations, attaques qui le cassent.</span></a>
+    <a class="pcard p4" href="#level-4"><b>Niveau 4 · Expert</b><span>Tests, injection de dépendances, détails de la JVM, compromis.</span></a>
+  </div>
+</section>
+
+<!-- ================= LEVEL 1 ================= -->
+<div class="level lv1" id="level-1">
+<div class="lvl-banner"><div class="coin" aria-hidden="true"><div class="cf">1</div><div class="cb2">🌱</div></div><div><small>Niveau 1 · Débutant</small><h2>Faites connaissance avec le Singleton</h2><p>Pas de threads, pas de jargon. Juste l’idée, deux mots-clés Java et un premier programme qui fonctionne.</p><div class="goals"><span>✔ expliquer l’idée en une phrase</span><span>✔ savoir pourquoi <code>new</code> pose problème ici</span><span>✔ écrire un singleton en 3 étapes</span></div></div></div>
+
+<section class="ch" id="idea">
+  <div class="chh"><div class="num">1.1</div><div><h2>L’idée, dans la vie de tous les jours</h2><p class="sub">Certaines choses ne devraient exister qu’une seule fois</p></div></div>
+  <p>Pensez à un match de football : il y a <b>un seul</b> tableau d’affichage. Chaque joueur, arbitre et spectateur regarde le <b>même</b> tableau. Si chacun avait le sien, on ne serait bientôt plus d’accord sur le score. Un <b>Singleton</b> est une classe qui garantit qu’il n’existe <b>qu’un seul objet</b> de son type, et qui donne à tout le monde le même moyen d’y accéder.</p>
+  <div class="flips" id="analogies"></div>
+  <div class="callout"><b class="t">En une phrase :</b> un Singleton est une classe qui possède exactement <b>un</b> objet, et tous ceux qui le demandent reçoivent <b>ce même objet</b>.</div>
+</section>
+
+<section class="ch" id="newproblem">
+  <div class="chh"><div class="num">1.2</div><div><h2>Le problème : <code>new</code> crée un nouvel objet à chaque fois</h2><p class="sub">Ouvrez des écrans, puis activez le mode sombre. Comparez les deux mondes.</p></div></div>
+  <div class="sim"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATEUR</span> Chaque écran demande les paramètres de l’appli</h4></div>
+    <div class="row"><button class="btn pri" id="sp-add" type="button">+ Ouvrir un écran</button><button class="btn" id="sp-dark" type="button">🌙 Activer le mode sombre dans le premier écran</button><button class="btn" id="sp-rst" type="button">↺ Réinitialiser</button></div>
+    <div class="worlds">
+      <div class="world-box bad-w"><h4>Avec <code>new Settings()</code></h4><div class="wl" id="sp-new"></div><div class="wcount" id="sp-newc"></div></div>
+      <div class="world-box good-w"><h4>Avec <code>Settings.getInstance()</code></h4><div class="wl" id="sp-one"></div><div class="wcount" id="sp-onec"></div></div>
+    </div>
+    <div class="say" id="sp-say" aria-live="polite"></div>
+  </div></div>
+  <div class="two">
+    <div><div class="lbl">Sans singleton (sortie vérifiée)</div><pre class="code" data-code="nosingle"></pre><pre class="code">menu: dark, editor: light
+same object? false</pre></div>
+    <div class="callout warn" style="margin-top:22px"><b class="t">Pourquoi est-ce un bogue ?</b> Le menu et l’éditeur ont chacun reçu leur <b>propre</b> objet <code>Settings</code>. Modifier l’un ne modifie pas l’autre : l’appli affiche deux thèmes différents en même temps. Nous voulons un seul objet partagé.</div>
+  </div>
+</section>
+
+<section class="ch" id="tools">
+  <div class="chh"><div class="num">1.3</div><div><h2>Deux mots-clés Java indispensables</h2><p class="sub">Un petit rappel avant de construire quoi que ce soit</p></div></div>
+  <div class="grid">
+    <div class="sim" style="margin:0"><div class="sim-in">
+      <div class="sim-head"><h4><code>static</code> = partagé par toute la classe</h4></div>
+      <p style="margin:0 0 8px;font-size:15px">Chaque objet <code>Student</code> a son <b>propre</b> <code>name</code>, mais il n’y a qu’<b>un seul</b> <code>count</code>, qui appartient à la classe.</p>
+      <div class="row"><button class="btn pri" id="st-add" type="button">+ new Student(…)</button><button class="btn sm" id="st-rst" type="button">↺</button></div>
+      <div class="stage" id="st-stage"></div>
+    </div></div>
+    <div class="sim" style="margin:0"><div class="sim-in">
+      <div class="sim-head"><h4>constructeur <code>private</code> = une porte verrouillée</h4></div>
+      <p style="margin:0 0 8px;font-size:15px">Si le constructeur est <code>private</code>, le code extérieur à la classe ne peut pas appeler <code>new</code>. Seule la classe elle-même a la clé.</p>
+      <div class="row"><button class="btn" id="dr-new" type="button">Dehors : new Settings()</button><button class="btn pri" id="dr-get" type="button">Dehors : Settings.getInstance()</button></div>
+      <div class="stage" id="dr-stage"></div><div id="dr-res" aria-live="polite"></div>
+    </div></div>
+  </div>
+  <pre class="code" data-code="staticdemo"></pre>
+</section>
+
+<section class="ch" id="first">
+  <div class="chh"><div class="num">1.4</div><div><h2>Votre premier singleton en 3 étapes</h2><p class="sub">Parcourez les étapes. Chacune ajoute une idée.</p></div></div>
+  <div class="steps" id="fs-steps"></div>
+  <div class="two">
+    <div><pre class="code" id="fs-code" style="margin-top:0"></pre></div>
+    <div><div class="build3d" id="fs-3d" aria-hidden="true"></div><div class="say" id="fs-say" aria-live="polite"></div><div class="row"><button class="btn" id="fs-prev" type="button">◀ Retour</button><button class="btn pri" id="fs-next" type="button">Étape suivante ▶</button></div>
+      <div class="lbl">Sortie de <code>java FirstSingleton.java</code> (vérifiée)</div><pre class="code">menu: dark, editor: dark
+same object? true</pre></div>
+  </div>
+  <div class="checkpoint" id="cp1"><div class="cp-head"><span class="cp-badge">Point de contrôle 1</span><b>Vérifiez ce que vous avez appris au niveau 1</b></div><div class="score"></div><div class="qs"></div><div class="burst" aria-hidden="true"></div></div>
+</section>
+</div>
+
+<!-- ================= LEVEL 2 ================= -->
+<div class="level lv2" id="level-2">
+<div class="lvl-banner"><div class="coin" aria-hidden="true"><div class="cf">2</div><div class="cb2">🧭</div></div><div><small>Niveau 2 · Intermédiaire</small><h2>Comprendre le patron</h2><p>La définition officielle, le diagramme de classes et la question « quand l’objet est-il créé ? ».</p><div class="goals"><span>✔ lire l’UML</span><span>✔ expliquer paresseux vs immédiat</span><span>✔ reconnaître les singletons du JDK</span></div></div></div>
+
+<section class="ch" id="intent">
+  <div class="chh"><div class="num">2.1</div><div><h2>L’intention officielle</h2><p class="sub">Deux promesses dans un seul patron</p></div></div>
+  <blockquote>« Garantir qu’une classe n’a qu’une seule instance, et fournir un point d’accès global à celle-ci. »<cite>Gamma, Helm, Johnson, Vlissides · Design Patterns (1994)</cite></blockquote>
+  <div class="grid">
+    <div class="tile"><h4>① Une seule instance</h4><p>La classe elle-même empêche les autres d’appeler <code>new</code> : son constructeur est <code>private</code>.</p></div>
+    <div class="tile"><h4>② Accès global</h4><p>Une méthode ou un champ statique fournit cette instance : <code>Config.getInstance()</code> ou <code>Config.INSTANCE</code>.</p></div>
+    <div class="tile"><h4>Bons usages</h4><p>Ce qui n’existe vraiment qu’une fois par programme : l’environnement d’exécution, un périphérique, un registre, un cache partagé, un utilitaire sans état.</p></div>
+  </div>
+</section>
+
+<section class="ch" id="structure">
+  <div class="chh"><div class="num">2.2</div><div><h2>Structure</h2><p class="sub">Le plus petit diagramme de classes du livre du GoF</p></div></div>
+  <figure class="fig"><div id="fig-uml"></div><figcaption>Figure 2.1 · Les membres statiques sont soulignés : le champ d’instance et <code>getInstance()</code> appartiennent à la classe, pas à un objet.</figcaption></figure>
+  <div class="flips" id="flips"></div>
+</section>
+
+<section class="ch" id="init">
+  <div class="chh"><div class="num">2.3</div><div><h2>Paresseux ou immédiat ? Quand l’objet est-il créé ?</h2><p class="sub">La JVM est déjà paresseuse : une classe est initialisée à sa première utilisation</p></div></div>
+  <div class="grid"><div class="tile"><h4>Immédiat (eager)</h4><p>L’objet est créé dès la première utilisation de la classe, même si personne n’a encore appelé <code>getInstance()</code>.</p></div><div class="tile"><h4>Paresseux (lazy)</h4><p>L’objet n’est créé qu’au premier appel de <code>getInstance()</code>. Utile s’il est coûteux et peut ne jamais servir.</p></div></div>
+  <p>Cliquez sur les appels dans n’importe quel ordre. Le simulateur suit les mêmes règles que le vrai programme ci-dessous, dont la sortie a été vérifiée en l’exécutant.</p>
+  <div class="sim"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATEUR</span> Chronologie de l’initialisation des classes</h4></div>
+    <div class="row"><button class="btn" data-ic="ev" type="button">Eager.version()</button><button class="btn" data-ic="eg" type="button">Eager.getInstance()</button><button class="btn" data-ic="lv" type="button">Lazy.version()</button><button class="btn pri" data-ic="lg" type="button">Lazy.getInstance()</button><button class="btn" id="ic-rst" type="button">↺ Relancer le programme</button></div>
+    <div class="two">
+      <div><div class="ibox"><div class="istat"><h4>Eager</h4><div class="light" id="l-eo"><i></i>classe initialisée</div><div class="light" id="l-ei"><i></i>instance créée</div></div><div class="istat"><h4>Paresseux (idiome holder)</h4><div class="light" id="l-lo"><i></i>outer classe initialisée</div><div class="light" id="l-lh"><i></i>Holder classe initialisée</div><div class="light" id="l-li"><i></i>instance créée</div></div></div><div class="say" id="ic-say" style="margin-top:10px"></div></div>
+      <div><div class="lbl">Console</div><div class="out" id="ic-out"></div></div>
+    </div>
+  </div></div>
+  <pre class="code" data-code="init"></pre>
+</section>
+
+<section class="ch" id="jdk">
+  <div class="chh"><div class="num">2.4</div><div><h2>Les singletons du JDK</h2><p class="sub">La plupart sont immuables ou sans état. Ce n’est pas un hasard.</p></div></div>
+  <div class="scroll"><table class="vs">
+    <tr><th>API</th><th>Style</th><th>À retenir</th></tr>
+    <tr><td><code>Runtime.getRuntime()</code></td><td>Champ statique immédiat</td><td>Le singleton de référence du JDK : un environnement d’exécution par JVM.</td></tr>
+    <tr><td><code>Collections.emptyList()</code>, <code>List.of()</code></td><td>Instance partagée immuable</td><td>Toujours la même liste vide. Sûr, car personne ne peut la modifier.</td></tr>
+    <tr><td><code>Comparator.naturalOrder()</code></td><td>Singleton sans état</td><td>Implémenté avec une constante d’enum dans le JDK.</td></tr>
+    <tr><td><code>TimeUnit.SECONDS</code>, <code>StandardOpenOption.READ</code></td><td>constantes d’enum</td><td>Chaque constante d’enum est un singleton de son espèce.</td></tr>
+    <tr><td><code>Desktop.getDesktop()</code>, <code>Toolkit.getDefaultToolkit()</code></td><td>Un par environnement</td><td>Enveloppe une ressource unique : le bureau ou le système de fenêtrage.</td></tr>
+    <tr><td><code>ProcessHandle.current()</code></td><td>Un par processus</td><td>Représente le processus en cours d’exécution.</td></tr>
+  </table></div>
+  <div class="checkpoint" id="cp2"><div class="cp-head"><span class="cp-badge">Point de contrôle 2</span><b>Vérifiez ce que vous avez appris au niveau 2</b></div><div class="score"></div><div class="qs"></div><div class="burst" aria-hidden="true"></div></div>
+</section>
+</div>
+
+<!-- ================= LEVEL 3 ================= -->
+<div class="level lv3" id="level-3">
+<div class="lvl-banner"><div class="coin" aria-hidden="true"><div class="cf">3</div><div class="cb2">⚡</div></div><div><small>Niveau 3 · Avancé</small><h2>Le rendre sûr</h2><p>Les vrais programmes exécutent plusieurs threads à la fois. Ici la version simple casse, et vous apprenez celles qui résistent.</p><div class="goals"><span>✔ expliquer une condition de course</span><span>✔ choisir parmi 6 implémentations</span><span>✔ se défendre contre la réflexion et la sérialisation</span></div></div></div>
+
+<section class="ch" id="race">
+  <div class="chh"><div class="num">3.1</div><div><h2>Threads et course</h2><p class="sub">Deux threads appellent <code>getInstance()</code> en même temps. Vous êtes l’ordonnanceur.</p></div></div>
+  <div class="grid"><div class="tile"><h4>Une course du quotidien</h4><p>Deux conducteurs voient la même place libre. Tous deux pensent « libre ! », tous deux s’y engagent, et c’est l’accrochage. Vérifier puis agir n’est pas une seule étape.</p></div><div class="tile"><h4>La même chose en Java</h4><p><code>if (instance == null) instance = new Config();</code> fait deux étapes. Entre les deux, un autre thread peut faire sa propre vérification.</p></div></div>
+  <p>Click <b>T1</b> or <b>T2</b> to choose who runs the next step, or let the simulator pick randomly. Make the unsafe version create two objects, then try the same with the safe ones.</p>
+  <div class="sim"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATOR</span> Who runs next?</h4></div>
+    <div class="row"><span class="lbl">Implémentation</span><div class="seg" id="rc-impl"></div></div>
+    <div class="row"><button class="btn t1" id="rc-t1" type="button">T1 step</button><button class="btn t2" id="rc-t2" type="button">T2 step</button><button class="btn pri" id="rc-rand" type="button">Random step</button><button class="btn" id="rc-auto" type="button">▶ Play</button><button class="btn" id="rc-rst" type="button">↺ Réinitialiser</button><button class="btn" id="rc-many" type="button">Run 2,000 random schedules</button></div>
+    <div class="two">
+      <div><div class="lanes" id="rc-lanes"></div><div class="mem" id="rc-mem"></div></div>
+      <div><pre class="code" id="rc-code" style="margin-top:0"></pre><div class="say" id="rc-say" aria-live="polite"></div><div id="rc-res"></div></div>
+    </div>
+  </div></div>
+  <div class="callout"><b class="t">Real Java behaves the same way.</b> We ran the unsafe version with 100 virtual threads and a slow constructor. It printed <code>instances created: 100</code> on every run. Without the slow constructor, the number varies from run to run, which is worse: the bug may hide for months.</div>
+  <pre class="code" data-code="race"></pre>
+</section>
+
+<section class="ch" id="impls">
+  <div class="chh"><div class="num">3.2</div><div><h2>Six façons de l’écrire en Java 25</h2><p class="sub">Faites tourner le carrousel 3D. Chaque version a été compilée et exécutée.</p></div></div>
+  <div class="car"><div class="ring" id="ring"></div></div>
+  <div class="row" style="justify-content:center"><button class="btn" id="car-prev" type="button">◀</button><span id="car-pos" style="font:600 14px var(--f-mono)"></span><button class="btn" id="car-next" type="button">▶</button></div>
+  <div class="car-detail" id="car-detail" aria-live="polite"></div>
+  <h3>Comparaison côte à côte</h3>
+  <div class="scroll"><table class="vs">
+    <tr><th>Implementation</th><th>Lazy</th><th>Thread-safe</th><th>Cost per call</th><th>Reflection-proof</th><th>Serialization-proof</th></tr>
+    <tr><td>Champ statique immédiat</td><td class="m">on class init</td><td class="y">yes</td><td class="y">none</td><td class="n">no</td><td class="n">no*</td></tr>
+    <tr><td>Lazy, unsynchronized</td><td class="y">yes</td><td class="n">NO</td><td class="y">none</td><td class="n">no</td><td class="n">no*</td></tr>
+    <tr><td>synchronized method</td><td class="y">yes</td><td class="y">yes</td><td class="m">a lock</td><td class="n">no</td><td class="n">no*</td></tr>
+    <tr><td>Double-checked + volatile</td><td class="y">yes</td><td class="y">yes</td><td class="y">a volatile read</td><td class="n">no</td><td class="n">no*</td></tr>
+    <tr><td>Holder idiom</td><td class="y">yes</td><td class="y">yes (JVM)</td><td class="y">none</td><td class="n">no</td><td class="n">no*</td></tr>
+    <tr><td><b>enum</b></td><td class="m">on class init</td><td class="y">yes (JVM)</td><td class="y">none</td><td class="y">yes</td><td class="y">yes</td></tr>
+  </table></div>
+  <p style="font-size:14px;color:var(--muted)">* unless you add a constructor guard and <code>readResolve()</code>, as shown in 3.3.</p>
+</section>
+
+<section class="ch" id="attacks">
+  <div class="chh"><div class="num">3.3</div><div><h2>Essayez de le casser</h2><p class="sub">Quatre façons d’obtenir une seconde instance, et les implémentations qui résistent</p></div></div>
+  <div class="sim"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATEUR</span> Laboratoire d’attaques</h4></div>
+    <div class="row"><span class="lbl">Implémentation</span><div class="seg" id="at-impl"><button type="button" data-v="classic" class="on">Classic static final</button><button type="button" data-v="guarded">Guarded + readResolve</button><button type="button" data-v="enum">enum</button></div></div>
+    <div class="row"><span class="lbl">Attaque</span><div class="seg" id="at-kind"><button type="button" data-v="reflect" class="on">Reflection</button><button type="button" data-v="serial">Serialization</button><button type="button" data-v="clone">clone()</button><button type="button" data-v="loader">Two class loaders</button></div><button class="btn pri" id="at-go" type="button">⚡ Attaquer</button></div>
+    <div class="two"><div class="stage lab-vis" id="at-vis"></div><div><pre class="code" id="at-code" style="margin-top:0"></pre><div id="at-res" aria-live="polite"></div></div></div>
+  </div></div>
+  <div class="lbl">Sortie vérifiée de <code>java Attacks.java</code></div>
+  <pre class="code">Classic  reflection: second instance created
+Guarded  reflection: blocked: already created
+Enum     reflection: blocked: Cannot reflectively create enum objects
+Classic  serialization same? false
+Guarded  serialization same? true
+Enum     serialization same? true</pre>
+  <div class="checkpoint" id="cp3"><div class="cp-head"><span class="cp-badge">Point de contrôle 3</span><b>Vérifiez ce que vous avez appris au niveau 3</b></div><div class="score"></div><div class="qs"></div><div class="burst" aria-hidden="true"></div></div>
+</section>
+</div>
+
+<!-- ================= LEVEL 4 ================= -->
+<div class="level lv4" id="level-4">
+<div class="lvl-banner"><div class="coin" aria-hidden="true"><div class="cf">4</div><div class="cb2">👑</div></div><div><small>Niveau 4 · Expert</small><h2>Savoir quand ne pas l’utiliser</h2><p>Le débat de conception, la testabilité, les rouages de la JVM et les compromis que pèsent les développeurs expérimentés.</p><div class="goals"><span>✔ rendre testable du code avec singletons</span><span>✔ connaître les cas limites de la JVM</span><span>✔ décider quoi utiliser à la place</span></div></div></div>
+
+<section class="ch" id="testing">
+  <div class="chh"><div class="num">4.1</div><div><h2>Pourquoi les tests détestent les singletons globaux</h2><p class="sub">L’état mutable partagé rend les résultats des tests dépendants de leur ordre</p></div></div>
+  <div class="callout warn"><b class="t">The controversy:</b> the pattern combines two decisions, "there is one" and "everyone can reach it". The second one is a <b>global variable</b> in disguise. It hides dependencies and lets tests interfere with each other. Many experts keep "one instance" and drop the global lookup: create the object once and <b>pass it</b> to whoever needs it.</div>
+  <div class="sim"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATEUR</span> Suite de tests instable</h4></div>
+    <div class="row"><span class="lbl">Run order</span><div class="seg" id="ts-order"><button type="button" data-v="ab" class="on">A then B</button><button type="button" data-v="ba">B then A</button></div><label class="chk"><input type="checkbox" id="ts-di"> Inject a fresh <code>Cart</code> into each test (fix)</label><button class="btn pri" id="ts-run" type="button">▶ Lancer les tests</button></div>
+    <div class="two"><div><pre class="code" id="ts-code" style="margin-top:0"></pre></div><div><div class="tests" id="ts-list"></div><div class="say" id="ts-say" style="margin-top:10px" aria-live="polite"></div></div></div>
+  </div></div>
+  <h3>La solution : garder une instance, abandonner l’accès global</h3>
+  <pre class="code" data-code="di"></pre>
+</section>
+
+<section class="ch" id="expert">
+  <div class="chh"><div class="num">4.2</div><div><h2>Ce que savent les experts</h2><p class="sub">Les détails qui comptent en production et en entretien</p></div></div>
+  <div class="xp" id="xp"></div>
+  <h3>A preview feature to watch: stable values <span class="tag pv">JDK 25 preview</span></h3>
+  <p>JEP 502 adds a <b>preview</b> API for values that are set at most once and then treated as constants by the JIT. It's a lazy, thread-safe alternative to the holder idiom without an extra class. You need <code>--enable-preview</code> to use it, and the API may still change in later releases.</p>
+  <pre class="code" data-code="stable"></pre>
+</section>
+
+<section class="ch" id="tradeoffs">
+  <div class="chh"><div class="num">4.3</div><div><h2>Compromis</h2><p class="sub">Pratique aujourd’hui, coûteux demain</p></div></div>
+  <div class="scroll"><table class="vs">
+    <tr><th>✔ Avantages</th><th>✘ Coûts</th></tr>
+    <tr><td>Guarantees a single instance of something that really exists once</td><td>A global access point hides dependencies: method signatures stop telling the truth</td></tr>
+    <tr><td>Created on demand (lazy) or at class initialization</td><td>Tests share state and depend on their order; mocking a static call is hard</td></tr>
+    <tr><td>Can implement interfaces and be passed around, unlike a static utility class</td><td>Mutable singletons need synchronization; they become a contention point</td></tr>
+    <tr><td>GoF: the count can change later (e.g. a small pool) behind <code>getInstance()</code></td><td>"One per JVM" is really "one per class loader"; it leaks on hot redeploy</td></tr>
+    <tr><td>Saves memory for heavy, immutable resources</td><td>Breaks the Single Responsibility Principle: the class manages its own lifecycle too</td></tr>
+  </table></div>
+  <div class="sim"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATEUR</span> Que devriez-vous utiliser à la place ?</h4></div>
+    <div class="two"><div id="wiz-q"></div><div><div class="stage" id="wiz-bars"></div><div class="say" id="wiz-v" style="margin-top:10px" aria-live="polite"></div></div></div>
+  </div></div>
+</section>
+
+<section class="ch" id="rules">
+  <div class="chh"><div class="num">4.4</div><div><h2>Pièges</h2><p class="sub">Erreurs vues dans de vraies revues de code, des plus basiques aux plus subtiles</p></div></div>
+  <div class="grid">
+    <div class="rule"><h4>Forgetting the private constructor</h4>Without it, anyone can call <code>new</code>.<span class="bad">✗ public Config() { }</span><span class="good">✓ private Config() { }</span></div>
+    <div class="rule"><h4>Lazy without synchronization</h4>Check-then-act is a race.<span class="bad">✗ if (instance == null) instance = new …</span><span class="good">✓ holder idiom or enum</span></div>
+    <div class="rule"><h4>Double-checked without volatile</h4>Another thread may see a half-built object.<span class="bad">✗ private static Config instance;</span><span class="good">✓ private static volatile Config instance;</span></div>
+    <div class="rule"><h4>Serializable without readResolve</h4>Deserializing creates a copy.<span class="bad">✗ implements Serializable (only)</span><span class="good">✓ readResolve() or enum</span></div>
+    <div class="rule"><h4>Mutable global state</h4>Every caller can change it, at any time.<span class="bad">✗ Settings.get().setLocale(…)</span><span class="good">✓ immutable singleton, or pass the object</span></div>
+    <div class="rule"><h4>Heavy work in the constructor</h4>An exception there kills the class for good.<span class="bad">✗ load files in a static initializer</span><span class="good">✓ load explicitly, report errors, allow retry</span></div>
+  </div>
+  <div class="checkpoint" id="cp4"><div class="cp-head"><span class="cp-badge">Point de contrôle 4</span><b>Vérifiez ce que vous avez appris au niveau 4</b></div><div class="score"></div><div class="qs"></div><div class="burst" aria-hidden="true"></div></div>
+</section>
+</div>
+
+<!-- ================= FINAL TESTS ================= -->
+<div class="part"><b>Final</b> Testez-vous sur tous les niveaux</div>
+<section class="ch" id="yn"><div class="chh"><div class="num">✓</div><div><h2>Oui ou non ?</h2><p class="sub">Du niveau débutant à expert. Chaque réponse est accompagnée de sa raison.</p></div></div><div class="score"></div><div class="qs"></div></section>
+<section class="ch" id="quiz"><div class="chh"><div class="num">?</div><div><h2>Quiz</h2><p class="sub">Choix multiples, du niveau débutant à expert</p></div></div><div class="score"></div><div class="qs"></div></section>
+<section class="ch" id="levels"><div class="chh"><div class="num">🏆</div><div><h2>Exercices, de facile à expert</h2><p class="sub">Neuf niveaux de natures différentes. Chaque réponse de code a été compilée ou exécutée pour vérification.</p></div></div><div class="ladder" id="ladder" role="tablist"></div><div id="lvbody"></div></section>
+
+<section class="ch" id="cheat">
+  <div class="chh"><div class="num">★</div><div><h2>Aide-mémoire</h2><p class="sub">Le Singleton sur un écran, par niveau</p></div></div>
+  <div class="grid">
+    <div class="tile lv1"><h4>🌱 Les 3 étapes</h4><p>Constructeur privé · instance <code>private static final</code> · <code>public static getInstance()</code>.</p></div>
+    <div class="tile lv2"><h4>🧭 Paresseux ou immédiat</h4><p>Immédiat = créé à l’initialisation de la classe (souvent assez paresseux). Paresseux = créé au premier <code>getInstance()</code>.</p></div>
+    <div class="tile lv3"><h4>⚡ Choix par défaut</h4><p><code>enum Config { INSTANCE; … }</code> : sûr face aux threads, à la sérialisation et à la réflexion. Besoin d’une superclasse ? Idiome holder.</p></div>
+    <div class="tile lv3"><h4>⚡ Jamais</h4><p>Paresseux sans synchronisation, ou verrouillage à double vérification sans <code>volatile</code>.</p></div>
+    <div class="tile lv4"><h4>👑 Connaître les limites</h4><p>Un par <b>chargeur de classes</b>. Un initialiseur en échec donne <code>ExceptionInInitializerError</code>, puis <code>NoClassDefFoundError</code> pour toujours.</p></div>
+    <div class="tile lv4"><h4>👑 Meilleure conception</h4><p>Gardez une instance, mais <b>injectez</b>-la via une interface. Les tests peuvent alors utiliser des doublures.</p></div>
+  </div>
+</section>
+
+</main>
+<footer>Patron Singleton · chapitre interactif · tout le code cible <b>Java 25</b> (JDK 25, LTS). Exécutez un fichier seul avec <code>java Fichier.java</code>.</footer>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const YES=['Correct !','Exactement.','Bien joué !','En plein dans le mille !','Juste !'];const pick=a=>a[Math.floor(Math.random()*a.length)];
+const KW=new Set('abstract boolean case catch class default double else enum extends final for if implements import int interface long new private protected public record return static super switch synchronized this throw throws try var void volatile while null true false'.split(' '));
+function hl(src){const re=/(\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)')|(@[A-Za-z]+)|(\b\d[\d_]*(?:\.\d+)?\b)|([A-Za-z_]\w*)/g;let o='',l=0,m;
+  while((m=re.exec(src))){o+=esc(src.slice(l,m.index));l=re.lastIndex;
+    if(m[1])o+=`<span class="c">${esc(m[1])}</span>`;else if(m[2])o+=`<span class="s">${esc(m[2])}</span>`;else if(m[3])o+=`<span class="a">${m[3]}</span>`;else if(m[4])o+=`<span class="n">${m[4]}</span>`;
+    else{const w=m[5];o+=KW.has(w)?`<span class="k">${w}</span>`:/^[A-Z]/.test(w)?`<span class="t">${w}</span>`:w}}
+  return o+esc(src.slice(l))}
+function addCopy(pre,text){const b=document.createElement('button');b.className='copy';b.type='button';b.textContent='Copier';
+  b.onclick=()=>{const ok=()=>{b.textContent='Copié ✓';setTimeout(()=>b.textContent='Copier',1400)};const sel=()=>{const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r)};try{navigator.clipboard.writeText(text).then(ok,sel)}catch(e){sel()}};pre.append(b)}
+function codeBlock(pre,src){pre.innerHTML=hl(src);addCopy(pre,src)}
+const codeLines=(lines,on)=>lines.map((l,i)=>`<span class="ln${on.includes(i)?' on':''}">${hl(l)||' '}</span>`).join('');
+
+/* ---------- mini class renderer ---------- */
+const LH=18;
+function prep(c){if(c._p)return c;const A=c.noAttr?null:(c.attrs||[]),O=c.noOps?null:(c.ops||[]);const all=[...(A||[]),...(O||[])].map(s=>s.replace(/^[_*]+/,''));
+  c.w=c.w||Math.max(110,Math.round(Math.max(c.name.length*9,(c.stereo||'').length*7+20,...all.map(s=>s.length*7.3))+26));c.H0=c.stereo?46:32;c.hA=A?(A.length?A.length*LH+10:12):0;c.hO=O?(O.length?O.length*LH+10:12):0;c.h=c.H0+c.hA+c.hO;c._p=1;return c}
+function anc(D,r){if(Array.isArray(r))return r;const m=r.match(/^(\w+)\.([TBLR])(?:@([\d.]+))?$/);const c=prep(D.c[m[1]]),f=m[3]!==undefined?+m[3]:.5;return m[2]==='T'?[c.x+c.w*f,c.y]:m[2]==='B'?[c.x+c.w*f,c.y+c.h]:m[2]==='L'?[c.x,c.y+c.h*f]:[c.x+c.w,c.y+c.h*f]}
+function member(x,y,s){let st=false,ab=false;while(/^[_*]/.test(s)){if(s[0]==='_')st=true;else ab=true;s=s.slice(1)}return `<text class="cm" x="${x}" y="${y}"${st?' text-decoration="underline"':''}${ab?' font-style="italic"':''}>${esc(s)}</text>`}
+function clsSvg(c){prep(c);const{x,y,w,h,H0}=c;let s=`<g class="cls"><rect class="body" x="${x}" y="${y}" width="${w}" height="${h}" rx="9"/><path class="hd" d="M${x+.8} ${y+H0} V${y+9} Q${x+.8} ${y+.8} ${x+9} ${y+.8} H${x+w-9} Q${x+w-.8} ${y+.8} ${x+w-.8} ${y+9} V${y+H0} Z"/>`;
+  if(c.stereo)s+=`<text class="cs" x="${x+w/2}" y="${y+17}" text-anchor="middle">${esc(c.stereo)}</text>`;s+=`<text class="cn" x="${x+w/2}" y="${y+(c.stereo?36:21)}" text-anchor="middle">${esc(c.name)}</text>`;let yy=y+H0;
+  if(!c.noAttr){(c.attrs||[]).forEach((a,i)=>s+=member(x+10,yy+18+i*LH,a));yy+=c.hA;if(!c.noOps)s+=`<line class="sep" x1="${x}" y1="${yy}" x2="${x+w}" y2="${yy}"/>`}if(!c.noOps)(c.ops||[]).forEach((o,i)=>s+=member(x+10,yy+18+i*LH,o));return s+'</g>'}
+function render(D){const[W,H]=D.vb;let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(D.alt)}">`;for(const id in D.c)prep(D.c[id]);
+  (D.e||[]).forEach(e=>{const P=e.p.map(r=>anc(D,r));s+=`<g class="rel k-${e.k}"><polyline class="ln" points="${P.map(p=>p.join(',')).join(' ')}"/>${e.label?`<text class="alab" x="${(P[0][0]+P[P.length-1][0])/2}" y="${(P[0][1]+P[P.length-1][1])/2-9}" text-anchor="middle">${esc(e.label)}</text>`:''}${e.m2?`<text class="mult" x="${P[P.length-1][0]+12}" y="${P[P.length-1][1]-12}">${e.m2}</text>`:''}</g>`});
+  for(const id in D.c)s+=clsSvg(D.c[id]);(D.notes||[]).forEach(n=>{s+=`<g class="note"><path d="M${n.x} ${n.y}H${n.x+n.w-12}L${n.x+n.w} ${n.y+12}V${n.y+n.h}H${n.x}Z M${n.x+n.w-12} ${n.y}V${n.y+12}H${n.x+n.w}"/>${n.text.split('\n').map((l,i)=>`<text x="${n.x+10}" y="${n.y+20+i*16}">${esc(l)}</text>`).join('')}</g>`});
+  if(D.raw)s+=D.raw;return s+'</svg>'}
+$('#fig-uml').innerHTML=render({vb:[760,230],alt:'Singleton class diagram',c:{cl:{x:20,y:70,w:130,name:'Client',noAttr:true,noOps:true},s:{x:270,y:30,w:270,name:'Singleton',attrs:['_- instance : Singleton','- data : String'],ops:['- Singleton()','_+ getInstance() : Singleton','+ operation() : void']}},
+  e:[{k:'dep',p:[[150,86],[270,86]],label:'getInstance()'},{k:'nav',p:[[540,70],[600,70],[600,46],[540,46]],m2:'1'}],
+  notes:[{x:560,y:120,w:190,h:60,text:'if (instance == null)\n  instance = new Singleton();\nreturn instance;'}],
+  raw:`<line x1="540" y1="150" x2="560" y2="150" style="stroke:var(--edge);stroke-dasharray:4 3"/><text x="618" y="62" class="alab" style="font-size:11px">self-reference</text>`});
+
+/* ---------- flips ---------- */
+$('#flips').innerHTML=[['1','Singleton class','final class Config','Owns its single instance and its own creation. Usually <code>final</code>, so nobody can subclass it and add a public constructor.'],['S','Static instance','private static … instance','Holds the one object. <code>static</code> means it belongs to the class; <code>final</code> (when eager) means it can never be replaced.'],['P','Private constructor','private Config()','Stops other classes from calling <code>new</code>. Reflection can still bypass it, unless you guard it or use an enum.'],['G','Global accessor','static getInstance()','Returns the instance, creating it first if needed. This is the "global point of access", and also the part critics dislike.'],['C','Client','any class','Calls <code>Config.getInstance()</code>. It depends on the concrete class, which is the testability problem.']]
+ .map(r=>`<button type="button" class="flip" aria-pressed="false" aria-label="${r[1]}: show details"><div class="in"><div class="face front"><div class="ico">${r[0]}</div><h4>${r[1]}</h4><div class="k">${esc(r[2])}</div><div class="hint">↻ Click to flip</div></div><div class="face back"><h4>${r[1]}</h4><div>${r[3]}</div></div></div></button>`).join('');
+$$('.flip').forEach(f=>f.onclick=()=>{f.classList.toggle('on');f.setAttribute('aria-pressed',f.classList.contains('on'))});
+
+/* ---------- code ---------- */
+const IMPL={
+eager:`// 1. Eager: created when the class is initialized
+static final class EagerConfig {
+    private static final EagerConfig INSTANCE = new EagerConfig();
+    private EagerConfig() { }
+    static EagerConfig getInstance() { return INSTANCE; }
+}`,
+unsafe:`// 2. Lazy, NOT thread-safe: two threads can both see null
+static final class LazyUnsafe {
+    private static LazyUnsafe instance;
+    private LazyUnsafe() { }
+    static LazyUnsafe getInstance() {
+        if (instance == null) instance = new LazyUnsafe();   // check-then-act race
+        return instance;
+    }
+}`,
+sync:`// 3. Lazy, synchronized method: correct, takes a lock on every call
+static final class SyncConfig {
+    private static SyncConfig instance;
+    private SyncConfig() { }
+    static synchronized SyncConfig getInstance() {
+        if (instance == null) instance = new SyncConfig();
+        return instance;
+    }
+}`,
+dcl:`// 4. Double-checked locking: correct ONLY with volatile (Java 5+ memory model)
+static final class DclConfig {
+    private static volatile DclConfig instance;
+    private DclConfig() { }
+    static DclConfig getInstance() {
+        DclConfig local = instance;                  // read the volatile field once
+        if (local == null) {
+            synchronized (DclConfig.class) {
+                local = instance;
+                if (local == null) instance = local = new DclConfig();
+            }
+        }
+        return local;
+    }
+}`,
+holder:`// 5. Initialization-on-demand holder: lazy, thread-safe, no locking after init
+static final class HolderConfig {
+    private HolderConfig() { }
+    private static final class Holder {              // initialized on first use only
+        static final HolderConfig INSTANCE = new HolderConfig();
+    }
+    static HolderConfig getInstance() { return Holder.INSTANCE; }
+}`,
+enum:`// 6. Enum: Effective Java Item 3, safe against reflection and serialization
+enum EnumConfig {
+    INSTANCE;
+    private final Map<String, String> values = new ConcurrentHashMap<>();
+    String get(String key)             { return values.getOrDefault(key, "?"); }
+    void put(String key, String value) { values.put(key, value); }
+}
+
+void main() {                                        // Java 25 compact source file (JEP 512)
+    EnumConfig.INSTANCE.put("theme", "dark");
+    IO.println(EnumConfig.INSTANCE.get("theme"));    // dark
+}`};
+const CODE={
+race:`// File: Race.java   Run: java Race.java   (JDK 25)
+static final class LazyUnsafe {
+    static final AtomicInteger CREATED = new AtomicInteger();
+    private static LazyUnsafe instance;
+    private LazyUnsafe() {
+        CREATED.incrementAndGet();
+        try { Thread.sleep(10); } catch (InterruptedException e) { }   // widen the race window
+    }
+    static LazyUnsafe getInstance() {
+        if (instance == null) instance = new LazyUnsafe();
+        return instance;
+    }
+}
+
+void main() throws Exception {
+    try (var pool = Executors.newVirtualThreadPerTaskExecutor()) {
+        for (int i = 0; i < 100; i++) pool.submit(LazyUnsafe::getInstance);
+    }
+    IO.println("instances created: " + LazyUnsafe.CREATED.get());   // instances created: 100
+}`,
+init:`// File: InitOrder.java   Run: java InitOrder.java   (JDK 25)
+static final class Eager {
+    static { IO.println("  [Eager] class initialized, instance created"); }
+    private static final Eager INSTANCE = new Eager();
+    private Eager() { }
+    static String version() { return "1.0"; }
+    static Eager getInstance() { return INSTANCE; }
+}
+
+static final class Lazy {
+    static { IO.println("  [Lazy] classe externe initialisée"); }
+    private Lazy() { IO.println("  [Lazy] instance created"); }
+    private static final class Holder {
+        static final Lazy INSTANCE = new Lazy();
+    }
+    static String version() { return "1.0"; }
+    static Lazy getInstance() { return Holder.INSTANCE; }
+}
+
+void main() {
+    IO.println("1. main starts");
+    IO.println("2. Eager.version() = " + Eager.version());   // Eager is initialized here
+    IO.println("3. Lazy.version() = " + Lazy.version());     // only the OUTER class
+    IO.println("4. Lazy.getInstance()");
+    Lazy.getInstance();                                      // now Holder, and the instance
+    IO.println("5. Lazy.getInstance() again");
+    Lazy.getInstance();                                      // nothing printed
+}`,
+di:`// File: Testability.java   Run: java Testability.java   (JDK 25)
+interface Clock { LocalTime now(); }
+
+enum SystemClock implements Clock {                    // the one production instance
+    INSTANCE;
+    public LocalTime now() { return LocalTime.now(); }
+}
+
+static final class Greeter {
+    private final Clock clock;
+    Greeter(Clock clock) { this.clock = clock; }       // dependency is injected, not looked up
+    String greet() { return clock.now().getHour() < 12 ? "Good morning" : "Good afternoon"; }
+}
+
+void main() {
+    Clock morning = () -> LocalTime.of(9, 0);          // a test double in one line
+    Clock evening = () -> LocalTime.of(18, 0);
+    IO.println(new Greeter(morning).greet());          // Good morning
+    IO.println(new Greeter(evening).greet());          // Good afternoon
+    IO.println(new Greeter(SystemClock.INSTANCE).greet().startsWith("Good"));   // true
+}`,
+stable:`// JDK 25 PREVIEW (JEP 502): compile and run with --enable-preview --source 25
+// The API may change in later releases.
+static final class OrderService {
+    private static final StableValue<System.Logger> LOGGER = StableValue.of();
+
+    static System.Logger logger() {
+        return LOGGER.orElseSet(() -> System.getLogger("orders"));   // set once, thread-safe
+    }
+}
+// Or as a lazy supplier:
+// static final Supplier<System.Logger> LOGGER = StableValue.supplier(() -> System.getLogger("orders"));`};
+CODE.nosingle=`// File: NoSingleton.java   Run: java NoSingleton.java   (JDK 25)
+static final class Settings {
+    private String theme = "light";
+    String theme() { return theme; }
+    void setTheme(String t) { theme = t; }
+}
+
+void main() {
+    var menu   = new Settings();     // object #1
+    var editor = new Settings();     // object #2, a different one!
+    menu.setTheme("dark");
+    IO.println("menu: " + menu.theme() + ", editor: " + editor.theme());
+    IO.println("same object? " + (menu == editor));
+}`;
+CODE.staticdemo=`// File: StaticDemo.java   Run: java StaticDemo.java   (JDK 25)
+static final class Student {
+    static int count = 0;          // ONE copy, shared by the class
+    final String name;             // one copy PER object
+    Student(String name) { this.name = name; count++; }
+}
+
+void main() {
+    var a = new Student("Ali");
+    var b = new Student("Sara");
+    IO.println(a.name + " and " + b.name + ", count = " + Student.count);
+}
+// prints: Ali and Sara, count = 2`;
+$$('pre[data-code]').forEach(p=>codeBlock(p,CODE[p.dataset.code]));
+
+/* ---------- carousel ---------- */
+(()=>{const V=[
+ ['eager','Champ statique immédiat','Simple and correct','Created when the class is initialized. Because the JVM initializes classes on first use, this is usually lazy enough.',[['y','thread-safe'],['y','no lock'],['m','not lazy per se'],['n','reflection'],['n','serialization']],'✓ good default'],
+ ['unsafe','Lazy, unsynchronized','Broken under threads','Check-then-act: two threads can both see <code>null</code> and both create an object. Only acceptable in strictly single-threaded code.',[['n','NOT thread-safe'],['y','lazy']],'✗ avoid'],
+ ['sync','synchronized method','Correct, a bit slower','Every call takes the lock, even after creation. In Java 25, virtual threads no longer pin inside <code>synchronized</code> (JEP 491, since Java 24), but the lock is still a contention point under heavy load.',[['y','thread-safe'],['y','lazy'],['m','lock on every call']],'~ fine for low traffic'],
+ ['dcl','Double-checked locking','Correct only with volatile','Locks only during creation. <code>volatile</code> stops another thread from seeing the reference before the constructor has finished. Reading the field once into <code>local</code> avoids a second volatile read.',[['y','thread-safe'],['y','lazy'],['y','lock only once'],['n','hard to get right']],'~ expert only'],
+ ['holder','Holder idiom','Lazy and lock-free','The nested <code>Holder</code> class is only initialized when <code>getInstance()</code> first touches it. The JVM guarantees class initialization happens once, safely (JLS §12.4).',[['y','thread-safe'],['y','lazy'],['y','no lock'],['n','reflection'],['n','serialization']],'✓ best lazy class'],
+ ['enum','enum','Effective Java, Item 3','"A single-element enum type is often the best way to implement a singleton." The JVM blocks reflective creation and keeps one instance on deserialization. It can implement interfaces, but can\'t extend a class.',[['y','thread-safe'],['y','reflection-proof'],['y','serialization-proof'],['m','no superclass']],'✓ best overall']];
+ const N=V.length,R=250;let cur=0;const ring=$('#ring');
+ ring.innerHTML=V.map((v,i)=>`<button type="button" class="panel3d" data-i="${i}" style="transform:rotateY(${i*360/N}deg) translateZ(${R}px)"><small>${i+1} · ${v[2]}</small><h4>${v[1]}</h4><span class="verdict">${v[5]}</span></button>`).join('');
+ ring.querySelectorAll('.panel3d').forEach(b=>b.onclick=()=>go(+b.dataset.i));
+ function go(i){cur=(i+N)%N;ring.style.transform=`translateZ(-${R}px) rotateY(${-cur*360/N}deg)`;ring.querySelectorAll('.panel3d').forEach((p,j)=>{p.classList.toggle('dim',j!==cur);p.tabIndex=j===cur?0:-1});
+   $('#car-pos').textContent=`${cur+1} / ${N}`;const v=V[cur],d=$('#car-detail');d.style.animation='none';void d.offsetWidth;d.style.animation='';
+   d.innerHTML=`<h4>${cur+1}. ${v[1]}</h4><p style="margin:0">${v[3]}</p><div class="props">${v[4].map(p=>`<span class="${p[0]}">${p[0]==='y'?'✓':p[0]==='n'?'✗':'~'} ${p[1]}</span>`).join('')}</div><pre class="code" id="car-code"></pre>`;codeBlock($('#car-code'),IMPL[v[0]])}
+ $('#car-prev').onclick=()=>go(cur-1);$('#car-next').onclick=()=>go(cur+1);go(0)})();
+
+/* ---------- thread race simulator ---------- */
+const RACE=(()=>{
+  const nobj=(S,ready)=>{S.created++;return{id:S.created,ready}};
+  const M={
+   unsafe:{n:'Lazy unsafe',code:['static Config getInstance() {','    if (instance == null)','        instance = new Config();','    return instance;','}'],ops:[
+     {l:'read instance',ln:1,run:(S,t)=>{t.local=S.inst;return t.local?3:1}},{l:'new Config()',ln:2,run:(S,t)=>{t.obj=nobj(S,true)}},{l:'instance = obj',ln:2,run:(S,t)=>{S.inst=t.obj}},{l:'return',ln:3,run:(S,t)=>{t.res=t.local||t.obj}}]},
+   sync:{n:'synchronized',code:['static synchronized Config getInstance() {','    if (instance == null)','        instance = new Config();','    return instance;','}'],ops:[
+     {l:'lock',ln:0,can:(S,t)=>!S.lock||S.lock===t.n,run:(S,t)=>{S.lock=t.n}},{l:'read instance',ln:1,run:(S,t)=>{t.local=S.inst;return t.local?4:2}},{l:'new Config()',ln:2,run:(S,t)=>{t.obj=nobj(S,true)}},{l:'instance = obj',ln:2,run:(S,t)=>{S.inst=t.obj}},{l:'unlock',ln:3,run:S=>{S.lock=null}},{l:'return',ln:3,run:(S,t)=>{t.res=t.local||t.obj}}]},
+   dclbad:{n:'DCL without volatile',code:['private static Config instance;            // NOT volatile','static Config getInstance() {','    if (instance == null) {                 // read #1, no lock','        synchronized (Config.class) {','            if (instance == null)           // read #2','                instance = new Config();    // may be reordered!','        }','    }','    return instance;','}'],ops:[
+     {l:'read #1',ln:2,run:(S,t)=>{t.local=S.inst;return t.local?7:1}},{l:'lock',ln:3,can:(S,t)=>!S.lock||S.lock===t.n,run:(S,t)=>{S.lock=t.n}},{l:'read #2',ln:4,run:(S,t)=>{t.local=S.inst;return t.local?6:3}},
+     {l:'allocate memory',ln:5,run:(S,t)=>{t.obj=nobj(S,false)}},{l:'instance = ref  (reordered)',ln:5,run:(S,t)=>{S.inst=t.obj}},{l:'run constructor body',ln:5,run:(S,t)=>{t.obj.ready=true}},{l:'unlock',ln:6,run:S=>{S.lock=null}},{l:'return',ln:8,run:(S,t)=>{t.res=t.local||t.obj;t.half=!t.res.ready}}]},
+   dcl:{n:'DCL + volatile',code:['private static volatile Config instance;','static Config getInstance() {','    Config local = instance;                // volatile read','    if (local == null) {','        synchronized (Config.class) {','            local = instance;','            if (local == null)','                instance = local = new Config();   // volatile write after construction','        }','    }','    return local;','}'],ops:[
+     {l:'read #1 (volatile)',ln:2,run:(S,t)=>{t.local=S.inst;return t.local?6:1}},{l:'lock',ln:4,can:(S,t)=>!S.lock||S.lock===t.n,run:(S,t)=>{S.lock=t.n}},{l:'read #2',ln:5,run:(S,t)=>{t.local=S.inst;return t.local?5:3}},
+     {l:'new Config() (finished)',ln:7,run:(S,t)=>{t.obj=nobj(S,true)}},{l:'instance = obj (volatile)',ln:7,run:(S,t)=>{S.inst=t.obj}},{l:'unlock',ln:8,run:S=>{S.lock=null}},{l:'return',ln:10,run:(S,t)=>{t.res=t.local||t.obj;t.half=!t.res.ready}}]},
+   holder:{n:'Holder idiom',code:['static Config getInstance() {','    return Holder.INSTANCE;   // JVM initializes Holder once','}','private static final class Holder {','    static final Config INSTANCE = new Config();','}'],ops:[
+     {l:'touch Holder',ln:1,run:()=>{}},{l:'JVM: class-init lock',ln:3,can:(S,t)=>S.init!=='running'||S.initBy===t.n,run:(S,t)=>{if(S.init==='done')return 3;S.init='running';S.initBy=t.n}},
+     {l:'INSTANCE = new Config()',ln:4,run:(S,t)=>{S.inst=nobj(S,true);S.init='done'}},{l:'return',ln:1,run:(S,t)=>{t.res=S.inst}}]},
+   enum:{n:'enum',code:['enum Config {','    INSTANCE;                 // created by the JVM during class init','}','// use: Config.INSTANCE'],ops:[
+     {l:'touch Config.INSTANCE',ln:3,run:()=>{}},{l:'JVM: class-init lock',ln:0,can:(S,t)=>S.init!=='running'||S.initBy===t.n,run:(S,t)=>{if(S.init==='done')return 3;S.init='running';S.initBy=t.n}},
+     {l:'INSTANCE = new Config()',ln:1,run:(S,t)=>{S.inst=nobj(S,true);S.init='done'}},{l:'return',ln:3,run:(S,t)=>{t.res=S.inst}}]}};
+  const fresh=()=>({S:{inst:null,lock:null,created:0,init:'none',initBy:null},T:[{n:'T1',pc:0,trail:[]},{n:'T2',pc:0,trail:[]}]});
+  const runnable=(m,st,t)=>{if(t.pc>=m.ops.length)return false;const op=m.ops[t.pc];return !op.can||op.can(st.S,t)};
+  function step(m,st,t){const op=m.ops[t.pc];const from=t.pc;const nx=op.run(st.S,t);const to=nx===undefined?t.pc+1:nx;for(let k=from+1;k<to;k++)t.trail[k]='skip';t.trail[from]='done';t.pc=to;return op}
+  function verdict(st){const ids=new Set(st.T.filter(t=>t.res).map(t=>t.res.id));const half=st.T.some(t=>t.half);return{multi:st.S.created>1||ids.size>1,half,done:st.T.every(t=>t.res)}}
+  function trial(m){const st=fresh();let guard=0;while(guard++<100){const r=st.T.filter(t=>runnable(m,st,t));if(!r.length)break;step(m,st,r[Math.floor(Math.random()*r.length)])}return verdict(st)}
+  return{M,fresh,runnable,step,verdict,trial}})();
+(()=>{let key='unsafe',st=RACE.fresh(),timer=null,last=null;const M=RACE.M;
+  $('#rc-impl').innerHTML=Object.keys(M).map(k=>`<button type="button" data-v="${k}"${k===key?' class="on"':''}>${M[k].n}</button>`).join('');
+  $$('#rc-impl button').forEach(b=>b.onclick=()=>{$$('#rc-impl button').forEach(x=>x.classList.toggle('on',x===b));key=b.dataset.v;reset()});
+  const col=n=>n==='T1'?'var(--t1)':'var(--t2)';
+  function draw(blocked){const m=M[key];
+    $('#rc-lanes').innerHTML=st.T.map(t=>`<div class="lane"><div class="who" style="background:${col(t.n)}">${t.n}</div><div class="ops" style="--c:${col(t.n)}">${m.ops.map((o,i)=>`<span class="op${t.trail[i]==='done'?' done':''}${t.trail[i]==='skip'?' skip':''}${i===t.pc?' cur':''}${blocked===t.n&&i===t.pc?' blocked':''}">${esc(o.l)}</span>`).join('')}${t.res?`<span class="op done">→ Config#${t.res.id}${t.half?' ⚠':''}</span>`:''}</div></div>`).join('');
+    const S=st.S;$('#rc-mem').innerHTML=`<div class="cell"><small>instance</small><b>${S.inst?`Config#${S.inst.id}${S.inst.ready?'':' (fields NOT set)'}`:'null'}</b></div><div class="cell"><small>${key==='holder'||key==='enum'?'class init':'lock'}</small><b>${key==='holder'||key==='enum'?S.init+(S.initBy&&S.init==='running'?' by '+S.initBy:''):(S.lock?'held by '+S.lock:'free')}</b></div><div class="cell"><small>objects created</small><b style="color:${S.created>1?'var(--no)':'inherit'}">${S.created}</b></div>`;
+    const cur=[];st.T.forEach(t=>{if(t.pc<m.ops.length)cur.push(m.ops[t.pc].ln)});$('#rc-code').innerHTML=codeLines(m.code,cur);
+    const v=RACE.verdict(st);$('#rc-t1').disabled=!RACE.runnable(m,st,st.T[0]);$('#rc-t2').disabled=!RACE.runnable(m,st,st.T[1]);$('#rc-rand').disabled=v.done;
+    $('#rc-res').innerHTML=!v.done&&v.half?`<div class="result warn">⚠ ${st.T.find(t=>t.half).n} already returned an object whose <b>constructor hasn't run yet</b>. It will read default field values (0, null).</div>`:v.done?(v.multi?`<div class="result err">✗ ${st.S.created} objects were created. T1 got Config#${st.T[0].res.id}, T2 got Config#${st.T[1].res.id}. The singleton is broken.</div>`:v.half?`<div class="result warn">⚠ Only one object, but a thread received it <b>before its constructor finished</b>. It would read default field values (0, null).</div>`:`<div class="result ok">✓ Both threads got the same Config#${st.T[0].res.id}. Exactly one object was created.</div>`):''}
+  function act(t){const m=M[key];if(!RACE.runnable(m,st,t)){$('#rc-say').innerHTML=`<b>${t.n} is blocked:</b> ${key==='holder'||key==='enum'?'the JVM holds the class-initialization lock for the other thread.':'the other thread holds the lock.'} Let the other thread run.`;draw(t.n);return}
+    const op=RACE.step(m,st,t);last=op;$('#rc-say').innerHTML=`<b style="color:${col(t.n)}">${t.n}</b> ran <code>${esc(op.l)}</code>. ${hint(op,t)}`;draw()}
+  function hint(op,t){if(op.l.startsWith('read'))return t.local?'It saw an existing object, so it will skip creation.':'It saw <code>null</code>. If the other thread also sees null before anyone writes, both will create an object.';
+    if(op.l.includes('reordered'))return 'Without <code>volatile</code>, the JVM and CPU may publish the reference <b>before</b> the constructor runs. Let the other thread do its first read now.';
+    if(op.l==='lock')return 'It now holds the lock; the other thread must wait at <code>lock</code>.';if(op.l.includes('class-init'))return 'The JVM lets exactly one thread initialize the class. Others wait, then see the finished object.';return ''}
+  function rnd(){const m=M[key];const r=st.T.filter(t=>RACE.runnable(m,st,t));if(!r.length){stop();return}act(r[Math.floor(Math.random()*r.length)])}
+  function stop(){clearInterval(timer);timer=null;$('#rc-auto').textContent='▶ Play'}
+  function reset(){stop();st=RACE.fresh();$('#rc-say').innerHTML='Choose who runs. Tip for the unsafe version: let <b>both</b> threads read before either one writes.';draw()}
+  $('#rc-t1').onclick=()=>{stop();act(st.T[0])};$('#rc-t2').onclick=()=>{stop();act(st.T[1])};$('#rc-rand').onclick=()=>{stop();rnd()};$('#rc-rst').onclick=reset;
+  $('#rc-auto').onclick=()=>{if(timer){stop();return}if(RACE.verdict(st).done)reset();$('#rc-auto').textContent='❚❚ Pause';timer=setInterval(()=>{if(RACE.verdict(st).done){stop();return}rnd()},REDUCE?250:700)};
+  $('#rc-many').onclick=()=>{const m=M[key];let multi=0,half=0;const N=2000;for(let i=0;i<N;i++){const v=RACE.trial(m);if(v.multi)multi++;else if(v.half)half++}
+    $('#rc-res').innerHTML=`<div class="result ${multi?'err':half?'warn':'ok'}">${N.toLocaleString('en')} random schedules of <b>${m.n}</b>: ${multi} created two objects (${(multi/N*100).toFixed(1)}%)${key==='dclbad'?`, ${half} returned a half-built object (${(half/N*100).toFixed(1)}%)`:''}.${!multi&&!half?' No schedule broke it.':''}</div>`};
+  reset()})();
+
+/* ---------- init timeline ---------- */
+(()=>{let S;const out=$('#ic-out');
+  const put=t=>{const d=document.createElement('div');d.textContent=t;out.append(d);out.scrollTop=1e5};
+  const lamp=(id,on)=>{const el=$('#'+id);if(on&&!el.classList.contains('on')){el.classList.add('on')}else if(!on)el.classList.remove('on')};
+  function initE(){if(!S.eo){S.eo=S.ei=true;put('  [Eager] class initialized, instance created');lamp('l-eo',1);lamp('l-ei',1);return true}return false}
+  function initL(){if(!S.lo){S.lo=true;put('  [Lazy] classe externe initialisée');lamp('l-lo',1);return true}return false}
+  const A={ev:()=>{const w=initE();put('Eager.version() = 1.0');return w?'Calling a static method is an "active use", so the JVM initialized <code>Eager</code> and its static field: the instance exists now, even though you didn\'t ask for it.':'Already initialized: nothing new happens.'},
+    eg:()=>{const w=initE();put('Eager.getInstance() returned the instance');return w?'First use of <code>Eager</code>: the class initializer creates the instance.':'Same instance as before.'},
+    lv:()=>{const w=initL();put('Lazy.version() = 1.0');return w?'Only the <b>outer</b> class was initialized. <code>Holder</code> is a separate class and hasn\'t been touched, so <b>no instance yet</b>. That is the whole point of the holder idiom.':'Nothing new.'},
+    lg:()=>{initL();let msg;if(!S.lh){S.lh=S.li=true;put('  [Lazy] instance created');lamp('l-lh',1);lamp('l-li',1);msg='<code>Holder.INSTANCE</code> was touched for the first time, so the JVM initialized <code>Holder</code> and created the instance, safely, exactly once.'}else msg='The JVM already initialized <code>Holder</code>: no lock, no check, just a field read.';put('Lazy.getInstance() returned the instance');return msg}};
+  function reset(){S={};out.innerHTML='';['l-eo','l-ei','l-lo','l-lh','l-li'].forEach(i=>lamp(i,0));put('1. main starts');$('#ic-say').innerHTML='The program has started. No class has been initialized yet.'}
+  $$('[data-ic]').forEach(b=>b.onclick=()=>{$('#ic-say').innerHTML=A[b.dataset.ic]()});$('#ic-rst').onclick=reset;reset()})();
+
+/* ---------- attack lab ---------- */
+(()=>{let impl='classic',kind='reflect';
+  const CODES={classic:`static final class Classic implements Serializable {
+    static final Classic INSTANCE = new Classic();
+    private Classic() { }
+}`,guarded:`static final class Guarded implements Serializable {
+    static final Guarded INSTANCE = new Guarded();
+    private Guarded() {
+        if (INSTANCE != null) throw new IllegalStateException("already created");
+    }
+    @Serial private Object readResolve() { return INSTANCE; }
+}`,enum:`enum Single { INSTANCE }`};
+  const ATT={reflect:`Constructor<?> k = X.class.getDeclaredConstructors()[0];
+k.setAccessible(true);
+Object second = k.newInstance();`,serial:`Object copy = deserialize(serialize(X.INSTANCE));
+copy == X.INSTANCE ?`,clone:`Object copy = X.INSTANCE.clone();`,loader:`ClassLoader a = new URLClassLoader(urls, null);
+ClassLoader b = new URLClassLoader(urls, null);
+Object x1 = a.loadClass("X").getField("INSTANCE").get(null);
+Object x2 = b.loadClass("X").getField("INSTANCE").get(null);
+x1 == x2 ?`};
+  const R={classic:{reflect:[0,'A second instance was created. A private constructor only stops the compiler, not reflection.'],serial:[0,'Deserialization creates a <b>new</b> object without calling the constructor. <code>copy == INSTANCE</code> is false.'],clone:[1,'Safe: <code>Object.clone()</code> is protected and the class doesn\'t implement <code>Cloneable</code>. Never add a public <code>clone()</code> to a singleton.'],loader:[0,'Two class loaders load two different <code>Class</code> objects, each with its own static field. A singleton is unique per class loader, not per JVM.']},
+   guarded:{reflect:[1,'Blocked: the constructor throws <code>IllegalStateException("already created")</code> because INSTANCE already exists.'],serial:[1,'Safe: <code>readResolve()</code> replaces the deserialized copy with the real INSTANCE. (Mark any instance fields <code>transient</code>.)'],clone:[1,'Safe: no <code>Cloneable</code>, no public <code>clone()</code>.'],loader:[0,'Still broken: the guard and readResolve live inside each loaded copy of the class.']},
+   enum:{reflect:[1,'Blocked by the JVM: <code>IllegalArgumentException: Cannot reflectively create enum objects</code>.'],serial:[1,'Safe: enums are serialized by name, and deserialization returns the existing constant.'],clone:[1,'Safe: <code>Enum.clone()</code> is protected and final. Calling it from outside doesn\'t even compile.'],loader:[0,'Even an enum is one per class loader. This is the one attack nothing inside the class can stop.']}};
+  function vis(ok,anim){const a=anim?'':'style="animation:none"';return `<svg viewBox="0 0 300 190" role="img" aria-label="${ok?'One instance survives':'The instance was duplicated'}">
+    <g transform="translate(${ok?150:100} 95)" class="${anim?'popin':''}"><polygon points="0,-45 44,-20 0,5 -44,-20" fill="#fde68a"/><polygon points="-44,-20 0,5 0,55 -44,30" fill="#f0abfc"/><polygon points="44,-20 0,5 0,55 44,30" fill="#c084fc"/><text y="-14" text-anchor="middle" style="font:700 11px var(--f-mono);fill:#3b0764">INSTANCE</text></g>
+    ${ok?`<g class="${anim?'popin':''}"><path d="M150 18 l52 18 v34 c0 40 -26 62 -52 72 c-26 -10 -52 -32 -52 -72 v-34z" fill="none" stroke="var(--ok)" stroke-width="4" opacity=".9"/><text x="150" y="182" text-anchor="middle" style="font:700 13px var(--f-body);fill:var(--ok)">one instance survives</text></g>`
+      :`<g transform="translate(205 95)" ${anim?'style="animation:split .8s both"':''}><polygon points="0,-45 44,-20 0,5 -44,-20" fill="#fca5a5"/><polygon points="-44,-20 0,5 0,55 -44,30" fill="#f87171"/><polygon points="44,-20 0,5 0,55 44,30" fill="#dc2626"/><text y="-14" text-anchor="middle" style="font:700 11px var(--f-mono);fill:#450a0a">COPY</text></g><text x="150" y="182" text-anchor="middle" style="font:700 13px var(--f-body);fill:var(--no)">a second instance exists</text>`}
+    </svg><style>@keyframes split{from{transform:translate(100px,95px);opacity:.2}to{transform:translate(205px,95px)}}</style>`}
+  function draw(anim){$('#at-code').innerHTML=hl('// Implementation\n'+CODES[impl]+'\n\n// Attack\n'+ATT[kind].replaceAll('X',impl==='enum'?'Single':impl==='guarded'?'Guarded':'Classic'));
+    if(!anim){$('#at-vis').innerHTML=vis(true,false);$('#at-res').innerHTML='<div class="say">Choose an implementation and an attack, then press <b>Attack</b>.</div>';return}
+    const [ok,why]=R[impl][kind];$('#at-vis').innerHTML=vis(ok,true);$('#at-res').innerHTML=`<div class="result ${ok?'ok':'err'}">${ok?'✓ Survived.':'✗ Broken.'} <span style="font-weight:500">${why}</span></div>`}
+  const seg=(id,cb)=>$$(id+' button').forEach(b=>b.onclick=()=>{$$(id+' button').forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.v);draw(false)});
+  seg('#at-impl',v=>impl=v);seg('#at-kind',v=>kind=v);$('#at-go').onclick=()=>draw(true);draw(false)})();
+
+/* ---------- testing simulator ---------- */
+(()=>{let order='ab';
+  function code(){const di=$('#ts-di').checked;$('#ts-code').innerHTML=hl(di?`// Each test builds its own Cart: no shared state
+@Test void addingAnItemCountsIt() {
+    Cart cart = new Cart();              // fresh object
+    new Checkout(cart).add("book");
+    assertEquals(1, cart.size());
+}
+@Test void newCartIsEmpty() {
+    Cart cart = new Cart();
+    assertEquals(0, cart.size());
+}`:`enum Cart { INSTANCE;  private final List<String> items = new ArrayList<>(); ... }
+
+@Test void addingAnItemCountsIt() {      // test A
+    Cart.INSTANCE.add("book");
+    assertEquals(1, Cart.INSTANCE.size());
+}
+@Test void newCartIsEmpty() {            // test B
+    assertEquals(0, Cart.INSTANCE.size());
+}`)}
+  function list(res){const names={a:'A · addingAnItemCountsIt()',b:'B · newCartIsEmpty()'};const seq=order.split('');
+    $('#ts-list').innerHTML=seq.map(k=>`<div class="trow"><span>${names[k]}</span><span class="badge ${res?res[k]?'pass':'fail':'idle'}">${res?res[k]?'PASS':'FAIL':'not run'}</span></div>`).join('')}
+  $('#ts-run').onclick=()=>{const di=$('#ts-di').checked;let size=0;const res={};for(const k of order){if(di)size=0;if(k==='a'){size++;res.a=size===1}else res.b=size===0}
+    list(res);$('#ts-say').innerHTML=di?'<b class="good">Both pass in any order.</b> Each test owns its data, so they can also run in parallel.':order==='ab'?'<b class="bad">B fails</b>: it expected an empty cart, but test A left a book in the <b>shared</b> singleton. Run B first and everything passes. The result depends on test order: a flaky suite.':'<b class="good">Both pass</b>… only because B ran first. Switch the order and B fails. Nothing in the test code shows the dependency.'};
+  $$('#ts-order button').forEach(b=>b.onclick=()=>{$$('#ts-order button').forEach(x=>x.classList.toggle('on',x===b));order=b.dataset.v;list(null);$('#ts-say').textContent=''});
+  $('#ts-di').onchange=()=>{code();list(null);$('#ts-say').textContent=''};code();list(null)})();
+
+/* ---------- expert notes ---------- */
+$('#xp').innerHTML=[
+ ['One per class loader, not per JVM','Application servers, plugin systems and test runners use several class loaders. Each one that loads your class gets its own static field, and so its own "singleton". Even an enum.','JVM'],
+ ['The JVM is already lazy','A class is initialized on its first active use (JLS §12.4.1). An eager <code>static final</code> instance is only created when the class is first used. The holder idiom matters only when the class has <b>other</b> static members that are used earlier.','JLS'],
+ ['Why DCL needs volatile','Without <code>volatile</code>, writing the reference and running the constructor may be reordered, so another thread can see a non-null, half-built object. The Java 5 memory model (JSR-133) made <code>volatile</code> give the needed happens-before guarantee.','JMM'],
+ ['Read the volatile field once','In double-checked locking, copy the field into a local variable. That saves a second volatile read on the fast path, as in <i>Effective Java</i> Item 83.','Perf'],
+ ['A failing initializer is permanent','If the instance creation throws inside a static initializer, the first call gets <code>ExceptionInInitializerError</code> and every later call gets <code>NoClassDefFoundError</code>. The class can never be retried (verified with <code>InitFail.java</code>).','JVM'],
+ ['Virtual threads and synchronized','Before Java 24, a virtual thread blocked inside <code>synchronized</code> pinned its carrier thread. JEP 491 (Java 24) removed that, so a <code>synchronized getInstance()</code> is fine with virtual threads in Java 25.','Java 24+'],
+ ['Enum is the best class singleton, with limits','An enum can\'t extend another class (it already extends <code>Enum</code>) and is created when the enum class is initialized. It can implement interfaces, which is how clients should depend on it.','Item 3'],
+ ['readResolve needs transient fields','With <code>readResolve()</code>, deserialization still reads the stream first. Non-transient fields can be used in a "stealer" attack that keeps a reference to the temporary copy. Enum avoids the problem entirely.','Item 89'],
+ ['Spring\'s "singleton" is not GoF\'s','A Spring singleton bean is one instance <b>per application context</b>, created and injected by the container. It gives you "one instance" without the global access point, which is usually what you want.','Ecosystem'],
+ ['Immutable singletons are harmless','<code>Collections.emptyList()</code>, <code>Comparator.naturalOrder()</code> and enum constants are singletons nobody worries about, because they have no mutable state. The trouble always comes from <b>mutable</b> global state.','Design'],
+ ['GoF allowed "a variable number of instances"','The pattern lets you change your mind later: <code>getInstance()</code> could return one of a small pool, or one instance per key (a "multiton"), without changing the callers.','GoF'],
+ ['Class unloading and leaks','A singleton is reachable from a static field, so it lives as long as its class loader. In hot-redeploy environments, a singleton holding threads or caches keeps the old loader alive, which leaks memory.','Ops'],
+ ['Singleton vs static utility class','A static utility class (<code>Math</code>) can\'t implement interfaces, be passed as a parameter, or be replaced in tests. Prefer a singleton object when it has behaviour that clients might want to swap.','Design'],
+ ['Records can\'t be true singletons','A record\'s canonical constructor must be at least as accessible as the record itself, so a public record always has a public constructor. Making it <code>private</code> is a compile error (verified).','Java 16+']]
+ .map(x=>`<div class="xpc"><span class="lvlx">${x[2]}</span><h4>${x[0]}</h4><p>${x[1]}</p></div>`).join('');
+
+/* ---------- decision helper (3D bars) ---------- */
+(()=>{const OUTS=['enum singleton','DI single instance','static utility','plain object'];
+  const Q=[['Must there be exactly one instance for the program to be correct?',[3,2,0,-3]],['Does it hold mutable state?',[0,2,-3,1]],['Do you need to replace it in tests?',[-1,3,-3,2]],['Is it only stateless helper functions?',[0,0,4,0]],['Is a DI container (Spring, CDI, Guice) already used?',[0,3,0,0]],['Must it implement an interface or be passed as a parameter?',[1,2,-3,1]],['Would a separate instance per user or request be fine?',[-3,0,0,4]]];
+  const A=Q.map(()=>null);
+  $('#wiz-q').innerHTML=Q.map((q,i)=>`<div class="wq"><span>${q[0]}</span><div class="seg" data-i="${i}"><button type="button" data-v="1">Yes</button><button type="button" data-v="0">No</button></div></div>`).join('')+'<div class="row"><button type="button" class="btn sm" id="wiz-rst">↺ Réinitialiser</button></div>';
+  $$('#wiz-q .seg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.onclick=()=>{A[+sg.dataset.i]=b.dataset.v==='1';sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));upd()}));
+  $('#wiz-rst').onclick=()=>{A.fill(null);$$('#wiz-q .seg button').forEach(b=>b.classList.remove('on'));upd()};
+  const COL=[['#c084fc','#7e22ce'],['#f0abfc','#a21caf'],['#fcd34d','#b45309'],['#93c5fd','#1d4ed8']];
+  const prism=(x,base,w,h,c)=>{const dx=18,dy=11;return `<polygon points="${x},${base} ${x+w},${base} ${x+w},${base-h} ${x},${base-h}" fill="${c[0]}"/><polygon points="${x},${base-h} ${x+w},${base-h} ${x+w+dx},${base-h-dy} ${x+dx},${base-h-dy}" fill="${c[0]}"/><polygon points="${x},${base-h} ${x+w},${base-h} ${x+w+dx},${base-h-dy} ${x+dx},${base-h-dy}" fill="#fff" opacity=".35"/><polygon points="${x+w},${base} ${x+w+dx},${base-dy} ${x+w+dx},${base-h-dy} ${x+w},${base-h}" fill="${c[1]}"/>`};
+  function upd(){const sc=[0,0,0,0];let n=0;A.forEach((a,i)=>{if(a!==null){n++;if(a)Q[i][1].forEach((w,j)=>sc[j]+=w)}});const mx=Math.max(...sc),best=n&&mx>0?sc.indexOf(mx):-1;
+    let g=`<svg viewBox="0 0 460 230" role="img" aria-label="Scores: ${OUTS.map((o,i)=>o+' '+sc[i]).join(', ')}">`;
+    OUTS.forEach((o,i)=>{const h=Math.max(6,Math.min(150,10+Math.max(0,sc[i])*14)),x=24+i*108;g+=prism(x,190,70,h,i===best?COL[i]:[COL[i][0]+'88',COL[i][1]+'88'])+`<text x="${x+35}" y="210" text-anchor="middle" class="alab" style="font-size:12px">${o}</text><text x="${x+44}" y="${190-h-18}" text-anchor="middle" class="alab">${sc[i]}</text>`});
+    $('#wiz-bars').innerHTML=g+'</svg>';
+    const V=['Use an <b>enum singleton</b>, ideally implementing an interface that clients depend on.','Create <b>one instance and inject it</b> (by hand or with a DI container). You keep "one instance" and lose the global access point.','A <b>static utility class</b> (private constructor, static methods) is enough for stateless helpers.','Use a <b>plain object</b>: create one where you need it. Nothing here requires uniqueness.'];
+    $('#wiz-v').innerHTML=!n?'Answer the questions. The tallest column is the suggestion.':best<0?'No clear winner yet. Keep answering.':V[best]}
+  upd()})();
+
+/* ---------- MCQ engine ---------- */
+function mcq(root,items,onDone){const sc=root.querySelector('.score'),list=root.querySelector('.qs');let ok=0,n=0;
+  function upd(){sc.innerHTML=`<span><b>${ok}</b> / ${items.length} correct(s)</span><span class="meter"><i style="width:${ok/items.length*100}%"></i></span><button type="button" class="btn sm">↺ Restart</button>`;sc.querySelector('button').onclick=draw}
+  function draw(){ok=0;n=0;list.innerHTML=items.map((it,i)=>`<div class="q"><div class="qh"><span class="qn">${i+1}</span><div class="qt">${it.q}</div></div>${it.code?`<pre class="code qcode">${hl(it.code)}</pre>`:''}<div class="opts">${it.o.map((o,j)=>`<button type="button" class="opt" data-j="${j}">${o}</button>`).join('')}</div><div class="fb" aria-live="polite"></div></div>`).join('');
+    list.querySelectorAll('.q').forEach((q,i)=>q.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(q.dataset.done)return;q.dataset.done=1;const it=items[i],good=+b.dataset.j===it.a;n++;if(good)ok++;
+      q.querySelectorAll('.opt').forEach((x,k)=>{x.disabled=true;if(k===it.a)x.classList.add('right');else if(x===b)x.classList.add('wrong')});
+      if(!good){q.classList.add('shake');setTimeout(()=>q.classList.remove('shake'),450)}
+      q.querySelector('.fb').innerHTML=`<b class="${good?'good':'bad'}">${good?pick(YES):'Pas tout à fait.'}</b> ${it.w}`;upd();if(n===items.length&&onDone)onDone(ok,items.length)}));upd()}
+  draw()}
+
+const TG=['','<span class="qtag lv1">🌱 Débutant</span>','<span class="qtag lv2">🧭 Intermédiaire</span>','<span class="qtag lv3">⚡ Avancé</span>','<span class="qtag lv4">👑 Expert</span>'];
+mcq($('#yn'),[
+ [1,'Is Singleton a GoF creational pattern?',1,'Yes, together with Factory Method, Abstract Factory, Builder and Prototype.'],
+ [1,'Does a Singleton usually have a private constructor?',1,'Yes. That stops other classes from calling <code>new</code>.'],
+ [1,'Two screens each call <code>new Settings()</code>. Do they share the same object?',0,'No. Each <code>new</code> makes a separate object (verified: <code>same object? false</code>).'],
+ [1,'Does <code>static</code> mean the field belongs to the class, not to each object?',1,'Yes. Like <code>Student.count</code>: one copy for the whole class.'],
+ [1,'With a private constructor, can another class compile <code>new Settings()</code>?',0,'No: "Settings() has private access in Settings".'],
+ [2,'Is <code>Runtime.getRuntime()</code> a singleton?',1,'Yes. One runtime per JVM.'],
+ [2,'Is an eager <code>static final</code> instance created when the program is compiled?',0,'No. It is created at run time, when the class is initialized on its first use.'],
+ [2,'In the holder idiom, does calling <code>Lazy.version()</code> create the instance?',0,'No. Only the outer class is initialized; the Holder waits for <code>getInstance()</code>.'],
+ [2,'Are immutable singletons like <code>Collections.emptyList()</code> a problem for testing?',0,'No. Without mutable state, sharing them is harmless.'],
+ [3,'Is the lazy, unsynchronized version thread-safe?',0,'No. Two threads can both see <code>null</code> and create two objects.'],
+ [3,'Does double-checked locking need the field to be <code>volatile</code>?',1,'Yes. Otherwise another thread may see a half-built object.'],
+ [3,'Is the holder idiom lazy and thread-safe without explicit locking?',1,'Yes. The JVM initializes the nested class once, safely.'],
+ [3,'Can reflection create a second instance of an enum singleton?',0,'No: "Cannot reflectively create enum objects".'],
+ [3,'Does deserializing a plain Serializable singleton return the same instance?',0,'No, unless the class defines <code>readResolve()</code> (verified: <code>false</code>).'],
+ [3,'Can an enum singleton implement an interface?',1,'Yes, and clients should depend on that interface.'],
+ [3,'Can an enum singleton extend another class?',0,'No. Enums already extend <code>java.lang.Enum</code>.'],
+ [4,'Is a singleton unique per JVM, whatever the class loaders?',0,'No. It is unique per class loader.'],
+ [4,'Does global mutable state make tests depend on their order?',1,'Yes. Section 4.1 shows a test that passes or fails depending on what ran before it.'],
+ [4,'After a static initializer throws, can the class be initialized again later?',0,'No. Later uses get <code>NoClassDefFoundError</code>.'],
+ [4,'Is a Spring "singleton" bean the same thing as a GoF Singleton?',0,'No. It is one instance per container, injected, without a global accessor.'],
+ [4,'Can a public record be a true singleton?',0,'No. Its canonical constructor can\'t be less accessible than the record.']].map(y=>({q:TG[y[0]]+y[1],o:['Oui','Non'],a:y[2]?0:1,w:y[3]})));
+
+mcq($('#quiz'),[
+ [1,{q:'What are the two promises of the Singleton pattern?',o:['One instance and global access','Many instances and lazy loading','Immutability and speed'],a:0,w:'« Garantir qu’une classe n’a qu’une seule instance, et fournir un point d’accès global à celle-ci. »'}],
+ [1,{q:'Which keyword on the constructor stops other classes from calling <code>new Settings()</code>?',o:['private','static','final'],a:0,w:'A private constructor can only be called from inside the class.'}],
+ [1,{q:'With the singleton <code>Settings</code>, the menu calls <code>setTheme("dark")</code>. What does <code>editor.theme()</code> return?',o:['"dark"','"light"','It doesn\'t compile'],a:0,w:'Both variables point to the same object (verified output: <code>menu: dark, editor: dark</code>).'}],
+ [2,{q:'Why is an eager <code>static final</code> instance often "lazy enough"?',o:['The JVM initializes a class only on its first active use','Java delays all objects','Because it is final'],a:0,w:'JLS §12.4.1.'}],
+ [2,{q:'Which JDK API is an immutable shared instance?',o:['Collections.emptyList()','new ArrayList<>()','Thread.ofVirtual()'],a:0,w:'Always the same empty list.'}],
+ [2,{q:'What triggers the creation in the holder idiom?',o:['Loading the outer class','The first access to <code>Holder.INSTANCE</code>','A background thread'],a:1,w:'The nested class is initialized on its first active use.'}],
+ [3,{q:'Why can the lazy, unsynchronized version create two instances?',o:['Because of garbage collection','Because "check null, then create" is not atomic','Because constructors are slow'],a:1,w:'Check-then-act race.'}],
+ [3,{q:'In double-checked locking without <code>volatile</code>, what can another thread observe?',o:['A deadlock','A non-null reference to an object whose constructor hasn\'t finished','An exception'],a:1,w:'Reordering lets the reference become visible early.'}],
+ [3,{q:'Which implementation does <i>Effective Java</i> recommend as often the best?',o:['Double-checked locking','A single-element enum','A public static non-final field'],a:1,w:'Item 3: a single-element enum type.'}],
+ [3,{q:'How do you keep one instance when a class singleton is deserialized?',o:['Implement <code>readResolve()</code> returning INSTANCE','Make the constructor public','Add <code>synchronized</code>'],a:0,w:'readResolve replaces the deserialized copy.'}],
+ [3,{q:'How can you stop reflection from creating a second instance of a class singleton?',o:['It\'s impossible','Throw from the constructor if INSTANCE already exists','Mark the class abstract'],a:1,w:'A guard in the constructor (verified: "already created"). Or use an enum.'}],
+ [3,{q:'Which attack defeats even an enum singleton?',o:['Reflection','Serialization','Loading the class in two class loaders'],a:2,w:'Each class loader has its own copy of the class.'}],
+ [4,{q:'What happens on the <b>second</b> call after the singleton\'s static initializer threw?',o:['It retries','ExceptionInInitializerError again','NoClassDefFoundError'],a:2,w:'The class is marked as failed forever.'}],
+ [4,{q:'Since Java 24, what changed for <code>synchronized</code> and virtual threads?',o:['synchronized is forbidden','Virtual threads no longer pin their carrier inside synchronized (JEP 491)','Locks became re-entrant'],a:1,w:'So <code>synchronized getInstance()</code> is fine with virtual threads in Java 25.'}],
+ [4,{q:'What is the main testing problem with a global singleton?',o:['It is slow','Shared mutable state and hidden dependencies make tests order-dependent and hard to fake','It uses too much memory'],a:1,w:'Inject the instance instead of looking it up.'}],
+ [4,{q:'Which is a reasonable alternative to a global singleton?',o:['Create one instance at startup and inject it','Use more static fields','Use reflection'],a:0,w:'One instance, no global access point.'}],
+ [4,{q:'Which statement about JEP 502 (stable values) in JDK 25 is correct?',o:['It is a final feature','It is a preview API, needing --enable-preview','It replaces enums'],a:1,w:'Preview in JDK 25; the API may still change.'}]].map(([l,it])=>({...it,q:TG[l]+it.q})));
+
+/* ---------- levels ---------- */
+const LEVELS=[
+ {t:'Fill in the blanks',st:1,type:'blanks',intro:'Choose the missing keyword in each box, then press Check. This is the 3-step singleton from section 1.4.'},
+ {t:'Match the terms',st:1,type:'match',intro:'Click a term, then its meaning.',pairs:[['private constructor','stops other classes from calling new'],['static instance field','holds the one object, owned by the class'],['getInstance()','global access point that returns the instance'],['eager','created when the class is initialized'],['lazy','created on the first call to getInstance()'],['holder idiom','a nested class initialized on first use'],['enum singleton','INSTANCE constant, reflection- and serialization-safe'],['readResolve()','returns INSTANCE after deserialization']]},
+ {t:'Which implementation?',st:1,type:'mcq',intro:'Pick the best implementation for each situation.',items:[
+   ['You want the simplest correct singleton, safe against serialization.',3,'enum.'],['The singleton must extend an existing abstract class and be created lazily.',2,'Holder idiom: enums can\'t extend classes.'],['A heavy object, but nothing else in the class is used before getInstance().',0,'Eager is lazy enough: the class is initialized on first use.'],['A tiny single-threaded command-line tool.',0,'Eager is still the simplest; there\'s no reason for lazy code.'],['Legacy code with many static methods on the class, created lazily, high traffic.',2,'The holder keeps the outer class\'s other statics from creating it.']].map(([q,a,w])=>({q,o:['Champ statique immédiat','synchronized method','Holder idiom','enum'],a,w}))},
+ {t:'Spot the bug',st:2,type:'mcq',intro:'Each snippet has one problem. Pick it.',items:[
+   {q:'What is wrong?',code:'public class Config {\n    private static final Config INSTANCE = new Config();\n    public Config() { }\n    public static Config getInstance() { return INSTANCE; }\n}',o:['INSTANCE should not be final','The constructor is public, so anyone can create more','getInstance() must be synchronized'],a:1,w:'Make the constructor private.'},
+   {q:'What is wrong?',code:'private static Config instance;\nstatic Config getInstance() {\n    if (instance == null) {\n        synchronized (Config.class) {\n            if (instance == null) instance = new Config();\n        }\n    }\n    return instance;\n}',o:['Nothing','The field must be volatile','The lock must be on this'],a:1,w:'Without volatile, another thread may see a half-built object.'},
+   {q:'What is wrong?',code:'static Config getInstance() {\n    if (instance == null) instance = new Config();\n    return instance;\n}   // called from a thread pool',o:['Nothing','A race can create several instances','It never returns'],a:1,w:'Check-then-act without synchronization.'},
+   {q:'What is wrong?',code:'final class Config implements Serializable {\n    static final Config INSTANCE = new Config();\n    private Config() { }\n}',o:['Nothing','Deserialization will create a second instance','final classes can\'t be serialized'],a:1,w:'Add readResolve() returning INSTANCE (or use an enum).'}]},
+ {t:'Predict the output',st:2,type:'mcq',intro:'Every answer was produced by running the code.',items:[
+   {q:'In <code>InitOrder.java</code> (section 2.3), which line is printed <b>just before</b> <code>3. Lazy.version() = 1.0</code>?',o:['  [Lazy] instance created','  [Lazy] classe externe initialisée','Nothing'],a:1,w:'Only the outer class is initialized by <code>Lazy.version()</code>.'},
+   {q:'How many times is <code>[Lazy] instance created</code> printed in that program?',o:['0','1','2'],a:1,w:'Once: the second <code>getInstance()</code> prints nothing.'},
+   {q:'What does <code>reflect(Single.class)</code> return for the enum?',o:['second instance created','blocked: Cannot reflectively create enum objects','blocked: already created'],a:1,w:'The JVM forbids it.'},
+   {q:'What does <code>roundTrip(Classic.INSTANCE) == Classic.INSTANCE</code> print?',o:['true','false'],a:1,w:'No readResolve, so a new object.'},
+   {q:'What does <code>InitFail.java</code> print?',code:'for (int i = 1; i <= 2; i++) {\n    try { Settings.getInstance(); }\n    catch (Throwable t) { IO.println("call " + i + ": " + t.getClass().getSimpleName()); }\n}',o:['call 1: IllegalStateException / call 2: IllegalStateException','call 1: ExceptionInInitializerError / call 2: NoClassDefFoundError','call 1: ExceptionInInitializerError / call 2: ExceptionInInitializerError'],a:1,w:'The failure is remembered by the JVM.'}]},
+ {t:'Put it in order',st:3,type:'order',intro:'Click the steps in the order they happen.',items:[
+   ['Double-checked locking, first call',['Read the volatile field into a local variable: null','Enter synchronized (Config.class)','Read the field again: still null','Create the object and finish the constructor','Write the reference to the volatile field','Leave the lock and return the local variable']],
+   ['Holder idiom, first call',['A thread calls getInstance()','It reads Holder.INSTANCE, the first use of Holder','The JVM takes the class-initialization lock for Holder','Holder\'s static initializer creates the instance','The JVM marks Holder as initialized; later calls just read the field']]]},
+ {t:'Interleavings',st:3,type:'mcq',intro:'Think like the race simulator in section 3.1.',items:[
+   {q:'<b>Lazy unsafe.</b> T1 reads null · T2 reads null · T1 creates and writes · T2 creates and writes. How many objects?',o:['1','2','0'],a:1,w:'Both saw null.'},
+   {q:'<b>Lazy unsafe.</b> T1 reads, creates, writes · then T2 reads. How many objects?',o:['1','2'],a:0,w:'T2 saw the written instance. The bug only appears with unlucky timing.'},
+   {q:'<b>synchronized.</b> T1 takes the lock, then T2 tries to run. What happens to T2?',o:['It creates its own object','It waits until T1 releases the lock','It throws'],a:1,w:'Only one thread is inside at a time.'},
+   {q:'<b>DCL without volatile.</b> T1 allocated and published the reference but hasn\'t run the constructor. T2 does its first read. What can T2 get?',o:['null','A reference to an object whose fields still have default values','A second instance'],a:1,w:'That is why volatile is required.'},
+   {q:'<b>Holder idiom.</b> T1 is running Holder\'s initializer when T2 calls getInstance(). What happens?',o:['T2 creates a second instance','T2 waits for the JVM, then gets the same instance','T2 gets null'],a:1,w:'The JVM\'s class-initialization lock.'}]},
+ {t:'Will it compile?',st:4,type:'mcq',intro:'Expert level. Every answer was checked with javac.',items:[
+   {q:'Does it compile?',code:'public record Config(String env) {\n    public static final Config INSTANCE = new Config("prod");\n    private Config { }\n}',o:['Yes','No: invalid canonical constructor (weaker access than the record)'],a:1,w:'Records can\'t hide their canonical constructor.'},
+   {q:'Does it compile?',code:'class Base { }\nenum E2 extends Base { INSTANCE }',o:['Oui','Non'],a:1,w:'Enums can\'t declare a superclass; they extend Enum implicitly.'},
+   {q:'Does it compile?',code:'public final class S3 {\n    public static final S3 INSTANCE = new S3();\n    private S3() { }\n    static void reset() { INSTANCE = null; }\n}',o:['Yes','No: cannot assign a value to static final variable INSTANCE'],a:1,w:'An eager final instance can never be replaced, which also means it can\'t be "reset" for tests.'},
+   {q:'In a <b>different top-level class</b>, does <code>new Single4()</code> compile when the constructor is private?',o:['Yes','No: Single4() has private access in Single4'],a:1,w:'Note: inside the same top-level class (nested classes), private access is allowed.'},
+   {q:'Does it compile?',code:'interface Greeter { String hi(); }\nenum E5 implements Greeter { INSTANCE; public String hi() { return "hi"; } }',o:['Oui','Non'],a:0,w:'Enums can implement interfaces.'},
+   {q:'Does it compile?',code:'enum Lazy { INSTANCE }\nObject o = Lazy.INSTANCE.clone();',o:['Yes','No: clone() has protected access in Enum'],a:1,w:'Enums can\'t be cloned from outside.'}]},
+ {t:'Write it yourself',st:5,type:'tasks',intro:'Write the code in your IDE (JDK 25) or here, then compare. Each solution runs as a single file, with its real output in the comments.',items:[
+   {stars:'★★★★',t:'A bullet-proof class singleton',s:'Write a <code>Serializable</code> singleton class <code>Guarded</code> that survives a reflection attack and a serialization round-trip. Then write a small <code>main</code> that tries both attacks and prints the results.',c:['private constructor that throws if INSTANCE exists','readResolve() returning INSTANCE','attacks with setAccessible and Object streams'],h:'Use getDeclaredConstructors()[0], setAccessible(true), newInstance(); catch InvocationTargetException and print its cause.',sol:'attacks'},
+   {stars:'★★★★★',t:'An enum ID generator under load',s:'Create an enum singleton <code>Ids</code> implementing an <code>IdGenerator</code> interface, backed by an <code>AtomicLong</code>. Submit 10,000 tasks on virtual threads and prove that no ID was lost or duplicated.',c:['enum implements interface','AtomicLong, not a plain long','Executors.newVirtualThreadPerTaskExecutor() in try-with-resources'],h:'close() on the executor waits for all tasks. After 10,000 calls, the next id is 10,001.',sol:'idgen'},
+   {stars:'★★★★★',t:'Refactor for testability',s:'A <code>Greeter</code> calls <code>LocalTime.now()</code> directly, so its output depends on the time of day. Introduce a <code>Clock</code> interface with one production singleton, inject it, and write two "tests" with lambdas for 9:00 and 18:00.',c:['interface Clock','enum SystemClock implements Clock','constructor injection'],h:'A lambda () -> LocalTime.of(9, 0) is a complete test double.',sol:'di'}]}];
+const SOL={attacks:`// File: Attacks.java   Run: java Attacks.java   (JDK 25)
+static final class Classic implements Serializable {
+    static final Classic INSTANCE = new Classic();
+    private Classic() { }
+}
+static final class Guarded implements Serializable {
+    static final Guarded INSTANCE = new Guarded();
+    private Guarded() {
+        if (INSTANCE != null) throw new IllegalStateException("already created");
+    }
+    @Serial private Object readResolve() { return INSTANCE; }   // keep one instance on deserialization
+}
+enum Single { INSTANCE }
+
+static Object roundTrip(Object o) throws Exception {
+    var bytes = new ByteArrayOutputStream();
+    try (var out = new ObjectOutputStream(bytes)) { out.writeObject(o); }
+    try (var in = new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray()))) { return in.readObject(); }
+}
+
+static String reflect(Class<?> c) {
+    try {
+        Constructor<?> k = c.getDeclaredConstructors()[0];
+        k.setAccessible(true);
+        Object second = k.getParameterCount() == 0 ? k.newInstance() : k.newInstance("INSTANCE", 1);
+        return "second instance created";
+    } catch (InvocationTargetException e) { return "blocked: " + e.getCause().getMessage();
+    } catch (Exception e)                 { return "blocked: " + e.getMessage(); }
+}
+
+void main() throws Exception {
+    IO.println("Classic  reflection: " + reflect(Classic.class));
+    IO.println("Guarded  reflection: " + reflect(Guarded.class));
+    IO.println("Enum     reflection: " + reflect(Single.class));
+    IO.println("Classic  serialization same? " + (roundTrip(Classic.INSTANCE) == Classic.INSTANCE));
+    IO.println("Guarded  serialization same? " + (roundTrip(Guarded.INSTANCE) == Guarded.INSTANCE));
+    IO.println("Enum     serialization same? " + (roundTrip(Single.INSTANCE) == Single.INSTANCE));
+}
+// Classic  reflection: second instance created
+// Guarded  reflection: blocked: already created
+// Enum     reflection: blocked: Cannot reflectively create enum objects
+// Classic  serialization same? false
+// Guarded  serialization same? true
+// Enum     serialization same? true`,
+idgen:`// File: IdGen.java   Run: java IdGen.java   (JDK 25)
+interface IdGenerator { long next(); }
+
+enum Ids implements IdGenerator {                      // enum singleton implementing an interface
+    INSTANCE;
+    private final AtomicLong counter = new AtomicLong();
+    public long next() { return counter.incrementAndGet(); }
+}
+
+void main() throws Exception {
+    IdGenerator gen = Ids.INSTANCE;                    // clients depend on the interface
+    try (var pool = Executors.newVirtualThreadPerTaskExecutor()) {
+        for (int i = 0; i < 10_000; i++) pool.submit(gen::next);
+    }                                                  // close() waits for all tasks
+    IO.println("last id = " + gen.next());             // last id = 10001
+}`,di:CODE.di};
+
+(()=>{const lad=$('#ladder'),body=$('#lvbody');
+  const GRP=[1,1,2,2,2,3,3,4,4],GN=['','Débutant','Intermédiaire','Avancé','Expert'];
+  lad.innerHTML=LEVELS.map((l,i)=>`<button type="button" class="lv lv${GRP[i]}" role="tab" data-i="${i}"><span class="grp">${GN[GRP[i]]}</span><small>${'★'.repeat(l.st)}</small><b>Niveau ${i+1}</b>${l.t}</button>`).join('');
+  lad.querySelectorAll('.lv').forEach(b=>b.onclick=()=>show(+b.dataset.i));const fin=i=>lad.querySelectorAll('.lv')[i].classList.add('done');
+  function show(i){const L=LEVELS[i];lad.querySelectorAll('.lv').forEach((b,j)=>{b.classList.toggle('on',j===i);b.setAttribute('aria-selected',j===i)});
+    {const bt=lad.querySelectorAll('.lv')[i];lad.scrollTo({left:bt.offsetLeft-lad.clientWidth/2+bt.offsetWidth/2,behavior:'smooth'})}
+    body.innerHTML=`<div class="lvhead"><h3>Niveau ${i+1} · ${L.t}</h3><span class="stars-b">${'★'.repeat(L.st)}</span></div><p style="margin:4px 0 10px;color:var(--muted)">${L.intro}</p><div id="lvc"></div><div class="lvnav"><button type="button" class="btn" id="lvp" ${i===0?'disabled':''}>◀ Niveau précédent</button><button type="button" class="btn pri" id="lvn" ${i===LEVELS.length-1?'disabled':''}>Niveau suivant ▶</button></div>`;
+    $('#lvp').onclick=()=>show(i-1);$('#lvn').onclick=()=>show(i+1);const box=$('#lvc');
+    if(L.type==='mcq'){box.innerHTML='<div class="score"></div><div class="qs"></div>';mcq(box,L.items,()=>fin(i))}
+    else if(L.type==='blanks')blankGame(box,()=>fin(i));else if(L.type==='match')matchGame(box,L.pairs,()=>fin(i));else if(L.type==='order')orderGame(box,L.items,()=>fin(i));else taskList(box,L.items,()=>fin(i))}
+  show(0)})();
+function blankGame(box,onDone){const B=[['static',['public','static','void']],['INSTANCE',['Settings','INSTANCE','new']],['private',['public','private','protected']],['getInstance',['new','main','getInstance']],['getInstance',['getInstance','new Settings','clone']],['true',['true','false']]];
+  const sel=i=>`<select data-b="${i}" aria-label="blank ${i+1}"><option value="">  ?  </option>${B[i][1].map(o=>`<option>${o}</option>`).join('')}</select>`;
+  box.innerHTML=`<pre class="code blank-code">${hl('public final class Settings {')}
+    ${hl('private')} ${sel(0)} ${hl('final Settings')} ${sel(1)} ${hl('= new Settings();')}
+    ${sel(2)} ${hl('Settings() { }')}
+    ${hl('public static Settings')} ${sel(3)}${hl('() { return INSTANCE; }')}
+}
+
+${hl('var a = Settings.')}${sel(4)}${hl('();')}
+${hl('var b = Settings.getInstance();')}
+${hl('IO.println(a == b);')}   ${hl('// prints')} ${sel(5)}</pre><div class="row"><button type="button" class="btn pri" id="bl-chk">✓ Vérifier</button><button type="button" class="btn" id="bl-rst">↺ Réinitialiser</button></div><div id="bl-res" aria-live="polite"></div>`;
+  const ss=[...box.querySelectorAll('select')];
+  box.querySelector('#bl-chk').onclick=()=>{let ok=0;ss.forEach(x=>{const g=x.value===B[+x.dataset.b][0];x.classList.toggle('ok',g);x.classList.toggle('bad',!g);if(g)ok++});
+    box.querySelector('#bl-res').innerHTML=ok===ss.length?'<div class="result ok">All 6 correct! Private constructor, one static final INSTANCE, one static entrance, and a == b is true.</div>':`<div class="result warn">${ok} of ${ss.length} correct. Red boxes need another look. Hint: the field must belong to the class, and only the class may call the constructor.</div>`;if(ok===ss.length)onDone()};
+  box.querySelector('#bl-rst').onclick=()=>blankGame(box,onDone)}
+function matchGame(box,pairs,onDone){box.innerHTML='<div class="score"><span class="mstat"></span><button type="button" class="btn sm mres">Mélanger et recommencer</button></div><div class="match"><div class="col mt"></div><div class="col md"></div></div>';
+  function draw(){let sel=null,tries=0,found=0;const tt=box.querySelector('.mt'),dd=box.querySelector('.md'),st=box.querySelector('.mstat');
+    const upd=()=>{st.innerHTML=`<b>${found}</b>/${pairs.length} matched · ${tries} tries${found===pairs.length?' · <span class="good">All matched!</span>':''}`;if(found===pairs.length)onDone()};
+    tt.innerHTML=shuffle(pairs).map(p=>`<button type="button" class="mb mono" data-k="${esc(p[0])}">${esc(p[0])}</button>`).join('');dd.innerHTML=shuffle(pairs).map(p=>`<button type="button" class="mb" data-k="${esc(p[0])}">${esc(p[1])}</button>`).join('');
+    tt.querySelectorAll('.mb').forEach(b=>b.onclick=()=>{if(b.disabled)return;tt.querySelectorAll('.mb').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');sel=b});
+    dd.querySelectorAll('.mb').forEach(b=>b.onclick=()=>{if(!sel||b.disabled)return;tries++;if(b.dataset.k===sel.dataset.k){[b,sel].forEach(x=>{x.classList.remove('sel');x.classList.add('ok');x.disabled=true});sel=null;found++}else{b.classList.add('bad','shake');setTimeout(()=>b.classList.remove('bad','shake'),500)}upd()});upd()}
+  box.querySelector('.mres').onclick=draw;draw()}
+function orderGame(box,items,onDone){const solved=new Set();box.innerHTML=items.map((o,i)=>`<div class="ord" data-i="${i}"><h4>${i+1}. ${o[0]}</h4><div class="pool"></div><div class="ans"></div><div class="row"><button type="button" class="btn pri chk">Vérifier</button><button type="button" class="btn clr">Effacer</button><button type="button" class="btn sh">Voir la réponse</button><span class="res" aria-live="polite"></span></div></div>`).join('');
+  box.querySelectorAll('.ord').forEach(el=>{const steps=items[+el.dataset.i][1],pool=el.querySelector('.pool'),ans=el.querySelector('.ans'),res=el.querySelector('.res');
+    const chip=t=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=t;b.onclick=()=>{b.classList.remove('okc','noc');(b.parentNode===pool?ans:pool).append(b);res.textContent=''};return b};
+    function fill(){pool.innerHTML='';ans.innerHTML='';res.textContent='';let s=shuffle(steps);while(s.join()===steps.join())s=shuffle(steps);s.forEach(t=>pool.append(chip(t)))}
+    el.querySelector('.chk').onclick=()=>{if(ans.children.length<steps.length){res.innerHTML=`<span class="bad">Place all ${steps.length} steps first.</span>`;return}let r=0;[...ans.children].forEach((c,i)=>{const ok=c.textContent===steps[i];if(ok)r++;c.classList.toggle('okc',ok);c.classList.toggle('noc',!ok)});
+      if(r===steps.length){res.innerHTML='<span class="good">Ordre parfait !</span>';solved.add(el.dataset.i);if(solved.size===items.length)onDone()}else res.innerHTML=`<span class="bad">${r} of ${steps.length} in place. Click a red step to send it back.</span>`};
+    el.querySelector('.clr').onclick=fill;el.querySelector('.sh').onclick=()=>{pool.innerHTML='';ans.innerHTML='';steps.forEach(t=>{const c=chip(t);c.classList.add('okc');ans.append(c)});res.textContent='Correct order shown.'};fill()})}
+function taskList(box,items,onDone){const seen=new Set();box.innerHTML=items.map((m,i)=>`<div class="task"><h4>${m.t} <span class="stars-b">${m.stars}</span></h4><div class="scen">${m.s}</div><ul>${m.c.map(c=>`<li>${c}</li>`).join('')}</ul><textarea spellcheck="false" placeholder="Écrivez votre code Java 25 ici…" aria-label="Your answer for ${esc(m.t)}"></textarea><div class="row"><button type="button" class="btn hb">💡 Indice</button><button type="button" class="btn pri sb">Afficher la solution</button></div><div class="hint" hidden>${m.h}</div><pre class="code sol" hidden></pre></div>`).join('');
+  box.querySelectorAll('.task').forEach((el,i)=>{el.querySelector('.hb').onclick=()=>{const h=el.querySelector('.hint');h.hidden=!h.hidden};
+    el.querySelector('.sb').onclick=e=>{const s=el.querySelector('.sol');if(!s.innerHTML)codeBlock(s,SOL[items[i].sol]);s.hidden=!s.hidden;e.target.textContent=s.hidden?'Afficher la solution':'Masquer la solution';seen.add(i);if(seen.size===items.length)onDone()}})}
+
+/* ================= BEGINNER LEVEL & LEARNING PATH ================= */
+/* analogies */
+$('#analogies').innerHTML=[['⚽','The scoreboard','one per match','Everyone reads the <b>same</b> board. If each fan had a private board, they would disagree about the score.'],['🔔','The school bell','one per school','One bell rings for every class. Nobody installs a second bell in their own room.'],['🖨️','The print queue','one per printer','All documents wait in <b>one</b> queue, so two jobs never print on top of each other.'],['⚙️','App settings','one per app','Dark mode switched on in the menu should also apply to the editor. One settings object, shared.']]
+ .map(r=>`<button type="button" class="flip" aria-pressed="false" aria-label="${r[1]}: show details"><div class="in"><div class="face front"><div class="ico" style="font-size:26px">${r[0]}</div><h4>${r[1]}</h4><div class="k">${r[2]}</div><div class="hint">↻ Click to flip</div></div><div class="face back"><h4>${r[1]}</h4><div>${r[3]}</div></div></div></button>`).join('');
+$$('#analogies .flip').forEach(f=>f.onclick=()=>{f.classList.toggle('on');f.setAttribute('aria-pressed',f.classList.contains('on'))});
+
+/* new vs getInstance() */
+(()=>{const NAMES=['menu','editor','preview','toolbar','sidebar','status'];let n=0,dark=false;
+ const cube=(lbl,big,drk)=>`<div class="cube${big?' big':''}${drk?' dark':''}"><i>${lbl}</i><i>${lbl}</i><i></i><i></i><i></i><i></i></div>`;
+ function draw(newOne){
+  const scr=(i,dk,obj)=>`<div class="scr${dk?' dark':''}"${newOne===i?'':' style="animation:none"'}>${NAMES[i]}<small>→ ${obj}</small><small>${dk?'🌙 dark':'☀️ light'}</small></div>`;
+  let a='<div class="scr-row">',b='<div class="scr-row">';
+  for(let i=0;i<n;i++){a+=scr(i,dark&&i===0,'Settings #'+(i+1));b+=scr(i,dark,'Settings #1')}
+  a+='</div><div class="obj-row">';for(let i=0;i<n;i++)a+=`<div class="cube-w${newOne===i?' cube-pop':''}">${cube('#'+(i+1),false,dark&&i===0)}#${i+1}</div>`;a+='</div>';
+  b+='</div><div class="obj-row">'+(n?`<div class="cube-w${n===1&&newOne===0?' cube-pop':''}">${cube('#1',true,dark)}the only object</div>`:'')+'</div>';
+  $('#sp-new').innerHTML=n?a:'<p style="margin:0;color:var(--muted)">Aucun écran pour l’instant. Cliquez sur « Ouvrir un écran ».</p>';$('#sp-one').innerHTML=n?b:'<p style="margin:0;color:var(--muted)">Aucun écran pour l’instant.</p>';
+  $('#sp-newc').innerHTML=`objets créés : <span class="${n>1?'bad':'good'}">${n}</span>`;$('#sp-onec').innerHTML=`objets créés : <span class="good">${n?1:0}</span>`;
+  $('#sp-dark').disabled=!n}
+ $('#sp-add').onclick=()=>{if(n>=NAMES.length){$('#sp-say').innerHTML='That\'s enough screens. Notice: on the left, every screen got its <b>own</b> object.';return}n++;draw(n-1);
+   $('#sp-say').innerHTML=n===1?'One screen, one object on each side. No difference yet.':`<b>${n} screens.</b> On the left, each <code>new</code> made another object (${n} so far). On the right, every screen got the <b>same</b> object.`};
+ $('#sp-dark').onclick=()=>{dark=true;draw(-1);$('#sp-say').innerHTML=n>1?'<b>See the bug?</b> On the left, only the menu turned dark, because the other screens hold different objects. On the right, all screens turned dark: they share one object.':'Open a second screen, then try again to see the difference.';if(n<2)dark=false};
+ $('#sp-rst').onclick=()=>{n=0;dark=false;draw(-1);$('#sp-say').innerHTML='Ouvrez deux ou trois écrans, puis activez le mode sombre.'};
+ $('#sp-rst').onclick()})();
+
+/* static refresher */
+(()=>{const NM=['Ali','Sara','Omar','Lina','Yanis','Maya','Adam','Nour'];let k=0;
+ function draw(bump){$('#st-stage').innerHTML=`<div class="st-cls">class Student · static count = <b class="${bump?'bump':''}">${k}</b></div><div class="st-objs">${NM.slice(0,k).map((x,i)=>`<div class="st-o"${i===k-1&&bump?'':' style="animation:none"'}><small>object #${i+1}</small>name = "${x}"</div>`).join('')||'<span style="color:var(--muted);font-size:15px">Aucun objet pour l’instant.</span>'}</div>`}
+ $('#st-add').onclick=()=>{if(k<NM.length){k++;draw(true)}};$('#st-rst').onclick=()=>{k=0;draw()};draw()})();
+
+/* locked door */
+(()=>{let calls=0;const st=$('#dr-stage');
+ st.innerHTML=`<div class="door-scene"><div class="caller">class Main<br>(outside)</div><div class="frame"><div class="inside"><div class="cube big"><i>1</i><i>1</i><i></i><i></i><i></i><i></i></div></div><div class="door" id="dr-door">🔒</div></div><div class="caller">class Settings<br>private Settings()</div></div>`;
+ const door=$('#dr-door');
+ $('#dr-new').onclick=()=>{door.classList.remove('open','rattle');void door.offsetWidth;door.classList.add('rattle');door.textContent='🔒';
+   $('#dr-res').innerHTML='<div class="result err">error: Settings() has private access in Settings<br><span style="font-weight:500">The compiler refuses. Outside code can\'t build its own Settings object.</span></div>'};
+ $('#dr-get').onclick=()=>{calls++;door.classList.remove('rattle');door.classList.add('open');door.textContent='🔓';
+   $('#dr-res').innerHTML=`<div class="result ok">getInstance() call #${calls} → the same object #1<br><span style="font-weight:500">The class opens the door from inside and hands out its one object.</span></div>`;
+   clearTimeout(door._t);door._t=setTimeout(()=>{door.classList.remove('open');door.textContent='🔒'},1800)}})();
+
+/* first singleton in 3 steps */
+(()=>{const S=[
+ {t:'Départ',say:'A normal class. Anyone can write <code>new Settings()</code> as often as they like, and each call makes another object.',hl:[2],code:`static final class Settings {
+    private String theme = "light";
+    Settings() { }                       // anyone may call new
+    String theme() { return theme; }
+    void setTheme(String t) { theme = t; }
+}`},
+ {t:'1 · Verrouiller la porte',say:'<b>Step 1:</b> make the constructor <code>private</code>. Now only code inside <code>Settings</code> can create a <code>Settings</code>.',hl:[2],code:`static final class Settings {
+    private String theme = "light";
+    private Settings() { }               // step 1: nobody else can call new
+    String theme() { return theme; }
+    void setTheme(String t) { theme = t; }
+}`},
+ {t:'2 · Créer l’unique objet',say:'<b>Step 2:</b> the class creates its own object once, and keeps it in a <code>private static final</code> field. <code>static</code> = one per class, <code>final</code> = never replaced.',hl:[1],code:`static final class Settings {
+    private static final Settings INSTANCE = new Settings();   // step 2: the one and only object
+    private String theme = "light";
+    private Settings() { }
+    String theme() { return theme; }
+    void setTheme(String t) { theme = t; }
+}`},
+ {t:'3 · Ouvrir une seule entrée',say:'<b>Step 3:</b> a <code>static</code> method returns that object. Everybody calls <code>Settings.getInstance()</code> and gets the <b>same</b> one. Run it: both screens are dark.',hl:[3,9,10],code:`static final class Settings {
+    private static final Settings INSTANCE = new Settings();   // step 2: the one and only object
+    private String theme = "light";
+    private Settings() { }                                     // step 1: nobody else can call new
+    static Settings getInstance() { return INSTANCE; }         // step 3: the only way in
+    String theme() { return theme; }
+    void setTheme(String t) { theme = t; }
+}
+
+void main() {
+    var menu = Settings.getInstance();
+    var editor = Settings.getInstance();
+    menu.setTheme("dark");
+    IO.println("menu: " + menu.theme() + ", editor: " + editor.theme());
+    IO.println("same object? " + (menu == editor));
+}`}];
+ S[3].hl=[4,10,11];
+ let cur=0;$('#fs-steps').innerHTML=S.map((s,i)=>`<button type="button" class="stepb" data-i="${i}">${s.t}</button>`).join('');
+ $('#fs-3d').innerHTML='<div class="b3"><div class="slab base">class Settings</div><div class="slab l l1">private Settings()</div><div class="slab l l2">static final INSTANCE</div><div class="slab l l3">getInstance()</div></div>';
+ $$('#fs-steps .stepb').forEach(b=>b.onclick=()=>go(+b.dataset.i));
+ function go(i){cur=Math.max(0,Math.min(S.length-1,i));const s=S[cur];
+  $$('#fs-steps .stepb').forEach((b,j)=>{b.classList.toggle('on',j===cur);b.classList.toggle('past',j<cur)});
+  const pre=$('#fs-code');pre.innerHTML=codeLines(s.code.split('\n'),s.hl);addCopy(pre,'// File: FirstSingleton.java   Run: java FirstSingleton.java   (JDK 25)\n'+S[3].code);
+  $$('#fs-3d .slab.l').forEach((x,j)=>x.classList.toggle('on',j<cur));$('#fs-say').innerHTML=s.say;
+  $('#fs-prev').disabled=cur===0;$('#fs-next').disabled=cur===S.length-1}
+ $('#fs-prev').onclick=()=>go(cur-1);$('#fs-next').onclick=()=>go(cur+1);go(0)})();
+
+/* checkpoints with celebration */
+function burst(root){const b=root.querySelector('.burst');if(!b||REDUCE)return;const C=['#10b981','#3b82f6','#a855f7','#ec4899','#f59e0b','#facc15'];
+ b.innerHTML=Array.from({length:44},(_,i)=>`<i style="background:${C[i%C.length]};--x:${Math.round(Math.random()*640-320)}px;--y:${Math.round(Math.random()*-260+40)}px;--r:${Math.round(Math.random()*720-360)}deg;animation-delay:${(Math.random()*.15).toFixed(2)}s"></i>`).join('');
+ setTimeout(()=>b.innerHTML='',1800)}
+const CP={
+ cp1:[{q:'What does a Singleton guarantee?',o:['Exactly one object of the class, shared by everyone','One object per screen','That the class has no objects at all'],a:0,w:'One object, and everybody gets that same object.'},
+  {q:'Why do we make the constructor <code>private</code>?',o:['So other classes can\'t call <code>new</code>','To make the program faster','So the method can be static'],a:0,w:'Outside code gets the compile error "has private access".'},
+  {q:'What does <code>static</code> mean for the <code>INSTANCE</code> field?',o:['There is one copy, owned by the class','Each object has its own copy','The field can never be read'],a:0,w:'Like <code>Student.count</code>: one copy for the whole class.'},
+  {q:'Two screens each call <code>new Settings()</code>. The menu switches to dark. What does the editor show?',o:['dark','light'],a:1,w:'They hold two different objects (verified: <code>same object? false</code>).'},
+  {q:'Which of these is like a singleton in everyday life?',o:['The scoreboard of a match','The players\' shirts','The fans\' tickets'],a:0,w:'Everyone looks at one shared board.'}],
+ cp2:[{q:'In a UML class diagram, what does an <u>underlined</u> member mean?',o:['It is static','It is private','It is abstract'],a:0,w:'Static members belong to the class, so they are underlined.'},
+  {q:'When is an eager <code>static final</code> instance created?',o:['When the class is initialized, on its first use','When the program is compiled','Only when getInstance() is called a second time'],a:0,w:'The JVM initializes a class on its first active use.'},
+  {q:'In the holder idiom, does <code>Lazy.version()</code> create the instance?',o:['Yes','No: only the outer class is initialized'],a:1,w:'The Holder class is initialized only when getInstance() first touches it.'},
+  {q:'Which JDK method returns a singleton?',o:['<code>Runtime.getRuntime()</code>','<code>new ArrayList&lt;&gt;()</code>','<code>String.valueOf(1)</code>'],a:0,w:'One runtime per JVM.'}],
+ cp3:[{q:'Lazy unsafe: T1 reads <code>null</code>, then T2 reads <code>null</code>, then both create. How many objects?',o:['1','2','0'],a:1,w:'Both saw null, so both created one.'},
+  {q:'Double-checked locking must declare the field…',o:['volatile','transient','public'],a:0,w:'Otherwise another thread can see a half-built object.'},
+  {q:'Which implementation resists reflection and serialization with no extra code?',o:['Holder idiom','enum','synchronized method'],a:1,w:'The JVM protects enum constants.'},
+  {q:'Which attack still gives two instances of an enum singleton?',o:['Reflection','Serialization','Loading the class in two class loaders'],a:2,w:'A singleton is unique per class loader.'}],
+ cp4:[{q:'Why do global mutable singletons make tests flaky?',o:['They share state between tests, so results depend on the order','They use more memory','They can\'t be compiled in tests'],a:0,w:'Section 4.1 shows a test that passes or fails depending on what ran before.'},
+  {q:'A common alternative to a global singleton is…',o:['Create one instance at startup and inject it','Use more static fields','Use reflection'],a:0,w:'Keep one instance, drop the global lookup.'},
+  {q:'A singleton\'s static initializer threw. What does the <b>second</b> call give?',o:['It retries and works','ExceptionInInitializerError again','NoClassDefFoundError'],a:2,w:'The class is marked as failed for good (verified).'},
+  {q:'In JDK 25, stable values (JEP 502) are…',o:['A final feature','A preview API that needs --enable-preview','A replacement for enums'],a:1,w:'Preview: the API may still change.'}]};
+const ROAD_CLEARED=new Set();
+Object.keys(CP).forEach((id,k)=>{const root=$('#'+id);mcq(root,CP[id],(ok,tot)=>{let w=root.querySelector('.cp-win');if(!w){w=document.createElement('div');w.className='cp-win';root.appendChild(w)}
+  if(ok===tot){w.textContent=`🎉 Perfect! Level ${k+1} cleared. On to the next level.`;burst(root);ROAD_CLEARED.add(k);roadUpd()}else w.textContent=`${ok} of ${tot}. Re-read the level and press Restart to try again.`})});
+
+/* learning path staircase */
+const LVINFO=[['🌱','Débutant'],['🧭','Intermédiaire'],['⚡','Avancé'],['👑','Expert']];
+$('#road').innerHTML=`<div class="stair">${LVINFO.map((l,i)=>`<button type="button" class="stp lv${i+1}" style="--hgt:${70+i*38}px" data-i="${i}" aria-label="Aller au niveau ${i+1} : ${l[1]}"><i class="tp"></i><i class="sd"></i><i class="fc"><b>${l[0]} ${i+1}</b><span>${l[1]}</span></i><i class="cl" title="cleared">✓</i></button>`).join('')}<div class="token" id="token"></div></div>`;
+$$('#road .stp').forEach(b=>b.onclick=()=>$('#level-'+(+b.dataset.i+1)).scrollIntoView({behavior:REDUCE?'auto':'smooth'}));
+let ROAD_AT=0;
+function roadUpd(){const st=$$('#road .stp');st.forEach((s,i)=>s.classList.toggle('cleared',ROAD_CLEARED.has(i)));const s=st[ROAD_AT];if(!s)return;
+ const tk=$('#token');tk.style.transform=`translate(${s.offsetLeft+s.offsetWidth/2-tk.offsetWidth/2}px,${s.offsetTop-tk.offsetHeight-4}px) translateZ(40px)`}
+addEventListener('resize',roadUpd);
+
+/* level pill + token follow the scroll */
+(()=>{const pill=document.createElement('span');pill.className='lvpill none';pill.setAttribute('aria-live','polite');$('#theme').before(pill);
+ const lv=[1,2,3,4].map(i=>$('#level-'+i));let last=-2;
+ const on=()=>{let cur=-1;lv.forEach((s,i)=>{if(s.getBoundingClientRect().top<innerHeight*.45)cur=i});if(cur>=0&&$('#yn').getBoundingClientRect().top<innerHeight*.45)cur=4;
+  if(cur===last)return;last=cur;
+  if(cur<0||cur===4){pill.className='lvpill none'}else{pill.className='lvpill lv'+(cur+1);pill.innerHTML=`${LVINFO[cur][0]} <span class="lt">Niveau ${cur+1} · ${LVINFO[cur][1]}</span>`}
+  ROAD_AT=cur<0?0:Math.min(cur,3);roadUpd()};
+ addEventListener('scroll',on,{passive:true});on();setTimeout(roadUpd,300)})();
+
+$('#theme').onclick=()=>{const r=document.documentElement,cur=r.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),n=cur==='dark'?'light':'dark';r.dataset.theme=n;try{localStorage.setItem('sg-theme',n)}catch(e){}};
+(()=>{const links=$$('#toc a'),secs=links.map(a=>$(a.getAttribute('href')));const on=()=>{let cur=-1;secs.forEach((s,i)=>{if(s&&s.getBoundingClientRect().top<160)cur=i});links.forEach((a,i)=>{const act=i===cur;if(act&&!a.classList.contains('act')){const t=a.parentNode;t.scrollTo({left:a.offsetLeft-t.clientWidth/2+a.offsetWidth/2,behavior:'smooth'})}a.classList.toggle('act',act)})};
+  addEventListener('scroll',on,{passive:true});on()})();
+</script>
+
+</body>
+</html>
