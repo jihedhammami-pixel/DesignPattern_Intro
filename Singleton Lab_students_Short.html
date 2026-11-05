@@ -1,0 +1,1142 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Singleton Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Lab 5 on the Singleton pattern in Java 25: animated recap and revision sheet, 75-minute hands-on part with warm-ups and four coding exercises, and a flashcard wrap-up.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@600;700;800;900&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700;800&display=swap">
+<script>try{var t=localStorage.getItem('sglab-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<style>
+/* Layout: one reading column of lab "stations" (Recap → Warm-up → Exercises → Wrap-up), a sticky bar with a sliding section pill, scroll bar and timer, a side rail of station dots on wide screens. Danish pastel palette. */
+:root{
+  --paper:#f5f7f6; --card:#ffffff; --card-2:#eef2f1; --ink:#253140; --muted:#5a6676; --line:#dde3e4; --edge:#3a4658;
+  --sky:#d3e5f1; --sky-2:#b4d2e7; --sky-ink:#2c6489;
+  --sage:#d9e8d4; --sage-2:#b9d6b0; --sage-ink:#386a43;
+  --butter:#f6ecc6; --butter-2:#ecd98f; --butter-ink:#7c5f0c;
+  --blush:#f5dbd4; --blush-2:#ebbcb0; --blush-ink:#9a4436;
+  --lav:#e3ddf1; --lav-2:#c9bfe5; --lav-ink:#55468e;
+  --accent:#2c6489; --on-accent:#ffffff;
+  --ok:#2f7a45; --ok-bg:#dcefdc; --no:#b4473a; --no-bg:#f8dfda; --warn:#8a6810; --warn-bg:#f7ecc9;
+  --code:#f3f5fa; --code-ink:#26303d; --code-k:#7240a3; --code-s:#2f7a4a; --code-c:#7d8594; --code-t:#2c6489; --todo:#f8e6a0; --todo-ink:#6b510a;
+  --f-display:"Schibsted Grotesk","Segoe UI",system-ui,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#12171d; --card:#19212a; --card-2:#212b36; --ink:#e8eef2; --muted:#a3afbb; --line:#2c3743; --edge:#c6d2dc;
+  --sky:#1e3242; --sky-2:#2d4c63; --sky-ink:#9cc9e8;
+  --sage:#1f3326; --sage-2:#2f4d38; --sage-ink:#a5d7ad;
+  --butter:#352d16; --butter-2:#57491f; --butter-ink:#efd78a;
+  --blush:#3a2421; --blush-2:#5a3530; --blush-ink:#f1b7aa;
+  --lav:#2a2540; --lav-2:#423a63; --lav-ink:#cbbff0;
+  --accent:#8cc0e3; --on-accent:#102330;
+  --ok:#8fd49d; --ok-bg:#1d3324; --no:#f0a091; --no-bg:#3d221e; --warn:#ecd07c; --warn-bg:#352c15;
+  --code:#0f141a; --code-ink:#dde6ee; --code-k:#c6a6f0; --code-s:#9bd6a8; --code-c:#8793a1; --code-t:#93c4e6; --todo:#4b3e14; --todo-ink:#f3dc8e;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#12171d; --card:#19212a; --card-2:#212b36; --ink:#e8eef2; --muted:#a3afbb; --line:#2c3743; --edge:#c6d2dc;
+  --sky:#1e3242; --sky-2:#2d4c63; --sky-ink:#9cc9e8;
+  --sage:#1f3326; --sage-2:#2f4d38; --sage-ink:#a5d7ad;
+  --butter:#352d16; --butter-2:#57491f; --butter-ink:#efd78a;
+  --blush:#3a2421; --blush-2:#5a3530; --blush-ink:#f1b7aa;
+  --lav:#2a2540; --lav-2:#423a63; --lav-ink:#cbbff0;
+  --accent:#8cc0e3; --on-accent:#102330;
+  --ok:#8fd49d; --ok-bg:#1d3324; --no:#f0a091; --no-bg:#3d221e; --warn:#ecd07c; --warn-bg:#352c15;
+  --code:#0f141a; --code-ink:#dde6ee; --code-k:#c6a6f0; --code-s:#9bd6a8; --code-c:#8793a1; --code-t:#93c4e6; --todo:#4b3e14; --todo-ink:#f3dc8e;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(76px + env(safe-area-inset-top,0px))}
+body{overflow-wrap:break-word;margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 var(--f-body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--card)}
+h1,h2,h3,h4{font-family:var(--f-display);line-height:1.15;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:clamp(26px,3.6vw,34px);font-weight:800}
+h3{font-size:21px;font-weight:700;margin:26px 0 8px}
+h4{font-size:17px;font-weight:700;margin:0 0 4px}
+p{margin:8px 0;max-width:70ch}
+code{overflow-wrap:anywhere;font:500 .86em var(--f-mono);background:var(--card-2);padding:1px 5px;border-radius:5px}
+a{color:var(--accent)}
+.wrap{max-width:1060px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+ul,ol{padding-left:22px;margin:6px 0}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--card) 90%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:10px;padding-block:9px}
+.readbar{position:absolute;left:0;right:0;bottom:-2px;height:3px;transform-origin:0 50%;transform:scaleX(var(--sp,0));background:linear-gradient(90deg,var(--sky-ink),var(--lav-ink),var(--blush-ink));border-radius:0 3px 3px 0}
+.brand{display:flex;align-items:center;gap:9px;font:800 16px var(--f-display);color:var(--ink);text-decoration:none;white-space:nowrap}
+.brand i{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--sky-2),var(--lav-2),var(--blush-2));transform:rotate(calc(12deg + var(--sp,0) * 348deg));transition:transform .2s}
+.toc{position:relative;display:flex;gap:3px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none}.toc::-webkit-scrollbar{display:none}
+.toc .ind{position:absolute;left:0;top:0;height:100%;width:0;border-radius:99px;background:var(--sky);opacity:0;transition:transform .5s cubic-bezier(.3,1.35,.45,1),width .5s cubic-bezier(.3,1.35,.45,1),background-color .5s,opacity .3s;z-index:0}
+.toc a{position:relative;z-index:1;white-space:nowrap;padding:6px 12px;border-radius:99px;color:var(--muted);text-decoration:none;font:700 14px var(--f-body);transition:color .3s}
+.toc a.act{color:var(--ink)}
+.toc a:focus-visible{outline:3px solid var(--accent);outline-offset:-2px}
+.prog{flex:none;display:flex;align-items:center;gap:8px;font:600 13px var(--f-mono);color:var(--muted)}
+.prog .bar{width:70px;height:8px;border-radius:99px;background:var(--card-2);overflow:hidden}
+.prog .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--sky-2),var(--sage-2),var(--butter-2),var(--blush-2));transition:width .6s}
+.timer{flex:none;display:flex;align-items:center;gap:7px;border:0;cursor:pointer;border-radius:10px;padding:0 10px;height:36px;background:var(--card-2);color:var(--ink);font:700 14px var(--f-mono);font-variant-numeric:tabular-nums}
+.timer .tdot{width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.timer.run .tdot{background:var(--ok);animation:beat 1s ease-in-out infinite}
+.timer.over{background:var(--warn-bg);color:var(--warn)}.timer.over .tdot{background:var(--warn)}
+@keyframes beat{50%{transform:scale(1.6);opacity:.5}}
+@media(max-width:760px){.prog .bar{display:none}.brand span{display:none}}
+@media(max-width:460px){.prog{display:none}}
+.iconbtn{flex:none;border:0;background:var(--card-2);color:var(--ink);width:36px;height:36px;border-radius:10px;cursor:pointer;display:grid;place-items:center}
+
+/* ---------- side rail (wide screens) ---------- */
+.rail{position:fixed;z-index:25;right:max(14px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:none;flex-direction:column;gap:14px;padding:6px 0}
+@media(min-width:1220px){.rail{display:flex}}
+.rail::before,.rail .fill{content:"";position:absolute;right:6px;top:12px;bottom:12px;width:2px;border-radius:2px;background:var(--line)}
+.rail .fill{background:linear-gradient(var(--sky-ink),var(--lav-ink),var(--blush-ink));transform-origin:50% 0;transform:scaleY(var(--sp,0))}
+.rail a{position:relative;display:flex;align-items:center;justify-content:flex-end;gap:10px;text-decoration:none;color:var(--muted);height:14px}
+.rail a i{position:relative;z-index:1;width:14px;height:14px;border-radius:50%;background:var(--card);box-shadow:inset 0 0 0 2px var(--line);transition:transform .35s cubic-bezier(.3,1.6,.5,1),background .3s,box-shadow .3s}
+.rail a span{font:700 12px var(--f-mono);white-space:nowrap;padding:3px 9px;border-radius:99px;background:var(--card);box-shadow:0 4px 14px -6px #0004,inset 0 0 0 1px var(--line);opacity:0;transform:translateX(10px);transition:opacity .25s,transform .35s;pointer-events:none}
+.rail a:hover span,.rail a:focus-visible span,.rail a.act span{opacity:1;transform:none}
+.rail a.seen i{background:var(--rc);box-shadow:inset 0 0 0 2px var(--rc)}
+.rail a.act i{transform:scale(1.45);background:var(--rc);box-shadow:0 0 0 4px color-mix(in srgb,var(--rc) 45%,transparent)}
+.rail a.act span{color:var(--ink)}
+.rail a:focus-visible{outline:none}.rail a:focus-visible i{box-shadow:0 0 0 3px var(--accent)}
+
+/* ---------- floating back-to-top + toast ---------- */
+.totop{position:fixed;z-index:26;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:50px;height:50px;border:0;border-radius:50%;cursor:pointer;background:var(--card);color:var(--ink);box-shadow:0 10px 24px -10px #0006,inset 0 0 0 1px var(--line);display:grid;place-items:center;transform:scale(0) rotate(-90deg);transition:transform .45s cubic-bezier(.3,1.5,.5,1)}
+.totop.show{transform:none}
+.totop svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.totop circle{fill:none;stroke-width:3}
+.totop .bg{stroke:var(--line)}.totop .fg{stroke:var(--accent);stroke-linecap:round;stroke-dasharray:138.2;stroke-dashoffset:calc(138.2 * (1 - var(--sp,0)))}
+.totop b{font:800 18px var(--f-display)}
+.totop:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.toast{position:fixed;z-index:27;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,140%);max-width:calc(100% - 32px);padding:10px 16px;border-radius:14px;background:var(--ink);color:var(--paper);font:700 14px var(--f-body);box-shadow:0 14px 30px -12px #0007;transition:transform .5s cubic-bezier(.3,1.4,.5,1);display:flex;gap:8px;align-items:center}
+.toast.show{transform:translate(-50%,0)}
+.toast i{width:10px;height:10px;border-radius:3px;background:var(--tc,var(--sky-2));flex:none;font-style:normal}
+
+/* ---------- hero ---------- */
+.hero{background:linear-gradient(120deg,var(--sky) 0%,var(--lav) 45%,var(--blush) 100%);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:0;background-image:radial-gradient(color-mix(in srgb,var(--card) 60%,transparent) 1.2px,transparent 1.6px);background-size:26px 26px;opacity:.6;pointer-events:none;transform:translateY(calc(var(--hy,0) * .35px))}
+.hero .wrap{position:relative;z-index:1;display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:center;padding-block:40px 36px}
+@media(max-width:860px){.hero .wrap{grid-template-columns:1fr;padding-block:28px}}
+.hero-txt{transform:translateY(calc(var(--hy,0) * .12px));opacity:calc(1 - var(--hy,0) / 900)}
+.hero-txt>*{animation:enter .8s cubic-bezier(.2,.7,.2,1) both}
+.hero-txt>*:nth-child(2){animation-delay:.08s}.hero-txt>*:nth-child(3){animation-delay:.16s}.hero-txt>*:nth-child(4){animation-delay:.24s}.hero-txt>*:nth-child(5){animation-delay:.32s}
+@keyframes enter{from{opacity:0;transform:translateY(18px)}}
+.kicker{font:700 12px var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--sky-ink)}
+.hero h1{font-size:clamp(38px,6.4vw,66px);font-weight:900;margin:10px 0 12px;letter-spacing:-.025em}
+.hero h1 span{background:linear-gradient(95deg,var(--sky-ink),var(--lav-ink),var(--blush-ink),var(--sky-ink));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sheen 6s linear infinite}
+@keyframes sheen{to{background-position:-200% 0}}
+.lead{font-size:19px;max-width:34em}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.chip{font:600 13px var(--f-body);padding:5px 11px;border-radius:99px;background:color-mix(in srgb,var(--card) 75%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--card) 90%,transparent)}
+.chip.hot{background:var(--card);font-weight:800}
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.cue{display:inline-flex;align-items:center;gap:8px;margin-top:14px;font:700 12px var(--f-mono);color:var(--muted);text-decoration:none}
+.cue i{width:18px;height:28px;border-radius:10px;box-shadow:inset 0 0 0 2px currentColor;position:relative}
+.cue i::after{content:"";position:absolute;left:50%;top:6px;width:3px;height:6px;margin-left:-1.5px;border-radius:2px;background:currentColor;animation:wheel 1.6s ease-in-out infinite}
+@keyframes wheel{60%{transform:translateY(8px);opacity:0}}
+
+.scene3d{perspective:1000px;height:330px;display:grid;place-items:center;overflow:hidden;transform:translateY(calc(var(--hy,0) * .3px)) scale(calc(1 - var(--hy,0) / 2400))}
+.world{position:relative;width:10px;height:10px;transform-style:preserve-3d;transform:rotateX(calc(-16deg + var(--hy,0) * .04deg))}
+.core{position:absolute;left:-55px;top:-55px;width:110px;height:110px;transform-style:preserve-3d;animation:spin 16s linear infinite}
+.core i{position:absolute;inset:0;display:grid;place-items:center;font:700 13px var(--f-mono);font-style:normal;color:#2a3446;background:linear-gradient(135deg,#f7ecc4,#e5dcf3 55%,#f4d6cd);border:2px solid #ffffffb0;box-shadow:inset 0 0 24px #ffffffaa}
+.core i:nth-child(1){transform:translateZ(55px)}.core i:nth-child(2){transform:rotateY(180deg) translateZ(55px)}
+.core i:nth-child(3){transform:rotateY(90deg) translateZ(55px)}.core i:nth-child(4){transform:rotateY(-90deg) translateZ(55px)}
+.core i:nth-child(5){transform:rotateX(90deg) translateZ(55px)}.core i:nth-child(6){transform:rotateX(-90deg) translateZ(55px)}
+@keyframes spin{to{transform:rotateX(360deg) rotateY(360deg)}}
+.halo{position:absolute;left:-100px;top:-100px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,#ffffffaa,transparent 65%);transform:translateZ(-60px);animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{50%{transform:translateZ(-60px) scale(1.15)}}
+.orbit{position:absolute;left:0;top:0;transform-style:preserve-3d;animation:orbit 20s linear infinite}
+@keyframes orbit{to{transform:rotateY(360deg)}}
+.cli{position:absolute;left:-30px;top:-15px;width:60px;height:30px;border-radius:9px;display:grid;place-items:center;font:700 11px var(--f-mono);color:#253140;background:var(--c);box-shadow:0 8px 16px -6px #0004,inset 0 0 0 1px #ffffffb0;transform:rotateY(var(--a)) translateZ(165px) rotateY(calc(-1 * var(--a)))}
+.beam{position:absolute;left:0;top:-1px;width:155px;height:2px;transform-origin:0 50%;transform:rotateY(calc(90deg - var(--a)));background:linear-gradient(90deg,#ffffff00,#ffffffee);animation:beam 2.6s ease-in-out infinite;animation-delay:var(--dl)}
+@keyframes beam{0%,100%{filter:brightness(.6)}50%{filter:brightness(1.3)}}
+.label3d{position:absolute;left:-100px;top:84px;width:200px;text-align:center;font:700 12px var(--f-mono);transform:translateZ(80px);color:var(--lav-ink)}
+@media(max-width:560px){.scene3d{height:270px}.world{scale:.8}}
+
+/* ---------- roadmap + plan ---------- */
+.road{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px 12px;margin:22px 0 18px;perspective:900px}
+@media(max-width:760px){.road{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stone{display:block;text-decoration:none;color:var(--ink);border-radius:18px;padding:14px 16px;position:relative;transform:rotateX(18deg);transform-origin:bottom;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s;box-shadow:0 14px 0 -6px var(--sd),0 22px 28px -18px #0006}
+.stone:hover,.stone:focus-visible,.stone.act{transform:rotateX(0) translateY(-6px);outline:none;box-shadow:0 18px 0 -6px var(--sd),0 28px 30px -18px #0007}
+.stone:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.stone b{display:block;font:800 13px var(--f-display);letter-spacing:.08em;text-transform:uppercase}
+.stone span{font-size:14px;color:var(--muted)}
+.stone em{position:absolute;right:12px;top:8px;font:900 30px var(--f-display);font-style:normal;opacity:.35}
+.stone .done{display:block;margin-top:6px;font:700 12px var(--f-mono)}
+.st-a{background:linear-gradient(160deg,var(--sky),color-mix(in srgb,var(--sky) 40%,var(--card)));--sd:var(--sky-2)}.st-a b{color:var(--sky-ink)}
+.st-b{background:linear-gradient(160deg,var(--butter),color-mix(in srgb,var(--butter) 40%,var(--card)));--sd:var(--butter-2)}.st-b b{color:var(--butter-ink)}
+.st-c{background:linear-gradient(160deg,var(--sage),color-mix(in srgb,var(--sage) 40%,var(--card)));--sd:var(--sage-2)}.st-c b{color:var(--sage-ink)}
+.st-d{background:linear-gradient(160deg,var(--blush),color-mix(in srgb,var(--blush) 40%,var(--card)));--sd:var(--blush-2)}.st-d b{color:var(--blush-ink)}
+
+.plan-h{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.plan-h h3{margin:0}
+.segs{display:grid;grid-template-columns:15fr 10fr 12fr 20fr 13fr 5fr;gap:5px;margin-top:12px}
+@media(max-width:640px){.segs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.seg-b{position:relative;overflow:hidden;border:0;cursor:pointer;text-align:left;border-radius:12px;padding:9px 8px 8px;background:var(--sb);color:var(--ink);min-width:0;font:inherit;transition:transform .25s}
+.seg-b:hover{transform:translateY(-3px)}
+.seg-b:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.seg-b::before{content:"";position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(var(--f,0));background:var(--sf);transition:transform .9s cubic-bezier(.2,.7,.2,1)}
+.seg-b b,.seg-b small{position:relative;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg-b b{font:800 13px var(--f-display)}
+.seg-b small{font:700 12px var(--f-mono);color:var(--muted)}
+.seg-b.now{box-shadow:0 0 0 3px var(--accent)}
+.seg-b.now::after{content:"";position:absolute;right:7px;top:9px;width:8px;height:8px;border-radius:50%;background:var(--accent);animation:beat 1s infinite}
+.s-butter{--sb:var(--butter);--sf:var(--butter-2)}.s-sky{--sb:var(--sky);--sf:var(--sky-2)}.s-sage{--sb:var(--sage);--sf:var(--sage-2)}.s-blush{--sb:var(--blush);--sf:var(--blush-2)}.s-lav{--sb:var(--lav);--sf:var(--lav-2)}
+
+/* ---------- parts ---------- */
+main{padding-block:10px 40px}
+.part{margin-top:34px}
+.part-head{display:flex;gap:14px;align-items:center;border-radius:22px;padding:18px 20px;margin-bottom:14px;background:linear-gradient(110deg,var(--p2) 0%,var(--p1) 60%,color-mix(in srgb,var(--p1) 35%,var(--card)) 100%);background-size:160% 100%;background-position:calc(var(--pp,0) * 100%) 0;position:relative;overflow:hidden}
+.part-head::after{content:attr(data-big);position:absolute;right:-6px;bottom:-46px;font:900 160px/1 var(--f-display);color:var(--pi);opacity:.08;transform:translateY(calc(var(--pp,0) * -40px)) rotate(calc(var(--pp,0) * -8deg));pointer-events:none}
+.part-head .n{flex:none;width:54px;height:54px;border-radius:15px;display:grid;place-items:center;font:900 24px var(--f-display);color:var(--pi);background:color-mix(in srgb,var(--card) 80%,transparent);box-shadow:0 8px 16px -10px #0005;animation:bob 4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-4px) rotate(-4deg)}}
+.part-head small{display:block;font:700 12px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--pi)}
+.part-head p{margin:2px 0 0;font-size:15px;color:var(--muted)}
+.part-head>div:last-child{position:relative;z-index:1;min-width:0}
+.pa{--p1:var(--sky);--p2:var(--sky-2);--pi:var(--sky-ink)}
+.pb{--p1:var(--butter);--p2:var(--butter-2);--pi:var(--butter-ink)}
+.pc{--p1:var(--sage);--p2:var(--sage-2);--pi:var(--sage-ink)}
+.pd{--p1:var(--blush);--p2:var(--blush-2);--pi:var(--blush-ink)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;margin:14px 0}
+@media(max-width:600px){.card{padding:18px 14px}}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.grid>*{min-width:0}
+.two{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
+.tile{border-radius:16px;padding:14px 16px;background:var(--card-2)}
+.tile p{margin:4px 0 0;font-size:15px;color:var(--muted)}
+.t-sky{background:var(--sky)}.t-sage{background:var(--sage)}.t-butter{background:var(--butter)}.t-blush{background:var(--blush)}.t-lav{background:var(--lav)}
+.t-sky p,.t-sage p,.t-butter p,.t-blush p,.t-lav p{color:var(--ink)}
+.quote{margin:10px 0;padding:14px 18px;border-radius:0 16px 16px 0;background:var(--lav);border-left:5px solid var(--lav-2);font-size:19px;font-style:italic}
+.quote small{display:block;font:500 13px var(--f-mono);font-style:normal;color:var(--muted);margin-top:6px}
+.remember{display:flex;gap:12px;align-items:flex-start;margin:12px 0 0;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--butter) 70%,var(--card));border:1px dashed var(--butter-2)}
+.remember b.k{flex:none;font:800 11px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--butter-ink);padding-top:3px}
+.remember p{margin:0;font-size:15.5px}
+.lbl{font:700 12px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+.foot{font-size:14px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:700 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--lav-ink);background:var(--lav)}
+th:first-child{border-radius:10px 0 0 0}th:last-child{border-radius:0 10px 0 0}
+.scroll{overflow-x:auto}
+.y{color:var(--ok);font-weight:700}.n{color:var(--no);font-weight:700}.m{color:var(--warn);font-weight:700}
+
+/* revision sheet */
+.sheet{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.sheet>*{min-width:0}
+.sheet .item{border-radius:16px;padding:14px 16px;background:var(--card-2);position:relative}
+.sheet .item h4{display:flex;align-items:center;gap:8px}
+.sheet .item h4 i{font:800 12px var(--f-mono);font-style:normal;width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:var(--ic);color:var(--ink)}
+.sheet .item ul{font-size:15px;padding-left:18px}
+.sheet .wide{grid-column:1/-1}
+.mn{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.mn span{font:800 15px var(--f-display);padding:6px 12px;border-radius:12px;background:var(--card)}
+.mn span b{color:var(--lav-ink)}
+
+/* buttons */
+.btn{font:700 15px var(--f-body);border:0;border-radius:12px;padding:9px 16px;cursor:pointer;color:var(--ink);background:var(--card-2);box-shadow:inset 0 0 0 1px var(--line);transition:transform .15s;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.btn:hover{transform:translateY(-1px)}.btn:active{transform:translateY(1px)}
+.btn.pri{background:var(--accent);color:var(--on-accent);box-shadow:none}
+.btn.soft{background:color-mix(in srgb,var(--card) 80%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--card) 90%,transparent)}
+.btn.sm{padding:6px 12px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.btn:focus-visible,.seg button:focus-visible,.flip:focus-visible,.opt:focus-visible,.mb:focus-visible,.timer:focus-visible,.iconbtn:focus-visible,.fc:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;flex-wrap:wrap;gap:4px;background:var(--card-2);padding:4px;border-radius:12px}
+.seg button{font:700 14px var(--f-body);border:0;cursor:pointer;padding:6px 12px;border-radius:9px;background:transparent;color:var(--muted)}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 2px 6px -2px #0003,inset 0 0 0 1px var(--line)}
+.row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:10px 0}
+
+/* code */
+pre.code{background:var(--code);color:var(--code-ink);border:1px solid var(--line);border-left:5px solid var(--lav-2);border-radius:14px;padding:12px 14px;overflow-x:auto;font:13.5px/1.6 var(--f-mono);margin:8px 0;position:relative;tab-size:4}
+pre.code .k{color:var(--code-k);font-weight:700}pre.code .s{color:var(--code-s)}pre.code .c{color:var(--code-c);font-style:italic}pre.code .t{color:var(--code-t)}
+pre.code .todo{background:var(--todo);color:var(--todo-ink);font-weight:700;border-radius:4px;padding:0 3px}
+pre.out{border-left-color:var(--sage-2)}
+.copy{position:absolute;top:8px;right:8px;font:600 12px var(--f-body);padding:3px 9px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;cursor:pointer}
+
+/* sim frame */
+.sim{border-radius:22px;padding:3px;margin:16px 0;background:linear-gradient(135deg,var(--sky-2),var(--lav-2),var(--blush-2))}
+.sim-in{background:var(--card);border-radius:19px;padding:16px}
+.sim-head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:8px}
+.sim-head h4{font-size:18px;display:flex;align-items:center;gap:8px;margin:0}
+.live{font:700 11px var(--f-mono);letter-spacing:.08em;padding:3px 8px;border-radius:99px;background:var(--lav);color:var(--lav-ink)}
+.say{background:var(--card-2);border-radius:14px;padding:12px 14px;font-size:16px;margin-top:10px}
+.stage{background:var(--card-2);border-radius:16px;padding:12px;min-height:120px;overflow:hidden}
+.result{border-radius:12px;padding:10px 14px;font-weight:700;margin-top:8px;font-size:15px}
+.result.ok{background:var(--ok-bg);color:var(--ok)}.result.err{background:var(--no-bg);color:var(--no)}.result.warn{background:var(--warn-bg);color:var(--warn)}
+.popin{animation:popin .45s both}@keyframes popin{from{opacity:0;transform:scale(.92)}}
+.shake{animation:shake .4s}@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+/* flip cards */
+.flips{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.flip{perspective:1000px;height:200px;border:0;background:none;padding:0;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.flip .in{position:relative;height:100%;transition:transform .75s cubic-bezier(.2,.7,.2,1);transform-style:preserve-3d}
+.flip:hover .in{transform:rotateY(8deg) rotateX(4deg)}
+.flip.on .in{transform:rotateY(180deg)}.flip.on:hover .in{transform:rotateY(172deg) rotateX(4deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.front{background:var(--fb)}
+.front .big{font:900 42px/1 var(--f-display);color:var(--fi)}
+.front .h{margin-top:auto;font-size:13px;color:var(--muted)}
+.back{transform:rotateY(180deg);background:var(--card);box-shadow:inset 0 0 0 2px var(--fb);font-size:15px}
+.f1{--fb:var(--sky);--fi:var(--sky-ink)}.f2{--fb:var(--sage);--fi:var(--sage-ink)}.f3{--fb:var(--butter);--fi:var(--butter-ink)}
+
+/* uml */
+.uml{width:250px;max-width:100%;border:2px solid var(--edge);border-radius:8px;overflow:hidden;font:13px/1.6 var(--f-mono);background:var(--card)}
+.uml .hd{background:linear-gradient(90deg,var(--lav),var(--sky));text-align:center;font:800 15px var(--f-display);padding:6px}
+.uml .cmp{padding:6px 10px;border-top:2px solid var(--edge);min-height:34px}
+
+/* S1 */
+.clients{display:flex;gap:10px;flex-wrap:wrap}
+.client{flex:1;min-width:110px;border-radius:14px;padding:10px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);text-align:center;transition:background .5s,color .5s}
+.client.dark{background:#28303c;color:#eef3f7}
+.client b{display:block;font:800 15px var(--f-display)}
+.client small{font:600 12px var(--f-mono);color:inherit;opacity:.75}
+.objs{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;padding:22px 6px 6px;min-height:110px}
+.cube{--s:52px;width:var(--s);height:var(--s);position:relative;transform-style:preserve-3d;animation:cspin 8s linear infinite;margin:6px auto}
+.cube.big{--s:68px}
+.cube i{position:absolute;inset:0;border-radius:8px;display:grid;place-items:center;font:800 12px var(--f-mono);font-style:normal;color:#2a3446;box-shadow:inset 0 0 0 1px #ffffffaa}
+.cube i:nth-child(1){transform:translateZ(calc(var(--s)/2));background:#f6e7b4}.cube i:nth-child(2){transform:rotateY(180deg) translateZ(calc(var(--s)/2));background:#f6e7b4}
+.cube i:nth-child(3){transform:rotateY(90deg) translateZ(calc(var(--s)/2));background:#d2e4f0}.cube i:nth-child(4){transform:rotateY(-90deg) translateZ(calc(var(--s)/2));background:#d2e4f0}
+.cube i:nth-child(5){transform:rotateX(90deg) translateZ(calc(var(--s)/2));background:#efd3cc}.cube i:nth-child(6){transform:rotateX(-90deg) translateZ(calc(var(--s)/2));background:#d6e7d1}
+.cube.dark i{background:#38404e!important;color:#eef3f7}
+@keyframes cspin{from{transform:rotateX(-18deg) rotateY(0)}to{transform:rotateX(-18deg) rotateY(360deg)}}
+.objw{text-align:center;font:600 12px var(--f-mono);color:var(--muted)}
+.count{font:800 15px var(--f-mono)}
+
+/* S2 */
+.tl{display:grid;grid-template-columns:90px repeat(4,minmax(0,1fr));gap:6px;align-items:stretch;font-size:14px}
+@media(max-width:600px){.tl{grid-template-columns:62px repeat(4,minmax(0,1fr));font-size:12px}}
+.tl .hd{font:700 12px var(--f-mono);color:var(--muted);text-align:center;padding:4px}
+.tl .who{font:800 14px var(--f-display);display:flex;align-items:center}
+.tl .slot{border-radius:12px;min-height:62px;background:var(--card-2);display:grid;place-items:center;text-align:center;padding:6px;transition:background .4s}
+.tl .slot.now{box-shadow:inset 0 0 0 2px var(--accent)}
+.tl .slot.made{background:var(--butter)}
+.tl .slot.used{background:var(--sage)}
+.ev{font:700 12px var(--f-mono)}
+
+/* S3 */
+.lanes{display:flex;flex-direction:column;gap:10px}
+.lane{display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:start}
+.lane .who{font:800 13px var(--f-mono);border-radius:10px;padding:8px 0;text-align:center;color:#253140}
+.ops{display:flex;flex-wrap:wrap;gap:5px}
+.op{font:600 12.5px var(--f-mono);padding:5px 9px;border-radius:9px;background:var(--card-2);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line);transition:all .3s}
+.op.cur{color:#253140;background:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 55%,transparent);transform:translateY(-2px)}
+.op.done{color:var(--ink);background:color-mix(in srgb,var(--c) 45%,var(--card))}
+.op.skip{text-decoration:line-through;opacity:.45}
+.op.blocked{animation:shake .5s}
+.mem{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.cell{background:var(--card-2);border-radius:12px;padding:8px 10px}
+.cell small{display:block;font:700 11px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.cell b{font:700 15px var(--f-mono)}
+
+/* S4 + S5 */
+.vt{position:relative;height:210px;border-radius:16px;background:linear-gradient(180deg,var(--card-2),var(--card));overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.vt canvas{width:100%;height:100%;display:block}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:10px 0}
+.kv div{background:var(--card-2);border-radius:12px;padding:8px 10px}.kv small{display:block;font:700 11px var(--f-mono);color:var(--muted);text-transform:uppercase}.kv b{font:800 20px var(--f-mono);font-variant-numeric:tabular-nums}
+
+/* carousel */
+.car{perspective:1200px;height:250px;display:grid;place-items:center;overflow:hidden;margin:10px 0}
+.ring{position:relative;width:220px;height:170px;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.2,.7,.2,1)}
+@media(max-width:560px){.ring{scale:.74}}
+.panel3d{position:absolute;inset:0;border:0;border-radius:18px;padding:16px;cursor:pointer;text-align:left;font:inherit;color:#253140;background:var(--pc);box-shadow:0 18px 30px -18px #0007,inset 0 0 0 1px #ffffffaa;display:flex;flex-direction:column;gap:6px;backface-visibility:hidden;transition:filter .5s}
+.panel3d h4{font-size:18px}.panel3d small{font:700 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;opacity:.75}
+.panel3d .v{margin-top:auto;font:700 12px var(--f-mono);padding:3px 9px;border-radius:99px;align-self:flex-start;background:#ffffffa0}
+.panel3d.dim{filter:saturate(.6) brightness(.85)}
+.car-detail{background:var(--card-2);border-radius:18px;padding:16px;animation:popin .4s both}
+.props{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+.props span{font:600 13px var(--f-mono);padding:4px 10px;border-radius:99px}
+.props .y{background:var(--ok-bg)}.props .n{background:var(--no-bg)}.props .m{background:var(--warn-bg)}
+
+/* warm-ups */
+.wu{border-radius:20px;background:var(--card);border:1px solid var(--line);padding:18px;margin:14px 0}
+.wu-h{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:10px}
+.wu-h .tag{font:800 12px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--wt);color:var(--wi)}
+.wu-h h4{margin:0}
+.wu-h .mins{font:700 12px var(--f-mono);color:var(--muted)}
+.wu-h .st{margin-left:auto;font:700 13px var(--f-mono);color:var(--muted)}
+.wu-h .st.ok{color:var(--ok)}
+.w-sky{--wt:var(--sky);--wi:var(--sky-ink)}.w-sage{--wt:var(--sage);--wi:var(--sage-ink)}.w-butter{--wt:var(--butter);--wi:var(--butter-ink)}.w-blush{--wt:var(--blush);--wi:var(--blush-ink)}.w-lav{--wt:var(--lav);--wi:var(--lav-ink)}
+.q{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.q:last-child{border-bottom:0}
+.q.col{grid-template-columns:1fr}
+.opts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.opt{font:700 14px var(--f-body);border:0;cursor:pointer;border-radius:10px;padding:7px 12px;background:var(--card-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);text-align:left}
+.opt.sel{box-shadow:inset 0 0 0 2px var(--accent)}
+.opt.good{background:var(--ok-bg);box-shadow:inset 0 0 0 2px var(--ok)}
+.opt.bad{background:var(--no-bg);box-shadow:inset 0 0 0 2px var(--no)}
+.fb{font-size:14px;font-weight:700}
+.fb.ok{color:var(--ok)}.fb.no{color:var(--no)}
+.blank-code select{font:600 13px var(--f-mono);border-radius:6px;border:1px solid var(--line);padding:1px 4px;background:var(--todo);color:var(--todo-ink);cursor:pointer}
+.blank-code select.good{background:var(--ok-bg);color:var(--ok)}.blank-code select.bad{background:var(--no-bg);color:var(--no)}
+.cl{display:block;cursor:pointer;border-radius:6px;padding:0 6px;margin:0 -6px}
+.cl:hover{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.cl:focus-visible{outline:2px solid var(--accent)}
+.cl.pick-ok{background:var(--ok-bg)}.cl.pick-no{background:var(--no-bg)}
+textarea{width:100%;min-height:90px;border-radius:12px;border:1px solid var(--line);padding:10px 12px;font:15px/1.5 var(--f-body);background:var(--card);color:var(--ink);resize:vertical}
+textarea.mono{font:14px/1.5 var(--f-mono)}
+textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+.match{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:8px}
+@media(max-width:600px){.match{grid-template-columns:minmax(0,1fr)}}
+.match .col{display:flex;flex-direction:column;gap:6px}
+.mb{font:600 15px var(--f-body);border:0;cursor:pointer;text-align:left;padding:8px 12px;border-radius:10px;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.mt .mb{background:var(--sky)}.md .mb{background:var(--sage)}
+.mb.sel{box-shadow:inset 0 0 0 3px var(--accent)}
+.mb.ok{opacity:.55;box-shadow:inset 0 0 0 2px var(--ok)}
+.mb.bad{box-shadow:inset 0 0 0 2px var(--no)}
+
+/* exercises */
+.ex{border-radius:24px;padding:3px;margin:20px 0;background:linear-gradient(135deg,var(--e1),var(--e2))}
+.ex>.in{background:var(--card);border-radius:21px;padding:20px}
+@media(max-width:600px){.ex>.in{padding:16px 13px}}
+.ex .top2{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:6px}
+.ex .lvl{font:800 12px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--e1);color:var(--ei)}
+.ex .you{font:700 12px var(--f-mono);padding:4px 10px;border-radius:99px;background:var(--card-2);color:var(--muted)}
+.ex h3{margin:0;font-size:22px}
+.ex .time{margin-left:auto;font:700 13px var(--f-mono);color:var(--muted)}
+.e1{--e1:var(--sky-2);--e2:var(--sky);--ei:var(--sky-ink)}
+.e2{--e1:var(--sage-2);--e2:var(--sage);--ei:var(--sage-ink)}
+.e3{--e1:var(--butter-2);--e2:var(--butter);--ei:var(--butter-ink)}
+.e4{--e1:var(--blush-2);--e2:var(--lav);--ei:var(--blush-ink)}
+.reqs{list-style:none;padding:0;margin:6px 0;display:flex;flex-direction:column;gap:4px}
+.reqs label{display:flex;gap:10px;align-items:flex-start;cursor:pointer;padding:6px 8px;border-radius:10px;transition:background .3s}
+.reqs label:hover{background:var(--card-2)}
+.reqs input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent);flex:none}
+.reqs input:checked+span{text-decoration:line-through;text-decoration-color:var(--muted);color:var(--muted)}
+.reqbar{height:6px;border-radius:99px;background:var(--card-2);overflow:hidden;margin:4px 0 8px}
+.reqbar i{display:block;height:100%;background:var(--e1);transform-origin:0 50%;transform:scaleX(var(--rq,0));transition:transform .6s cubic-bezier(.3,1.3,.5,1)}
+details.hint{background:var(--butter);border-radius:12px;padding:8px 12px;margin:8px 0}
+details.hint summary{cursor:pointer;font-weight:700;color:var(--butter-ink)}
+details.bonus{background:var(--lav);border-radius:12px;padding:8px 12px;margin:10px 0}
+details.bonus summary{cursor:pointer;font-weight:700;color:var(--lav-ink)}
+.concept{background:linear-gradient(120deg,var(--lav),color-mix(in srgb,var(--lav) 40%,var(--card)));border-radius:12px;padding:10px 14px;font-size:15px;margin:8px 0}
+.concept b{color:var(--lav-ink)}
+.qa{margin:10px 0}
+.qa p{margin:4px 0;font-weight:600}
+.qa textarea{min-height:64px}
+.saved{font:600 12px var(--f-mono);color:var(--muted)}
+.checker{border-radius:16px;background:var(--card-2);padding:12px 14px;margin:10px 0}
+
+/* flashcards */
+.deck{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:18px;align-items:center}
+@media(max-width:720px){.deck{grid-template-columns:minmax(0,1fr)}}
+.fc{perspective:1200px;height:210px;border:0;background:none;padding:0;cursor:pointer;width:100%;font:inherit;color:inherit;text-align:left}
+.fc .in{position:relative;height:100%;transition:transform .7s cubic-bezier(.2,.7,.2,1);transform-style:preserve-3d}
+.fc.on .in{transform:rotateY(180deg)}
+.fc .face{justify-content:center;padding:22px}
+.fc .front{background:linear-gradient(135deg,var(--lav),var(--sky))}
+.fc .front h4{font-size:22px}
+.fc .back{font-size:16.5px}
+.fc small{font:700 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.fc.swipe-l .in{animation:swl .45s both}.fc.swipe-r .in{animation:swr .45s both}
+@keyframes swl{to{transform:translateX(-60px) rotate(-6deg);opacity:0}}
+@keyframes swr{to{transform:translateX(60px) rotate(6deg);opacity:0}}
+.fc.deal .in{animation:deal .5s cubic-bezier(.2,.8,.2,1) both}
+@keyframes deal{from{transform:translateY(24px) rotate(-3deg) scale(.95);opacity:0}}
+.dots{display:flex;flex-wrap:wrap;gap:5px}
+.dots i{width:12px;height:12px;border-radius:4px;background:var(--card-2);box-shadow:inset 0 0 0 1px var(--line);transition:background .3s,transform .3s}
+.dots i.k{background:var(--ok)}.dots i.c{transform:scale(1.3);box-shadow:0 0 0 2px var(--accent)}
+
+.rubric td:last-child{width:120px}
+.badge3d{display:inline-grid;place-items:center;width:110px;height:110px;border-radius:50%;font:900 30px var(--f-display);color:#253140;background:conic-gradient(var(--sky-2),var(--lav-2),var(--blush-2),var(--butter-2),var(--sage-2),var(--sky-2));box-shadow:inset 0 0 0 8px #ffffff90,0 18px 30px -16px #0007;animation:coin 6s ease-in-out infinite}
+@keyframes coin{0%,40%{transform:rotateY(0)}50%,90%{transform:rotateY(360deg)}100%{transform:rotateY(360deg)}}
+footer{text-align:center;color:var(--muted);font-size:14px;padding-block:20px 80px}
+kbd{font:700 12px var(--f-mono);padding:1px 6px;border-radius:5px;background:var(--card);box-shadow:inset 0 -2px 0 var(--line),inset 0 0 0 1px var(--line)}
+
+/* scroll reveal: elements are visible at rest; JS adds .rv-in only when one enters the viewport */
+.rv-in{animation:rise .75s cubic-bezier(.2,.7,.2,1) both;animation-delay:var(--d,0s)}
+@keyframes rise{from{opacity:0;transform:translateY(34px) scale(.975)}}
+.part-head.rv-in{animation:sweep .9s cubic-bezier(.2,.7,.2,1) both}
+@keyframes sweep{from{opacity:0;transform:translateX(-40px);clip-path:inset(0 100% 0 0 round 22px)}to{clip-path:inset(0 0 0 0 round 22px)}}
+.part-head.rv-in .n{animation:flipin .9s .2s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes flipin{from{transform:rotateY(-180deg) scale(.4);opacity:0}}
+.stone.rv-in{animation:drop .7s cubic-bezier(.3,1.4,.5,1) both;animation-delay:var(--d,0s)}
+@keyframes drop{from{opacity:0;transform:rotateX(70deg) translateY(-20px)}}
+.ex.rv-in .reqs li{animation:slidein .5s cubic-bezier(.2,.7,.2,1) both}
+.ex.rv-in .reqs li:nth-child(2){animation-delay:.06s}.ex.rv-in .reqs li:nth-child(3){animation-delay:.12s}.ex.rv-in .reqs li:nth-child(4){animation-delay:.18s}.ex.rv-in .reqs li:nth-child(5){animation-delay:.24s}.ex.rv-in .reqs li:nth-child(6){animation-delay:.3s}
+@keyframes slidein{from{opacity:0;transform:translateX(-16px)}}
+.land{animation:land 1.3s ease-out .45s}
+@keyframes land{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 55%,transparent)}100%{box-shadow:0 0 0 22px color-mix(in srgb,var(--accent) 0%,transparent)}}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}.hero-txt,.scene3d,.hero::after{transform:none!important;opacity:1!important}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#start"><i></i><span>Singleton Lab</span></a>
+    <nav class="toc" id="toc" aria-label="Lab parts">
+      <span class="ind" id="toc-ind" aria-hidden="true"></span>
+      <a href="#recap" style="--tc:var(--sky)" data-name="Part A · Recap">A · Recap</a><a href="#warmup" style="--tc:var(--butter)" data-name="Part B · Warm-up · 15 min">B · Warm-up</a><a href="#exercises" style="--tc:var(--sage)" data-name="Part C · Exercises · 55 min">C · Exercises</a><a href="#wrapup" style="--tc:var(--blush)" data-name="Part D · Wrap-up · 5 min">D · Wrap-up</a>
+    </nav>
+    <button class="timer" id="timer" type="button" title="75-minute hands-on timer"><span class="tdot"></span><span id="tval">75:00</span></button>
+    <div class="prog" title="Your progress, saved in this browser"><span class="bar"><i id="pbar"></i></span><span id="ptxt">0%</span></div>
+    <button class="iconbtn" id="theme" type="button" aria-label="Switch between light and dark theme"><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 2a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
+  </div>
+  <span class="readbar" aria-hidden="true"></span>
+</header>
+
+<nav class="rail" id="rail" aria-label="Jump to a station">
+  <span class="fill" aria-hidden="true"></span>
+  <a href="#recap" style="--rc:var(--sky-2)"><span>Recap</span><i></i></a>
+  <a href="#sheet" style="--rc:var(--sky-2)"><span>Revision sheet</span><i></i></a>
+  <a href="#warmup" style="--rc:var(--butter-2)"><span>Warm-up</span><i></i></a>
+  <a href="#ex1" style="--rc:var(--sage-2)"><span>Ex 1 · Eager</span><i></i></a>
+  <a href="#ex2" style="--rc:var(--sage-2)"><span>Ex 2 · Lazy</span><i></i></a>
+  <a href="#ex3" style="--rc:var(--sage-2)"><span>Ex 3 · Thread-safe</span><i></i></a>
+  <a href="#ex4" style="--rc:var(--sage-2)"><span>Ex 4 · Enum</span><i></i></a>
+  <a href="#wrapup" style="--rc:var(--blush-2)"><span>Wrap-up</span><i></i></a>
+</nav>
+
+<button class="totop" id="totop" type="button" aria-label="Back to top"><svg viewBox="0 0 50 50" aria-hidden="true"><circle class="bg" cx="25" cy="25" r="22"/><circle class="fg" cx="25" cy="25" r="22"/></svg><b aria-hidden="true">↑</b></button>
+<div class="toast" id="toast" role="status" aria-live="polite"><i></i><span></span></div>
+
+<section class="hero" id="start">
+  <div class="wrap">
+    <div class="hero-txt">
+      <div class="kicker">Software Design · Creational Patterns · Lab 5</div>
+      <h1>The <span>Singleton</span> Lab</h1>
+      <p class="lead">One class, one object, one shared access point. Revise the key ideas with simulators, then spend 75 minutes hands-on: five quick warm-ups and four coding exercises, from the basic singleton to the modern enum.</p>
+      <div class="chips"><span class="chip hot">⏱ 75 min hands-on</span><span class="chip">📖 15 min recap, also for revision</span><span class="chip">☕ JDK 25</span><span class="chip">💾 answers saved in this browser</span></div>
+      <div class="cta"><a class="btn pri" href="#recap">Start with the recap ↓</a><a class="btn soft" href="#plan">See the 75-minute plan</a></div>
+    </div>
+    <div class="scene3d" aria-hidden="true">
+      <div class="world">
+        <div class="halo"></div>
+        <div class="orbit">
+          <i class="beam" style="--a:0deg;--dl:0s"></i><i class="beam" style="--a:72deg;--dl:.5s"></i><i class="beam" style="--a:144deg;--dl:1s"></i><i class="beam" style="--a:216deg;--dl:1.5s"></i><i class="beam" style="--a:288deg;--dl:2s"></i>
+          <span class="cli" style="--a:0deg;--c:#d3e5f1">Menu</span><span class="cli" style="--a:72deg;--c:#d9e8d4">Editor</span><span class="cli" style="--a:144deg;--c:#f6ecc6">Logger</span><span class="cli" style="--a:216deg;--c:#f5dbd4">Report</span><span class="cli" style="--a:288deg;--c:#e3ddf1">Cart</span>
+        </div>
+        <div class="core"><i>INSTANCE</i><i>INSTANCE</i><i>getInstance()</i><i>getInstance()</i><i>1</i><i>1</i></div>
+        <div class="label3d">every caller gets the same object</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+  <nav class="road" aria-label="Lab roadmap">
+    <a class="stone st-a" href="#recap" data-p="0"><em>A</em><b>Recap</b><span>Key ideas, 4 simulators, revision sheet · ~15 min</span><span class="done" id="dA"></span></a>
+    <a class="stone st-b" href="#warmup" data-p="1"><em>B</em><b>Warm-up</b><span>5 quick activities · 15 min</span><span class="done" id="dB"></span></a>
+    <a class="stone st-c" href="#exercises" data-p="2"><em>C</em><b>Exercises</b><span>4 coding exercises · 55 min</span><span class="done" id="dC"></span></a>
+    <a class="stone st-d" href="#wrapup" data-p="3"><em>D</em><b>Wrap-up</b><span>Self-check, flashcards, submit · 5 min</span><span class="done" id="dD"></span></a>
+  </nav>
+
+  <div class="card" id="plan">
+    <div class="plan-h"><div><h3>Your 75-minute hands-on plan</h3><p class="foot" style="margin:2px 0 0">Start the timer when you begin the warm-up. Each bar fills as time passes, so you can see whether you are on pace.</p></div><div class="row" style="margin:0"><button class="btn sm pri" id="plan-go" type="button">▶ Start timer</button><button class="btn sm" id="plan-rst" type="button">↺ Reset</button></div></div>
+    <div class="segs" id="segs"></div>
+    <p class="foot" id="plan-say" aria-live="polite" style="margin-bottom:0"></p>
+  </div>
+
+  <div class="grid">
+    <div class="tile t-sage"><h4>🎯 By the end you can</h4><p>explain the Singleton; write eager and lazy versions; show a race condition and fix it; write an enum singleton and test it with virtual threads.</p></div>
+    <div class="tile t-sky"><h4>🛠 Before you start</h4><p>Check that <code>java -version</code> shows <b>25</b>. Create a folder <code>lab5-singleton</code>. Run each file with <code>java File.java</code>, no <code>javac</code> needed.</p></div>
+    <div class="tile t-butter"><h4>📌 How it works</h4><p>Warm-ups tell you <b>if</b> you are right, never the answer. Exercises have starter code with <code>TODO</code>s: you write the missing part, run it, and paste the output to check it.</p></div>
+  </div>
+
+  <!-- ================= A · RECAP ================= -->
+  <section class="part" id="recap">
+    <div class="part-head pa" data-big="A"><div class="n">A</div><div><small>Part A · ~15 minutes · revision</small><h2>Recap: what you need to know</h2><p>Read, play with the simulators, and come back here to revise. Every exercise uses these ideas.</p></div></div>
+
+    <div class="card">
+      <h3 style="margin-top:0">1. The idea</h3>
+      <div class="quote">"Ensure a class only has one instance, and provide a global point of access to it."<small>Gamma, Helm, Johnson &amp; Vlissides · Design Patterns (1994) · one of the five GoF creational patterns</small></div>
+      <p>Think of a football match: there is <b>one</b> scoreboard, and every player, referee and fan reads the <b>same</b> board. If everyone had their own scoreboard, they would soon disagree about the score.</p>
+      <h3>2. The three ingredients <span class="foot">(click the cards)</span></h3>
+      <div class="two">
+        <div class="flips" id="ingr"></div>
+        <div><div class="uml"><div class="hd">Singleton</div><div class="cmp"><u>- instance : Singleton</u><br>- data : String</div><div class="cmp">- Singleton()<br><u>+ getInstance() : Singleton</u><br>+ operation() : void</div></div><p class="foot">In UML, <u>underlined</u> members are <b>static</b>: they belong to the class, not to an object.</p></div>
+      </div>
+      <div class="remember"><b class="k">Remember</b><p><b>P·P·P</b>: <b>P</b>rivate constructor, <b>P</b>rivate static instance, <b>P</b>ublic static <code>getInstance()</code>.</p></div>
+    </div>
+
+    <div class="sim"><div class="sim-in">
+      <div class="sim-head"><h4><span class="live">SIMULATOR 1</span> new vs getInstance()</h4></div>
+      <p style="margin:0 0 6px;font-size:15px">Three parts of an app ask for the settings. Choose how they get them, then switch on dark mode in the Menu.</p>
+      <div class="row"><div class="seg" id="s1-mode"><button type="button" data-v="new" class="on">new Config()</button><button type="button" data-v="one">Config.getInstance()</button></div><button class="btn pri sm" id="s1-ask" type="button">▶ Each part asks for a Config</button><button class="btn sm" id="s1-dark" type="button">🌙 Dark mode in Menu</button><button class="btn sm" id="s1-rst" type="button">↺ Reset</button></div>
+      <div class="stage"><div class="clients" id="s1-cl"></div><div class="objs" id="s1-objs"></div></div>
+      <div class="say" id="s1-say" aria-live="polite"></div>
+    </div></div>
+
+    <div class="card">
+      <h3 style="margin-top:0">3. Eager or lazy? When is the object created?</h3>
+      <div class="grid"><div class="tile t-sky"><h4>Eager</h4><p>The field is <code>static final</code> and set immediately. The object is created when the JVM <b>initializes the class</b>, on its first use.</p></div><div class="tile t-lav"><h4>Lazy</h4><p>The field starts as <code>null</code>. The object is created on the first call to <code>getInstance()</code>, if it doesn't exist yet.</p></div></div>
+      <div class="remember"><b class="k">Remember</b><p>Eager = created when the <b>class</b> starts. Lazy = created when someone first <b>asks</b>.</p></div>
+    </div>
+
+    <div class="sim"><div class="sim-in">
+      <div class="sim-head"><h4><span class="live">SIMULATOR 2</span> Initialization timeline</h4><button class="btn pri sm" id="s2-next" type="button">Next event ▶</button><button class="btn sm" id="s2-rst" type="button">↺ Restart</button></div>
+      <div class="scroll"><div class="tl" id="s2"></div></div>
+      <div class="say" id="s2-say" aria-live="polite"></div>
+    </div></div>
+
+    <div class="card">
+      <h3 style="margin-top:0">4. The danger: two threads at the same time</h3>
+      <p>The lazy test <code>if (instance == null) instance = new X();</code> is <b>two steps</b>: check, then act. Another thread can run its own check in between, like two drivers who both see the same empty parking spot. In the simulator, <b>you are the scheduler</b>.</p>
+      <div class="remember"><b class="k">Remember</b><p>"Check, then act" is not atomic. Fix it with a lock, double-checked locking with <code>volatile</code>, the holder idiom, or an enum.</p></div>
+    </div>
+    <div class="sim"><div class="sim-in">
+      <div class="sim-head"><h4><span class="live">SIMULATOR 3</span> Who runs next?</h4></div>
+      <div class="row"><div class="seg" id="s3-impl"><button type="button" data-v="unsafe" class="on">Lazy, no lock</button><button type="button" data-v="sync">synchronized method</button><button type="button" data-v="dcl">Double-checked + volatile</button></div></div>
+      <div class="row"><button class="btn sm" id="s3-t1" type="button" style="background:var(--sky)">T1 step</button><button class="btn sm" id="s3-t2" type="button" style="background:var(--blush)">T2 step</button><button class="btn sm" id="s3-rand" type="button">🎲 Random step</button><button class="btn sm" id="s3-rst" type="button">↺ Reset</button></div>
+      <div class="lanes" id="s3-lanes"></div>
+      <div class="mem" id="s3-mem"></div>
+      <div class="say" id="s3-say" aria-live="polite"></div>
+    </div></div>
+
+    <div class="card">
+      <h3 style="margin-top:0">5. Six ways to write it <span class="foot">(turn the 3D carousel)</span></h3>
+      <div class="car"><div class="ring" id="ring"></div></div>
+      <div class="row" style="justify-content:center"><button class="btn sm" id="car-prev" type="button" aria-label="Previous">◀</button><span id="car-pos" style="font:700 14px var(--f-mono)"></span><button class="btn sm" id="car-next" type="button" aria-label="Next">▶</button></div>
+      <div class="car-detail" id="car-detail" aria-live="polite"></div>
+
+      <h3>6. Java 25 tools you will use</h3>
+      <div class="grid">
+        <div class="tile t-sky"><h4>☕ Single-file programs</h4><p><code>java File.java</code> compiles and runs one file. Java 25 also allows compact source files with <code>void main()</code> (JEP 512). This lab keeps the classic <code>public static void main(String[] args)</code>, which still works.</p></div>
+        <div class="tile t-lav"><h4>🧵 Virtual threads</h4><p>Very cheap threads: start thousands with <code>Executors.newVirtualThreadPerTaskExecutor()</code> inside a <code>try</code>-with-resources block. Closing it waits for all tasks. The exercises give you this code ready-made.</p></div>
+        <div class="tile t-sage"><h4>🔒 synchronized is fine again</h4><p>Since Java 24 (JEP 491), a virtual thread inside <code>synchronized</code> no longer blocks its carrier thread.</p></div>
+      </div>
+
+      <h3>7. Good use, bad use</h3>
+      <div class="grid">
+        <div class="tile t-sage"><h4>✔ Good candidates</h4><p>Something that exists once (the runtime, a device, a registry); stateless or immutable helpers; a shared thread-safe resource such as an ID generator.</p></div>
+        <div class="tile t-blush"><h4>✘ Warning signs</h4><p>Used only to avoid passing a parameter; holds mutable global state, so tests depend on each other; hides dependencies.</p></div>
+      </div>
+
+      <h3>8. Pitfalls</h3>
+      <div class="scroll"><table><tr><th>Mistake</th><th>Why it is a problem</th></tr>
+        <tr><td>Public constructor</td><td>Anyone can call <code>new</code>, so there can be many objects.</td></tr>
+        <tr><td>Lazy without synchronization</td><td>Two threads can both see <code>null</code> (simulator 3).</td></tr>
+        <tr><td>Double-checked locking without <code>volatile</code></td><td>Another thread may see a reference to a half-built object.</td></tr>
+        <tr><td><code>Serializable</code> without <code>readResolve()</code></td><td>Deserializing creates a second object.</td></tr>
+        <tr><td>Reflection</td><td><code>setAccessible(true)</code> can call a private constructor. Enums are protected.</td></tr></table></div>
+    </div>
+
+    <div class="card" id="sheet">
+      <h3 style="margin-top:0">9. Revision sheet: the whole recap on one screen</h3>
+      <p class="foot" style="margin-top:0">Come back here before a test. If a line feels unclear, scroll up to its section.</p>
+      <div class="sheet">
+        <div class="item" style="--ic:var(--sky-2)"><h4><i>1</i>Definition</h4><ul><li>Creational GoF pattern.</li><li>One instance per class.</li><li>One global access point.</li></ul></div>
+        <div class="item" style="--ic:var(--sage-2)"><h4><i>2</i>Ingredients</h4><div class="mn"><span><b>P</b>rivate constructor</span><span><b>P</b>rivate static field</span><span><b>P</b>ublic static getInstance()</span></div></div>
+        <div class="item" style="--ic:var(--butter-2)"><h4><i>3</i>Eager vs lazy</h4><ul><li><b>Eager</b>: <code>static final</code>, created when the class initializes. Thread-safe for free.</li><li><b>Lazy</b>: starts <code>null</code>, created on first <code>getInstance()</code>. Needs care with threads.</li></ul></div>
+        <div class="item" style="--ic:var(--blush-2)"><h4><i>4</i>Threads</h4><ul><li>Race: two threads see <code>null</code> and both create.</li><li>DCL: check, lock, check <b>again</b>, create.</li><li><code>volatile</code>: no thread sees a half-built object.</li></ul></div>
+        <div class="item wide" style="--ic:var(--lav-2)"><h4><i>5</i>The six implementations</h4>
+          <div class="scroll"><table><tr><th>Implementation</th><th>Thread-safe</th><th>Lazy</th><th>Remember</th></tr>
+            <tr><td>Eager <code>static final</code></td><td class="y">✓</td><td class="m">on class init</td><td>Simplest correct choice</td></tr>
+            <tr><td>Lazy, no lock</td><td class="n">✗</td><td class="y">✓</td><td>Single-threaded code only</td></tr>
+            <tr><td><code>synchronized</code> method</td><td class="y">✓</td><td class="y">✓</td><td>Lock on every call</td></tr>
+            <tr><td>Double-checked locking</td><td class="y">✓</td><td class="y">✓</td><td>Field must be <code>volatile</code></td></tr>
+            <tr><td>Holder idiom</td><td class="y">✓</td><td class="y">✓</td><td>Nested static class, no lock</td></tr>
+            <tr><td><code>enum</code></td><td class="y">✓</td><td class="m">on class init</td><td>Best overall; safe from reflection and serialization; can't extend a class</td></tr></table></div></div>
+        <div class="item" style="--ic:var(--sky-2)"><h4><i>6</i>Java 25</h4><ul><li><code>java File.java</code> runs one file.</li><li>Virtual threads test thread safety cheaply.</li><li><code>AtomicLong</code> makes <code>++</code> atomic.</li></ul></div>
+        <div class="item" style="--ic:var(--sage-2)"><h4><i>7</i>Use it when…</h4><ul><li>The thing truly exists once.</li><li>It is stateless, immutable or thread-safe.</li><li><b>Not</b> to avoid passing parameters.</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= B · WARM-UP ================= -->
+  <section class="part" id="warmup">
+    <div class="part-head pb" data-big="B"><div class="n">B</div><div><small>Part B · 15 minutes · start the timer</small><h2>Warm-up</h2><p>Five quick activities, about 3 minutes each. Press <b>Check</b>: you see what is right or wrong, never the answer.</p></div></div>
+
+    <div class="wu w-sky" id="w1"><div class="wu-h"><span class="tag">W1</span><h4>True or false?</h4><span class="mins">3 min</span><span class="st"></span></div><div class="body"></div><div class="row"><button class="btn pri sm chk" type="button">Check</button></div></div>
+    <div class="wu w-butter" id="w2"><div class="wu-h"><span class="tag">W2</span><h4>Fill in the blanks: complete the eager singleton</h4><span class="mins">2 min</span><span class="st"></span></div><div class="body"></div><div class="row"><button class="btn pri sm chk" type="button">Check</button></div></div>
+    <div class="wu w-blush" id="w3"><div class="wu-h"><span class="tag">W3</span><h4>Spot the bug: click the line with the problem</h4><span class="mins">4 min</span><span class="st"></span></div><div class="body"></div></div>
+    <div class="wu w-lav" id="w4"><div class="wu-h"><span class="tag">W4</span><h4>Predict the output</h4><span class="mins">3 min</span><span class="st"></span></div><div class="body"></div><div class="row"><button class="btn pri sm chk" type="button">Check</button></div></div>
+    <div class="wu w-sage" id="w5"><div class="wu-h"><span class="tag">W5</span><h4>Match the terms: click a term, then its meaning</h4><span class="mins">3 min</span><span class="st"></span></div><div class="body"></div></div>
+  </section>
+
+  <!-- ================= C · EXERCISES ================= -->
+  <section class="part" id="exercises">
+    <div class="part-head pc" data-big="C"><div class="n">C</div><div><small>Part C · 55 minutes</small><h2>Four exercises: you write the code</h2><p>Basic → lazy → thread-safe → modern best practice. Copy the starter code, fill in every <code>TODO</code>, run it, then paste the output here to check it.</p></div></div>
+    <div id="ex-list"></div>
+  </section>
+
+  <!-- ================= D · WRAP-UP ================= -->
+  <section class="part" id="wrapup">
+    <div class="part-head pd" data-big="D"><div class="n">D</div><div><small>Part D · 5 minutes · and later for revision</small><h2>Wrap-up</h2><p>Check your progress, write two sentences, submit. Use the flashcards to revise before the test.</p></div></div>
+    <div class="card">
+      <div class="two">
+        <div><h3 style="margin-top:0">Self-check: can you…</h3><div class="scroll"><table class="rubric" id="rubric"></table></div></div>
+        <div style="text-align:center"><div class="badge3d" id="badge">0%</div><p class="foot" id="badge-t">Your progress</p></div>
+      </div>
+      <h3>Reflection</h3>
+      <p>In 2–3 sentences: which implementation would you choose by default in a new project, and why?</p>
+      <textarea id="refl" data-save="refl" aria-label="Your reflection"></textarea>
+      <div class="grid" style="margin-top:14px">
+        <div class="tile t-sky"><h4>📦 What to submit</h4><p><code>ConfigurationManager.java</code>, <code>DatabaseConnectionManager.java</code>, <code>LoggerRace.java</code>, <code>IdGeneratorDemo.java</code>, and your answers. Each file must run with <code>java File.java</code> on JDK 25.</p></div>
+        <div class="tile t-lav"><h4>🚀 Going further (at home)</h4><p>Rewrite Exercise 2 with the <b>holder idiom</b>. Make <code>ConfigurationManager</code> <code>Serializable</code>, serialize and deserialize it: is it still the same object? How do you fix it?</p></div>
+      </div>
+      <div class="row" style="margin-top:14px"><button class="btn pri" id="copy-all" type="button">📋 Copy all my answers</button><span class="foot" id="copy-msg">Paste them into your submission document.</span></div>
+      <textarea id="copy-box" class="mono" hidden readonly aria-label="All your answers"></textarea>
+    </div>
+
+    <div class="card" id="cards">
+      <h3 style="margin-top:0">Revision flashcards</h3>
+      <p class="foot" style="margin-top:0">Read the question, answer in your head, flip the card. Keep going until every square is green.</p>
+      <div class="deck">
+        <button class="fc" id="fc" type="button" aria-label="Flip the card"><div class="in"><div class="face front"><small id="fc-n"></small><h4 id="fc-q"></h4><span class="foot">↻ Click or press space to flip</span></div><div class="face back"><small>Answer</small><div id="fc-a"></div></div></div></button>
+        <div>
+          <div class="row" style="margin-top:0"><button class="btn sm" id="fc-again" type="button" style="background:var(--blush)">↺ Review again</button><button class="btn sm" id="fc-knew" type="button" style="background:var(--sage)">✓ I knew it</button></div>
+          <div class="dots" id="fc-dots" aria-hidden="true"></div>
+          <p class="foot" id="fc-say" aria-live="polite"></p>
+          <button class="btn sm" id="fc-reset" type="button">Shuffle and restart</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>Singleton Lab · Software Design · Java 25 · Your answers are saved only in this browser.<br>Shortcuts: <kbd>N</kbd> next part · <kbd>P</kbd> previous part</footer>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const store={get(k,d){try{const v=localStorage.getItem('sglab2:'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('sglab2:'+k,JSON.stringify(v))}catch(e){}}};
+
+/* ---------- code highlighter ---------- */
+const KW=new Set('abstract boolean catch class else enum extends final for if implements import int interface long new private protected public return static synchronized this throw throws try var void volatile null true false'.split(' '));
+function hl(src){return src.split('\n').map(line=>{const ci=line.indexOf('//');let code=ci>=0?line.slice(0,ci):line,com=ci>=0?line.slice(ci):'';
+  let h=esc(code).replace(/("(?:[^"\\]|\\.)*")|\b([A-Za-z_]\w*)\b/g,(m,s,w)=>s?`<span class="s">${s}</span>`:KW.has(w)?`<span class="k">${w}</span>`:/^[A-Z]/.test(w)&&w!==w.toUpperCase()?`<span class="t">${w}</span>`:w);
+  if(com)h+=/TODO/.test(com)?`<span class="todo">${esc(com)}</span>`:`<span class="c">${esc(com)}</span>`;return h}).join('\n')}
+function codeBlock(pre,src){pre.innerHTML=hl(src);const b=document.createElement('button');b.className='copy';b.type='button';b.textContent='Copy';
+  b.onclick=()=>{const done=()=>{b.textContent='Copied ✓';setTimeout(()=>b.textContent='Copy',1400)};try{navigator.clipboard.writeText(src).then(done,()=>sel(pre))}catch(e){sel(pre)}};pre.append(b)}
+function sel(el){const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r)}
+
+/* ---------- progress ---------- */
+const PROG={};function mark(k,v){if(PROG[k]===v)return;PROG[k]=v;store.set('p:'+k,v);updProg()}
+const PKEYS=[];function track(k){PKEYS.push(k);PROG[k]=store.get('p:'+k,false)}
+function updProg(){const d=PKEYS.filter(k=>PROG[k]).length,p=Math.round(d/PKEYS.length*100);$('#pbar').style.width=p+'%';$('#ptxt').textContent=p+'%';
+  const b=$('#badge');if(b){b.textContent=p+'%';$('#badge-t').textContent=p===100?'Lab complete! 🎉':`${d} of ${PKEYS.length} steps done`}
+  const part=pre=>{const ks=PKEYS.filter(k=>k.startsWith(pre)),n=ks.filter(k=>PROG[k]).length;return ks.length?`${n}/${ks.length} done`:''};
+  $('#dA').textContent=part('A');$('#dB').textContent=part('W');$('#dC').textContent=part('E');$('#dD').textContent=part('D');renderRubric()}
+
+/* ================= A · RECAP ================= */
+$('#ingr').innerHTML=[['f1','1','Private constructor','<code>private Config() { }</code><br>No other class can write <code>new Config()</code>. Only the class itself can create the object.'],
+ ['f2','2','Private static instance','A field that holds the one object. <code>static</code> means one copy, owned by the class.'],
+ ['f3','3','Public static access','A method, usually <code>getInstance()</code>, returns the instance. It is the global access point.']]
+ .map(r=>`<button type="button" class="flip ${r[0]}" aria-pressed="false" aria-label="${r[2]}: show details"><div class="in"><div class="face front"><span class="big">${r[1]}</span><h4>${r[2]}</h4><span class="h">↻ Click to flip</span></div><div class="face back"><h4>${r[2]}</h4><div>${r[3]}</div></div></div></button>`).join('');
+$$('.flip').forEach(f=>f.onclick=()=>{f.classList.toggle('on');f.setAttribute('aria-pressed',f.classList.contains('on'));mark('A-flip',true)});
+track('A-flip');
+
+/* S1 */
+(()=>{const C=['Menu','Editor','Toolbar'];let mode='new',asked=false,dark=false;
+ const cube=(l,big,dk)=>`<div class="cube${big?' big':''}${dk?' dark':''}"><i>${l}</i><i>${l}</i><i></i><i></i><i></i><i></i></div>`;
+ function draw(){const objs=!asked?0:mode==='new'?3:1;
+  $('#s1-cl').innerHTML=C.map((c,i)=>{const dk=dark&&(mode==='one'||i===0);return`<div class="client${dk?' dark':''}"><b>${c}</b><small>${asked?(mode==='new'?'→ Config #'+(i+1):'→ Config #1'):'no Config yet'}</small><br><small>${dk?'🌙 dark':'☀️ light'}</small></div>`}).join('');
+  $('#s1-objs').innerHTML=!asked?'<span class="foot">No object yet.</span>':mode==='new'?C.map((c,i)=>`<div class="objw popin" style="animation-delay:${i*.12}s">${cube('#'+(i+1),false,dark&&i===0)}Config #${i+1}</div>`).join(''):`<div class="objw popin">${cube('#1',true,dark)}the only Config</div>`;
+  $('#s1-dark').disabled=!asked;
+  $('#s1-say').innerHTML=!asked?'Pick a mode, then ask.':`<span class="count">objects created: ${objs}</span> · ${dark?(mode==='new'?'Only the Menu turned dark: the other parts hold <b>different</b> objects.':'Every part turned dark: they all share <b>one</b> object.'):(mode==='new'?'Each <code>new</code> made another object.':'All three parts got the <b>same</b> object.')}`}
+ $$('#s1-mode button').forEach(b=>b.onclick=()=>{mode=b.dataset.v;$$('#s1-mode button').forEach(x=>x.classList.toggle('on',x===b));asked=false;dark=false;draw()});
+ $('#s1-ask').onclick=()=>{asked=true;dark=false;draw()};$('#s1-dark').onclick=()=>{dark=true;draw();mark('A-s1',true)};$('#s1-rst').onclick=()=>{asked=false;dark=false;draw()};draw()})();
+track('A-s1');
+
+/* S2 */
+(()=>{const EV=['main() starts','Config.version() (first use of the class)','getInstance() #1','getInstance() #2'];
+ const EAGER=['–','object created','returns it','returns it'],LAZY=['–','–','object created','returns it'];
+ const SAY=['The program starts. No class is initialized yet, so neither version has an object.','The class is used for the first time, so the JVM initializes it. <b>Eager</b> creates its object now. <b>Lazy</b> only sets its field to <code>null</code>.','First call to <code>getInstance()</code>. <b>Lazy</b> creates its object now. <b>Eager</b> returns the one it already has.','Second call: both return the existing object. Nothing new is created.'];let k=-1;
+ function draw(){let s='<div></div>'+EV.map((e,i)=>`<div class="hd">${i+1}. ${e}</div>`).join('');
+  for(const[n,row]of[['Eager',EAGER],['Lazy',LAZY]]){s+=`<div class="who">${n}</div>`+row.map((x,i)=>`<div class="slot${i===k?' now':''}${i<=k&&x==='object created'?' made popin':''}${i<=k&&x==='returns it'?' used':''}"><span class="ev">${i<=k?x:''}</span></div>`).join('')}
+  $('#s2').innerHTML=s;$('#s2-say').innerHTML=k<0?'Press <b>Next event</b> to run the program step by step.':SAY[k];$('#s2-next').disabled=k>=EV.length-1;if(k===EV.length-1)mark('A-s2',true)}
+ $('#s2-next').onclick=()=>{k++;draw()};$('#s2-rst').onclick=()=>{k=-1;draw()};draw()})();
+track('A-s2');
+
+/* S3 race */
+(()=>{const M={
+ unsafe:[{l:'read instance',run:(S,t)=>{t.saw=S.inst}},{l:'if null: new Config()',run:(S,t)=>{if(t.saw)return 3;t.obj=++S.made}},{l:'write instance',run:(S,t)=>{S.inst=t.obj;t.saw=t.obj}},{l:'return',run:(S,t)=>{t.res=t.saw}}],
+ sync:[{l:'lock',block:(S,t)=>S.lock&&S.lock!==t.n,run:(S,t)=>{S.lock=t.n}},{l:'read instance',run:(S,t)=>{t.saw=S.inst}},{l:'if null: new Config()',run:(S,t)=>{if(t.saw)return 4;t.obj=++S.made}},{l:'write instance',run:(S,t)=>{S.inst=t.obj;t.saw=t.obj}},{l:'unlock',run:S=>{S.lock=null}},{l:'return',run:(S,t)=>{t.res=t.saw}}],
+ dcl:[{l:'1st check',run:(S,t)=>{t.saw=S.inst;if(t.saw)return 6}},{l:'lock',block:(S,t)=>S.lock&&S.lock!==t.n,run:(S,t)=>{S.lock=t.n}},{l:'2nd check',run:(S,t)=>{t.saw=S.inst;if(t.saw)return 5}},{l:'new Config()',run:(S,t)=>{t.obj=++S.made}},{l:'write (volatile)',run:(S,t)=>{S.inst=t.obj;t.saw=t.obj}},{l:'unlock',run:S=>{S.lock=null}},{l:'return',run:(S,t)=>{t.res=t.saw}}]};
+ let key='unsafe',S,T;const C={T1:'var(--sky-2)',T2:'var(--blush-2)'};
+ function reset(){S={inst:null,made:0,lock:null};T=[{n:'T1',pc:0,trail:[]},{n:'T2',pc:0,trail:[]}];draw();$('#s3-say').innerHTML='Choose who runs. For the unsafe version, try letting <b>both</b> threads read before either one writes.'}
+ const done=t=>t.res!==undefined;
+ function draw(bl){const ops=M[key];$('#s3-lanes').innerHTML=T.map(t=>`<div class="lane" style="--c:${C[t.n]}"><div class="who" style="background:${C[t.n]}">${t.n}</div><div class="ops">${ops.map((o,i)=>`<span class="op ${t.trail[i]||''}${!done(t)&&i===t.pc?' cur':''}${bl===t.n&&i===t.pc?' blocked':''}">${o.l}</span>`).join('')}${done(t)?`<span class="op done">→ Config #${t.res}</span>`:''}</div></div>`).join('');
+  $('#s3-mem').innerHTML=`<div class="cell"><small>instance</small><b>${S.inst?'Config #'+S.inst:'null'}</b></div><div class="cell"><small>objects created</small><b>${S.made}</b></div><div class="cell"><small>lock</small><b>${key==='unsafe'?'none':S.lock||'free'}</b></div>`;
+  ['#s3-t1','#s3-t2'].forEach((id,i)=>$(id).disabled=done(T[i]));$('#s3-rand').disabled=T.every(done)}
+ function step(t){if(done(t))return;const op=M[key][t.pc];if(op.block&&op.block(S,t)){draw(t.n);$('#s3-say').innerHTML=`<b>${t.n} must wait:</b> the other thread holds the lock.`;return}
+  const from=t.pc,nx=op.run(S,t),to=nx===undefined?t.pc+1:nx;for(let k=from+1;k<to;k++)t.trail[k]='skip';t.trail[from]='done';t.pc=to;draw();
+  if(T.every(done)){const two=S.made>1;$('#s3-say').innerHTML=two?`<b class="n">✗ ${S.made} objects were created!</b> The singleton is broken. Now try the same order with another implementation.`:`<b class="y">✓ One object.</b> Both threads got Config #${S.inst}.${key==='unsafe'?' The order was lucky this time: try another order.':''}`;if(two&&key==='unsafe')mark('A-s3',true)}
+  else $('#s3-say').innerHTML=`${t.n} ran <b>${M[key][from].l}</b>. ${op.l.startsWith('read')||op.l.includes('check')?(t.saw?'It saw an existing object.':'It saw <code>null</code>.'):''}`}
+ $('#s3-t1').onclick=()=>step(T[0]);$('#s3-t2').onclick=()=>step(T[1]);
+ $('#s3-rand').onclick=()=>{const r=T.filter(t=>!done(t)&&!(M[key][t.pc].block&&M[key][t.pc].block(S,t)));if(r.length)step(r[Math.floor(Math.random()*r.length)])};
+ $('#s3-rst').onclick=reset;$$('#s3-impl button').forEach(b=>b.onclick=()=>{key=b.dataset.v;$$('#s3-impl button').forEach(x=>x.classList.toggle('on',x===b));reset()});reset()})();
+track('A-s3');
+
+/* carousel */
+(()=>{const V=[['Eager static final','Simple and correct','#d3e5f1','The object is created when the class is initialized. Usually lazy enough, because the JVM initializes a class on its first use.',[['y','thread-safe'],['y','no lock'],['m','created on class init']]],
+ ['Lazy, no synchronization','Broken under threads','#f5dbd4','Check-then-act: two threads can both see null and both create an object. Only for strictly single-threaded code.',[['n','NOT thread-safe'],['y','lazy']]],
+ ['synchronized method','Correct, a bit slower','#f6ecc6','Every call takes the lock, even after the object exists. Fine for low traffic.',[['y','thread-safe'],['y','lazy'],['m','lock on every call']]],
+ ['Double-checked locking','Correct only with volatile','#e3ddf1','Takes the lock only while creating. Needs a volatile field, so no thread sees a half-built object.',[['y','thread-safe'],['y','lazy'],['m','easy to get wrong']]],
+ ['Holder idiom','Lazy and lock-free','#d9e8d4','A nested static class holds the instance. The JVM initializes it on first use, safely and only once.',[['y','thread-safe'],['y','lazy'],['y','no lock']]],
+ ['enum','Best overall','#f1e2c9','A single-element enum. The JVM guarantees one instance and blocks reflection and serialization attacks.',[['y','thread-safe'],['y','reflection-proof'],['y','serialization-proof'],['m','no superclass']]]];
+ const N=V.length,R=230;let cur=0;const ring=$('#ring');
+ ring.innerHTML=V.map((v,i)=>`<button type="button" class="panel3d" data-i="${i}" style="--pc:${v[2]};transform:rotateY(${i*360/N}deg) translateZ(${R}px)"><small>${i+1} of 6</small><h4>${v[0]}</h4><span class="v">${v[1]}</span></button>`).join('');
+ ring.querySelectorAll('.panel3d').forEach(b=>b.onclick=()=>go(+b.dataset.i));
+ function go(i){cur=(i+N)%N;ring.style.transform=`translateZ(-${R}px) rotateY(${-cur*360/N}deg)`;ring.querySelectorAll('.panel3d').forEach((p,j)=>{p.classList.toggle('dim',j!==cur);p.tabIndex=j===cur?0:-1});$('#car-pos').textContent=`${cur+1} / ${N}`;
+  const v=V[cur],d=$('#car-detail');d.style.animation='none';void d.offsetWidth;d.style.animation='';d.innerHTML=`<h4>${v[0]}</h4><p style="margin:0">${v[3]}</p><div class="props">${v[4].map(p=>`<span class="${p[0]}">${p[0]==='y'?'✓':p[0]==='n'?'✗':'~'} ${p[1]}</span>`).join('')}</div>`;if(cur===N-1)mark('A-car',true)}
+ $('#car-prev').onclick=()=>go(cur-1);$('#car-next').onclick=()=>go(cur+1);go(0)})();
+track('A-car');
+
+/* ================= B · WARM-UP ================= */
+function wuStatus(id,ok,txt){const st=$(`#${id} .st`);st.textContent=txt;st.classList.toggle('ok',ok);if(ok)mark('W-'+id,true)}
+function choiceList(id,items){const root=$(`#${id} .body`),pick=store.get(id,{});
+ root.innerHTML=items.map((it,i)=>`<div class="q${it.o.length>2?' col':''}" data-i="${i}"><div>${i+1}. ${it.q}</div><div class="opts">${it.o.map((o,j)=>`<button type="button" class="opt${pick[i]===j?' sel':''}" data-j="${j}">${o}</button>`).join('')}<span class="fb"></span></div></div>`).join('');
+ root.querySelectorAll('.q').forEach(q=>q.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{q.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel','good','bad'));b.classList.add('sel');q.querySelector('.fb').textContent='';pick[q.dataset.i]=+b.dataset.j;store.set(id,pick)}));
+ $(`#${id} .chk`).onclick=()=>{let ok=0;root.querySelectorAll('.q').forEach((q,i)=>{const s=q.querySelector('.opt.sel'),fb=q.querySelector('.fb');if(!s){fb.textContent='choose an answer';fb.className='fb no';return}
+   const g=+s.dataset.j===items[i].a;if(g)ok++;s.classList.remove('good','bad');s.classList.add(g?'good':'bad');fb.textContent=g?'✓ correct':'✗ try again';fb.className='fb '+(g?'ok':'no');if(!g){q.classList.remove('shake');void q.offsetWidth;q.classList.add('shake')}});
+   wuStatus(id,ok===items.length,`${ok} / ${items.length} correct`)}}
+choiceList('w1',[['Singleton is a creational design pattern from the GoF book.',0],['A singleton class usually has a public constructor.',1],['A <code>static</code> field belongs to the class, not to each object.',0],['An eager singleton creates its instance on the first call to <code>getInstance()</code>.',1],['The lazy, unsynchronized singleton is safe when many threads use it.',1],['An enum with one constant can be used as a singleton.',0]].map(x=>({q:x[0],o:['True','False'],a:x[1]})));
+
+/* W2 blanks */
+(()=>{const B=[['static',['public','static','void']],['INSTANCE',['Settings','INSTANCE','new']],['private',['public','private','protected']],['getInstance',['new','main','getInstance']]];const v=store.get('w2',{});
+ const s=i=>`<select data-b="${i}" aria-label="blank ${i+1}"><option value="">  ?  </option>${shuffle(B[i][1]).map(o=>`<option${v[i]===o?' selected':''}>${o}</option>`).join('')}</select>`;
+ $('#w2 .body').innerHTML=`<pre class="code blank-code">${hl('public final class Settings {')}
+    ${hl('private')} ${s(0)} ${hl('final Settings')} ${s(1)} ${hl('= new Settings();')}
+    ${s(2)} ${hl('Settings() { }')}
+    ${hl('public static Settings')} ${s(3)}${hl('() { return INSTANCE; }')}
+}</pre>`;
+ const ss=$$('#w2 select');ss.forEach(x=>x.onchange=()=>{x.classList.remove('good','bad');v[x.dataset.b]=x.value;store.set('w2',v)});
+ $('#w2 .chk').onclick=()=>{let ok=0;ss.forEach(x=>{const g=x.value===B[+x.dataset.b][0];x.classList.toggle('good',g);x.classList.toggle('bad',!g);if(g)ok++});wuStatus('w2',ok===4,`${ok} / 4 blanks correct`)}})();
+
+/* W3 spot the bug */
+(()=>{const SN=[['Snippet A',['public class Printer {','    private static final Printer INSTANCE = new Printer();','    public Printer() { }','    public static Printer getInstance() {','        return INSTANCE;','    }','}'],2],
+ ['Snippet B (used by a thread pool)',['private static Cache instance;','public static Cache getInstance() {','    if (instance == null) {','        instance = new Cache();','    }','    return instance;','}'],2]];const found=store.get('w3',{});
+ $('#w3 .body').innerHTML=`<div class="grid">${SN.map((s,k)=>`<div><div class="lbl">${s[0]}</div><pre class="code" data-k="${k}">${s[1].map((l,i)=>`<span class="cl" data-i="${i}" tabindex="0" role="button">${hl(l)||' '}</span>`).join('')}</pre><div class="fb" data-k="${k}"></div><textarea data-save="w3-${k}" placeholder="Explain the problem in one sentence…" aria-label="Explain the bug in ${s[0]}" style="min-height:60px"></textarea></div>`).join('')}</div>`;
+ function upd(){const n=Object.keys(found).length;wuStatus('w3',n===2,`${n} / 2 bugs found`)}
+ $$('#w3 pre').forEach(pre=>{const k=+pre.dataset.k;pre.querySelectorAll('.cl').forEach(c=>{const act=()=>{pre.querySelectorAll('.cl').forEach(x=>x.classList.remove('pick-ok','pick-no'));const g=+c.dataset.i===SN[k][2];c.classList.add(g?'pick-ok':'pick-no');
+   const fb=$(`#w3 .fb[data-k="${k}"]`);fb.textContent=g?'✓ That is the line. Now explain why below.':'✗ Not this line. Look again.';fb.className='fb '+(g?'ok':'no');if(g){found[k]=1;store.set('w3',found)}upd()};c.onclick=act;c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act()}}});
+  if(found[k])pre.querySelector(`.cl[data-i="${SN[k][2]}"]`).classList.add('pick-ok')});if(Object.keys(found).length)upd()})();
+
+/* W4 predict */
+(()=>{const src=`public class W4 {
+  static class Counter {
+    private static final Counter INSTANCE = new Counter();
+    private int value;
+    private Counter() { System.out.println("Counter created"); }
+    static Counter getInstance() { return INSTANCE; }
+    int next() { return ++value; }
+  }
+  public static void main(String[] args) {
+    System.out.println("start");
+    Counter a = Counter.getInstance();
+    Counter b = Counter.getInstance();
+    a.next();
+    b.next();
+    System.out.println(a.next());
+    System.out.println(a == b);
+  }
+}`;const H=[109757538,-598315868,51,3569038];
+ const hash=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))|0;return h};
+ $('#w4 .body').innerHTML=`<div class="two"><pre class="code" id="w4-src"></pre><div><div class="lbl" style="margin-top:0">Your prediction, one line per output line</div><textarea id="w4-in" class="mono" data-save="w4" rows="5" placeholder="line 1&#10;line 2&#10;…" aria-label="Your predicted output"></textarea><div id="w4-fb"></div><details class="hint"><summary>💡 Hint</summary>A class is initialized on its <b>first use</b>, not when the program starts.</details></div></div>`;
+ $('#w4-src').innerHTML=hl(src);
+ $('#w4 .chk').onclick=()=>{const L=$('#w4-in').value.trim().split('\n').map(x=>x.trim()).filter(Boolean);let ok=0;const marks=H.map((h,i)=>{const g=L[i]!==undefined&&hash(L[i])===h;if(g)ok++;return`<span class="${g?'y':'n'}">line ${i+1} ${g?'✓':'✗'}</span>`});
+   const extra=L.length>4?` · <span class="n">${L.length-4} extra line(s)</span>`:'';const all=ok===4&&L.length===4;
+   $('#w4-fb').innerHTML=`<div class="result ${all?'ok':'warn'}">${marks.join(' · ')}${extra}</div>`;wuStatus('w4',all,`${ok} / 4 lines correct`)}})();
+
+/* W5 match */
+(()=>{const P=[['private constructor','stops other classes from calling new'],['static field','one copy shared by the whole class'],['eager initialization','the object is created when the class is initialized'],['lazy initialization','the object is created on the first call to getInstance()'],['race condition','two threads can create two objects'],['volatile','makes a write visible to all threads in the right order']];
+ const root=$('#w5 .body');root.innerHTML='<div class="match"><div class="col mt"></div><div class="col md"></div></div>';let sel=null,found=0,tries=0;
+ root.querySelector('.mt').innerHTML=shuffle(P).map(p=>`<button type="button" class="mb" data-k="${esc(p[0])}">${esc(p[0])}</button>`).join('');root.querySelector('.md').innerHTML=shuffle(P).map(p=>`<button type="button" class="mb" data-k="${esc(p[0])}">${esc(p[1])}</button>`).join('');
+ const upd=()=>wuStatus('w5',found===P.length,`${found} / ${P.length} matched · ${tries} tries`);
+ root.querySelectorAll('.mt .mb').forEach(b=>b.onclick=()=>{if(b.disabled)return;root.querySelectorAll('.mt .mb').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');sel=b});
+ root.querySelectorAll('.md .mb').forEach(b=>b.onclick=()=>{if(!sel||b.disabled)return;tries++;if(b.dataset.k===sel.dataset.k){[b,sel].forEach(x=>{x.classList.remove('sel');x.classList.add('ok');x.disabled=true});sel=null;found++}else{b.classList.add('bad','shake');setTimeout(()=>b.classList.remove('bad','shake'),500)}upd()});
+ if(store.get('p:W-w5',false))wuStatus('w5',true,'done earlier · play again any time');})();
+['w1','w2','w3','w4','w5'].forEach(w=>track('W-'+w));
+
+/* ================= C · EXERCISES ================= */
+const norm=t=>t.replace(/\r/g,'').split('\n').map(x=>x.trim()).filter(Boolean);
+const exactCheck=exp=>t=>{const L=norm(t),E=norm(exp);if(!L.length)return{ok:false,msg:'Paste the output of your program first.'};
+ const bad=E.map((e,i)=>L[i]===e?null:i+1).filter(Boolean);const ok=!bad.length&&L.length===E.length;
+ return{ok,msg:ok?'✓ Your output matches the expected output.':`✗ Not yet: ${bad.length?'line'+(bad.length>1?'s ':' ')+bad.join(', ')+' differ'+(bad.length>1?'':'s'):''}${L.length>E.length?(bad.length?', and ':'')+'there are extra lines':''}. Compare carefully: spelling, spaces and the order of lines matter.`}};
+const EX=[
+ {id:1,cls:'e1',lvl:'Level 1 · Easy',you:'you write ~6 lines',t:'Exercise 1: A basic eager Singleton',time:'10 min',
+  scen:'Your application needs one configuration manager. Every part of the application must use the <b>same</b> instance.',
+  reqs:['Create a class <code>ConfigurationManager</code> with a <code>private</code> constructor.','Add a <code>private static final</code> field that holds the one instance, created on the same line.','Add a <code>public static</code> method <code>getInstance()</code> that returns it.','Add <code>getApplicationName()</code>, which returns <code>"My Java Application"</code>.','In <code>main()</code>, get two references, print the name, then print <code>ref1 == ref2</code>.'],
+  starter:`public class ConfigurationManager {
+    // TODO 1: the single instance (private static final)
+    // TODO 2: the private constructor
+    // TODO 3: public static getInstance()
+    // TODO 4: getApplicationName()
+
+    public static void main(String[] args) {
+        // TODO 5: get two references, print the name and (ref1 == ref2)
+    }
+}`,out:`My Java Application
+true`,concept:'This version is called <b>eager initialization</b>: the object is created when the class is initialized.',
+  hint:'Look back at warm-up W2: it is the same shape with a different class name.',
+  qs:['Try writing <code>new ConfigurationManager()</code> in <b>another</b> class. What does the compiler say?','What does <code>==</code> compare for two object references?']},
+ {id:2,cls:'e2',lvl:'Level 2 · Easy+',you:'you write ~8 lines',t:'Exercise 2: Lazy Singleton',time:'12 min',
+  scen:'A database connection manager is expensive to create. It must be created <b>only when it is needed for the first time</b>, not when the program starts.',
+  reqs:['Create <code>DatabaseConnectionManager</code> with a <code>private static</code> field <code>instance</code> that starts as <code>null</code>.','The <code>private</code> constructor prints <code>Creating the DatabaseConnectionManager...</code>','<code>getInstance()</code> creates the object <b>only if</b> <code>instance</code> is <code>null</code>, then returns it.','Add <code>connect()</code>, which returns <code>"Connected to jdbc:postgresql://localhost/library"</code>.','In <code>main()</code>, after the given first line: call <code>getInstance()</code> twice, print <code>connect()</code>, then print <code>"Same instance? " + (a == b)</code>.'],
+  starter:`public class DatabaseConnectionManager {
+    // TODO 1: the instance field, not initialized
+    // TODO 2: private constructor that prints a message
+    // TODO 3: lazy getInstance()
+    // TODO 4: connect()
+
+    public static void main(String[] args) {
+        System.out.println("Application started");
+        // TODO 5: two getInstance() calls, print connect(), print "Same instance? ..."
+    }
+}`,out:`Application started
+Creating the DatabaseConnectionManager...
+Connected to jdbc:postgresql://localhost/library
+Same instance? true`,concept:'<b>Lazy initialization</b> delays creation until the first use. The message appears <b>only once</b>, even though <code>getInstance()</code> is called twice.',
+  hint:'Inside <code>getInstance()</code>, test <code>instance == null</code> before creating anything.',
+  qs:['Compare with Exercise 1: <b>when</b> is the object created in each version?','Look at simulator 3 in the recap. Why is this version <b>not</b> safe when several threads call <code>getInstance()</code>?']},
+ {id:3,cls:'e3',lvl:'Level 3 · Medium',you:'you write ~8 lines',t:'Exercise 3: Break it, then make it thread-safe',time:'20 min',
+  scen:'Your app writes logs from many threads. The starter code already contains the broken lazy logger from Exercise 2 and the code that starts <b>100 virtual threads</b>. You only write the safe version.',
+  parts:[['Step 1: see the race (5 min)',['Copy the starter code, run it as it is and read the first line. Run it twice more: does the number change?']],
+         ['Step 2: fix it (15 min)',['In <code>SafeLogger</code>, declare the <code>instance</code> field. It needs one extra keyword that <code>UnsafeLogger</code> doesn\'t have (recap section 8).','Write <code>getInstance()</code> with <b>double-checked locking</b>: check for <code>null</code>, enter <code>synchronized (SafeLogger.class)</code>, check <b>again</b>, then create.','Run it. The second line must say <code>1</code>.']]],
+  starter:`import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
+
+public class LoggerRace {
+
+    // GIVEN: the lazy logger from Exercise 2, made slow on purpose
+    static final class UnsafeLogger {
+        static final AtomicInteger CREATED = new AtomicInteger();
+        private static UnsafeLogger instance;
+        private UnsafeLogger() { CREATED.incrementAndGet(); pause(); }
+        static UnsafeLogger getInstance() {
+            if (instance == null) {
+                instance = new UnsafeLogger();
+            }
+            return instance;
+        }
+    }
+
+    // YOUR TURN: the same logger, made thread-safe
+    static final class SafeLogger {
+        static final AtomicInteger CREATED = new AtomicInteger();
+        // TODO 1: declare the instance field (one keyword more than above)
+        private SafeLogger() { CREATED.incrementAndGet(); pause(); }
+        static SafeLogger getInstance() {
+            // TODO 2: double-checked locking
+            return null;
+        }
+    }
+
+    // GIVEN: calls the method from 100 virtual threads at the same time
+    static void race(Runnable call) {
+        try (var pool = Executors.newVirtualThreadPerTaskExecutor()) {
+            for (int i = 0; i < 100; i++) pool.submit(call);
+        }
+    }
+
+    static void pause() {
+        try { Thread.sleep(50); }
+        catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+    }
+
+    public static void main(String[] args) {
+        race(UnsafeLogger::getInstance);
+        System.out.println("Unsafe instances created: " + UnsafeLogger.CREATED.get());
+        race(SafeLogger::getInstance);
+        System.out.println("Safe instances created: " + SafeLogger.CREATED.get());
+    }
+}`,out:`Unsafe instances created: (more than 1)
+Safe instances created: 1`,concept:'A <b>race condition</b> happens when "check, then act" is not one atomic step. The lock makes it one step; the second check stops a waiting thread from creating a second object.',
+  hint:'The shape is: <code>if (instance == null) { synchronized (SafeLogger.class) { if (instance == null) { … } } } return instance;</code>',
+  check:t=>{const a=t.match(/Unsafe instances created:\s*(\d+)/i),b=t.match(/^\s*Safe instances created:\s*(\d+)/im);if(!a||!b)return{ok:false,msg:'✗ I can\'t find both lines. They must start with "Unsafe instances created:" and "Safe instances created:".'};
+   const u=+a[1],s=+b[1];if(s===0)return{ok:false,msg:'✗ Your safe logger created 0 objects: getInstance() never calls the constructor yet. Finish TODO 2.'};
+   if(s!==1)return{ok:false,msg:`✗ Your safe logger created ${s} objects. It must create exactly 1. Check both null tests and the lock.`};
+   if(u<=1)return{ok:false,msg:'✗ The unsafe logger created only 1 object, so the race didn\'t show. Did you change the given UnsafeLogger code? Run it again.'};
+   return{ok:true,msg:`✓ The race shows (${u} objects) and your fix works (1 object). Run it again: does the first number change?`}},
+  sim:true,
+  qs:['What number did the unsafe version print in your three runs? Why does it change?','Why do we check <code>instance == null</code> a <b>second</b> time inside the <code>synchronized</code> block?']},
+ {id:4,cls:'e4',lvl:'Level 4 · Medium',you:'you write ~6 lines',t:'Exercise 4: The modern best practice, enum singleton',time:'13 min',
+  scen:'An online shop needs one <b>order ID generator</b> that never gives the same ID twice, even under heavy load. The test code with 10,000 virtual threads is given. You write the enum.',
+  reqs:['Write an <b>enum</b> <code>OrderIdGenerator</code> with one constant <code>INSTANCE</code> that <code>implements IdGenerator</code>.','Store the counter in an <code>AtomicLong</code> and implement <code>nextId()</code> with <code>incrementAndGet()</code>, so the first ID is 1.','In <code>main()</code>, replace <code>null</code> with the enum constant, then run the program.'],
+  starter:`import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
+
+public class IdGeneratorDemo {
+    interface IdGenerator { long nextId(); }
+
+    // TODO 1: enum OrderIdGenerator with one constant INSTANCE
+    //         that implements IdGenerator and counts with an AtomicLong
+
+    public static void main(String[] args) {
+        IdGenerator gen = null; // TODO 2: use the enum constant
+
+        // GIVEN: 10,000 tasks call nextId() on virtual threads
+        try (var pool = Executors.newVirtualThreadPerTaskExecutor()) {
+            for (int i = 0; i < 10_000; i++) pool.submit(gen::nextId);
+        }
+        System.out.println("Next id after 10,000 tasks: " + gen.nextId());
+        System.out.println("Same instance? " + (gen == OrderIdGenerator.INSTANCE));
+    }
+}`,out:`Next id after 10,000 tasks: 10001
+Same instance? true`,concept:'The JVM creates enum constants <b>once</b>, safely. It also blocks reflection and keeps one instance after serialization. <i>Effective Java</i> (Item 3) calls a single-element enum often the best way to implement a singleton.',
+  hint:'An enum constant can be followed by a body, and the enum itself can declare fields and methods after a <code>;</code> like a class.',
+  bonus:'If you finish early: use reflection to call the private constructor of the enum (<code>getDeclaredConstructors()[0]</code>, <code>setAccessible(true)</code>, <code>newInstance("X", 1)</code>) and print the exception. Try the same on <code>ConfigurationManager</code>. What is different?',
+  sim4:true,
+  qs:['Why is the result exactly 10001 and never less, even with 10,000 tasks at the same time?','Name one thing an enum singleton <b>can\'t</b> do that a class singleton can.']}];
+
+const reqList=(id,items,off)=>`<ul class="reqs">${items.map((r,i)=>`<li><label><input type="checkbox" data-req="${id}-${off+i}"><span>${r}</span></label></li>`).join('')}</ul>`;
+$('#ex-list').innerHTML=EX.map(e=>{let reqs='';if(e.parts){let off=0;reqs=e.parts.map(p=>{const h=`<div class="lbl">${p[0]}</div>`+reqList(e.id,p[1],off);off+=p[1].length;return h}).join('')}else reqs='<div class="lbl">☐ Requirements</div>'+reqList(e.id,e.reqs,0);
+ return`<article class="ex ${e.cls}" id="ex${e.id}"><div class="in">
+  <div class="top2"><span class="lvl">${e.lvl}</span><span class="you">✍ ${e.you}</span><h3>${e.t}</h3><span class="time">⏱ ${e.time}</span></div>
+  <p><b>Scenario.</b> ${e.scen}</p>${reqs}<div class="reqbar" aria-hidden="true"><i id="rq${e.id}"></i></div>
+  <div class="two"><div><div class="lbl">Starter code</div><pre class="code" data-ex="${e.id}"></pre></div>
+   <div><div class="lbl">Expected output</div><pre class="code out">${esc(e.out)}</pre><div class="concept"><b>🧠 Key concept:</b> ${e.concept}</div><details class="hint"><summary>💡 Hint (open only if stuck for 3 minutes)</summary>${e.hint}</details></div></div>
+  ${e.sim?simVT():''}${e.sim4?simCounter():''}
+  <div class="checker"><div class="lbl" style="margin-top:0">✔ Check my output</div><textarea class="mono" id="out${e.id}" data-save="out${e.id}" placeholder="Run your program and paste its output here…" aria-label="Output of exercise ${e.id}"></textarea><div class="row"><button class="btn pri sm" type="button" data-chk="${e.id}">Check output</button><span class="saved">saved automatically</span></div><div id="res${e.id}" aria-live="polite"></div></div>
+  <div class="lbl">Two quick questions</div>${e.qs.map((q,i)=>`<div class="qa"><p>${i+1}. ${q}</p><textarea data-save="q${e.id}-${i}" aria-label="Answer to question ${i+1} of exercise ${e.id}"></textarea></div>`).join('')}
+  ${e.bonus?`<details class="bonus"><summary>⭐ Bonus, not timed: try to break it</summary><p>${e.bonus}</p><textarea data-save="bonus" aria-label="Bonus answer" style="min-height:60px"></textarea></details>`:''}
+ </div></article>`}).join('');
+
+function simVT(){return`<div class="sim"><div class="sim-in"><div class="sim-head"><h4><span class="live">SIMULATOR 4</span> 100 virtual threads call getInstance()</h4></div>
+ <p style="margin:0 0 6px;font-size:15px">Red dots create an object; green dots reuse one. Each dot is a thread, placed at the moment it checks <code>instance == null</code>. The shaded band is the time the first constructor is still running, so the field is still <code>null</code>. Predict your program's first line before you run it.</p>
+ <div class="two"><div><div class="row"><div class="seg" id="vt-impl"><button type="button" data-v="unsafe" class="on">Lazy, no lock</button><button type="button" data-v="dcl">Double-checked + volatile</button></div></div>
+  <label class="lbl" for="vt-ctor">Constructor time: <b id="vt-cv"></b></label><input type="range" id="vt-ctor" min="0" max="60" step="5" value="50">
+  <label class="lbl" for="vt-spread">Threads start within: <b id="vt-sv"></b></label><input type="range" id="vt-spread" min="2" max="100" step="2" value="20">
+  <div class="row"><button class="btn pri sm" id="vt-run" type="button">▶ Start 100 threads</button></div></div>
+  <div><div class="vt"><canvas id="vt-cv-el" width="560" height="210" aria-label="Threads on a timeline"></canvas></div><div class="kv"><div><small>threads</small><b>100</b></div><div><small>saw null</small><b id="vt-null">–</b></div><div><small>objects created</small><b id="vt-made">–</b></div></div></div></div></div></div>`}
+function simCounter(){return`<div class="sim"><div class="sim-in"><div class="sim-head"><h4><span class="live">SIMULATOR 5</span> Why AtomicLong?</h4></div>
+ <p style="margin:0 0 6px;font-size:15px">50 threads share 10,000 increments. A plain <code>counter++</code> is three steps (read, add, write), so two threads can read the same value and one update is lost. Compare the two counters.</p>
+ <div class="row"><div class="seg" id="ct-kind"><button type="button" data-v="plain" class="on">long counter; counter++</button><button type="button" data-v="atomic">AtomicLong.incrementAndGet()</button></div><button class="btn pri sm" id="ct-run" type="button">▶ Run 10,000 increments</button></div>
+ <div class="kv"><div><small>expected</small><b>10,000</b></div><div><small>final counter</small><b id="ct-val">–</b></div><div><small>lost updates</small><b id="ct-lost">–</b></div></div><div id="ct-say" class="say">Run both versions.</div></div></div>`}
+
+$$('pre[data-ex]').forEach(p=>codeBlock(p,EX[+p.dataset.ex-1].starter));
+EX.forEach(e=>{track('E-'+e.id);track('E-'+e.id+'r')});
+$$('[data-chk]').forEach(b=>b.onclick=()=>{const e=EX[+b.dataset.chk-1],r=(e.check||exactCheck(e.out))($('#out'+e.id).value);$('#res'+e.id).innerHTML=`<div class="result ${r.ok?'ok':'err'} popin">${r.msg}</div>`;if(r.ok)mark('E-'+e.id,true)});
+
+/* requirement checkboxes */
+(()=>{const st=store.get('reqs',{});$$('[data-req]').forEach(c=>{c.checked=!!st[c.dataset.req];c.onchange=()=>{st[c.dataset.req]=c.checked;store.set('reqs',st);upd()}});
+ function upd(){EX.forEach(e=>{const bs=$$(`#ex${e.id} [data-req]`),n=bs.filter(c=>c.checked).length;$('#rq'+e.id).style.setProperty('--rq',bs.length?n/bs.length:0);mark('E-'+e.id+'r',bs.length>0&&n===bs.length)})}upd()})();
+
+/* S4 virtual threads */
+(()=>{const cv=$('#vt-cv-el');if(!cv)return;const ctx=cv.getContext('2d');let impl='unsafe',anim=null;
+ const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+ const ct=$('#vt-ctor'),sp=$('#vt-spread');const lab=()=>{$('#vt-cv').textContent=ct.value+' ms';$('#vt-sv').textContent=sp.value+' ms'};ct.oninput=sp.oninput=lab;lab();
+ $$('#vt-impl button').forEach(b=>b.onclick=()=>{impl=b.dataset.v;$$('#vt-impl button').forEach(x=>x.classList.toggle('on',x===b))});
+ function run(){cancelAnimationFrame(anim);const W=cv.width,H=cv.height,C=+ct.value,S=+sp.value;const T=Array.from({length:100},()=>({t:Math.random()*S,y:18+Math.random()*(H-48)}));
+  const first=Math.min(...T.map(x=>x.t)),win=first+C+0.05,end=Math.max(S,win)*1.08,X=t=>12+t/end*(W-24);
+  T.forEach(x=>{x.nul=x.t<win;x.made=impl==='unsafe'?x.nul:x.t===first});const t0=performance.now(),dur=REDUCE?1:1800;
+  function frame(now){const p=Math.min(1,(now-t0)/dur),tc=p*end;ctx.clearRect(0,0,W,H);
+   ctx.fillStyle=css('--butter');ctx.fillRect(X(first),8,Math.max(2,X(win)-X(first)),H-30);
+   ctx.fillStyle=css('--muted');ctx.font='600 11px "JetBrains Mono", monospace';ctx.fillText('instance is still null',X(first)+4,22);ctx.fillText('0 ms',8,H-6);ctx.fillText(end.toFixed(0)+' ms',W-58,H-6);
+   let nn=0,mm=0;T.forEach(x=>{if(x.t>tc){ctx.fillStyle=css('--line');ctx.beginPath();ctx.arc(X(x.t),x.y,4,0,7);ctx.fill();return}
+    if(x.nul)nn++;if(x.made)mm++;ctx.fillStyle=x.made?css('--no'):css('--ok');ctx.beginPath();ctx.arc(X(x.t),x.y,x.made?5.5:4,0,7);ctx.fill()});
+   ctx.strokeStyle=css('--accent');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(tc),6);ctx.lineTo(X(tc),H-24);ctx.stroke();
+   $('#vt-null').textContent=nn;$('#vt-made').textContent=mm;if(p<1)anim=requestAnimationFrame(frame)}
+  anim=requestAnimationFrame(frame)}
+ $('#vt-run').onclick=run;run()})();
+
+/* S5 counter */
+(()=>{if(!$('#ct-run'))return;let kind='plain';
+ $$('#ct-kind button').forEach(b=>b.onclick=()=>{kind=b.dataset.v;$$('#ct-kind button').forEach(x=>x.classList.toggle('on',x===b))});
+ $('#ct-run').onclick=()=>{let shared=0,left=10000;const pend=[];
+  while(left>0||pend.length){pend.forEach(p=>p.c--);for(const p of pend.filter(p=>p.c<=0)){shared=p.reg+1;pend.splice(pend.indexOf(p),1)}
+   if(left<=0)continue;left--;
+   if(kind==='atomic')shared++;else{const reg=shared;if(Math.random()<.04)pend.push({reg,c:1+Math.floor(Math.random()*4)});else shared=reg+1}}
+  const lost=10000-shared,el=$('#ct-val'),target=shared,start=performance.now();
+  (function tick(n){const p=Math.min(1,(n-start)/(REDUCE?1:900));el.textContent=Math.round(target*p).toLocaleString('en');if(p<1)requestAnimationFrame(tick)})(start);
+  $('#ct-lost').textContent=lost.toLocaleString('en');
+  $('#ct-say').innerHTML=kind==='plain'?`<b class="n">${lost.toLocaleString('en')} updates were lost.</b> Two threads read the same value, both add 1, and one write erases the other. Run it again: the number changes.`:'<b class="y">No update lost.</b> <code>incrementAndGet()</code> is one atomic step. Compare this with the expected output of Exercise 4.'}})();
+
+/* ================= D · WRAP-UP ================= */
+var RUB=[['explain the three ingredients of a singleton','Recap, W2'],['write an eager singleton from memory','Ex. 1'],['explain the difference between eager and lazy','Ex. 2'],['show a race condition and fix it with double-checked locking','Ex. 3'],['explain why volatile is needed','Ex. 3'],['write an enum singleton that implements an interface','Ex. 4'],['say when not to use a singleton','Recap 7']];
+track('D-self');track('D-refl');track('D-cards');
+function renderRubric(){const t=$('#rubric');if(!RUB||!t||t.dataset.r)return;t.dataset.r=1;const st=store.get('rub',{});
+ t.innerHTML='<tr><th>Skill</th><th>Where</th><th>Yes, I can</th></tr>'+RUB.map((r,i)=>`<tr><td>${r[0]}?</td><td>${r[1]}</td><td><input type="checkbox" data-rub="${i}" aria-label="I can ${r[0]}"${st[i]?' checked':''}></td></tr>`).join('');
+ t.querySelectorAll('[data-rub]').forEach(c=>c.onchange=()=>{st[c.dataset.rub]=c.checked;store.set('rub',st);mark('D-self',RUB.every((_,i)=>st[i]))})}
+
+/* flashcards */
+(()=>{const CARDS=[['What are the three ingredients of a singleton?','A <b>private constructor</b>, a <b>private static</b> field holding the instance, and a <b>public static</b> <code>getInstance()</code>. Remember P·P·P.'],
+ ['When does an eager singleton create its object?','When the JVM <b>initializes the class</b>, on its first use.'],
+ ['When does a lazy singleton create its object?','On the <b>first call</b> to <code>getInstance()</code>.'],
+ ['Why is the lazy singleton without a lock unsafe?','"Check, then act" is two steps. Two threads can both see <code>null</code> and both create an object.'],
+ ['In double-checked locking, why check null a second time?','Another thread may have created the object while you were waiting for the lock.'],
+ ['Why must the field be volatile in double-checked locking?','So that no thread can see a reference to a <b>half-built</b> object. The write becomes visible in the right order.'],
+ ['What does a synchronized getInstance() cost?','It takes the lock on <b>every</b> call, even after the object exists.'],
+ ['What is the holder idiom?','A nested static class holds the instance. The JVM initializes it lazily, safely and only once, with no lock.'],
+ ['Which implementation is best overall, and why?','The single-element <b>enum</b>: thread-safe, and safe against reflection and serialization.'],
+ ['What can an enum singleton not do?','It can\'t <b>extend</b> another class (it can still implement interfaces).'],
+ ['What breaks a Serializable singleton?','Deserialization creates a second object, unless you add <code>readResolve()</code>.'],
+ ['Why AtomicLong instead of counter++?','<code>counter++</code> is read, add, write: updates can be lost. <code>incrementAndGet()</code> is one atomic step.'],
+ ['When should you NOT use a singleton?','To avoid passing a parameter, to hold mutable global state, or when it hides dependencies.']];
+ let known=new Set(store.get('fc-known',[])),order,pos=0;const fc=$('#fc');
+ function deal(){order=shuffle(CARDS.map((_,i)=>i).filter(i=>!known.has(i)));pos=0;show()}
+ function show(){const dots=$('#fc-dots');dots.innerHTML=CARDS.map((_,i)=>`<i class="${known.has(i)?'k':''}${order[pos]===i?' c':''}"></i>`).join('');
+  $('#fc-say').textContent=`${known.size} / ${CARDS.length} known`;
+  if(!order.length||pos>=order.length){if(known.size===CARDS.length){$('#fc-n').textContent='Deck complete';$('#fc-q').textContent='You know every card. 🎉';$('#fc-a').textContent='Shuffle and restart to practise again.';fc.classList.remove('on');mark('D-cards',true)}else deal();return}
+  const c=CARDS[order[pos]];fc.classList.remove('on');$('#fc-n').textContent=`Card ${CARDS.length-order.length+pos+1} · question`;$('#fc-q').textContent=c[0];setTimeout(()=>{$('#fc-a').innerHTML=c[1]},REDUCE?0:200);
+  fc.classList.remove('deal');void fc.offsetWidth;fc.classList.add('deal')}
+ function next(dir,isKnown){if(!order.length)return;if(isKnown)known.add(order[pos]);store.set('fc-known',[...known]);
+  fc.classList.add(dir);setTimeout(()=>{fc.classList.remove('swipe-l','swipe-r');pos++;show()},REDUCE?0:400)}
+ fc.onclick=()=>fc.classList.toggle('on');
+ $('#fc-knew').onclick=()=>next('swipe-r',true);$('#fc-again').onclick=()=>next('swipe-l',false);
+ $('#fc-reset').onclick=()=>{known=new Set();store.set('fc-known',[]);deal()};deal()})();
+
+/* autosave every [data-save] */
+$$('[data-save]').forEach(el=>{const k='t:'+el.dataset.save;el.value=store.get(k,'');let tm;el.addEventListener('input',()=>{clearTimeout(tm);tm=setTimeout(()=>{store.set(k,el.value);if(el.id==='refl')mark('D-refl',el.value.trim().split(/\s+/).length>=12)},300)})});
+if($('#refl').value.trim().split(/\s+/).length>=12)PROG['D-refl']=true;
+
+/* copy all answers */
+$('#copy-all').onclick=()=>{const g=k=>store.get('t:'+k,'').trim()||'(no answer)';let s='SINGLETON LAB · MY ANSWERS\n\n';
+ s+='W3 Snippet A: '+g('w3-0')+'\nW3 Snippet B: '+g('w3-1')+'\nW4 prediction:\n'+g('w4')+'\n\n';
+ EX.forEach(e=>{s+=`EXERCISE ${e.id}: ${e.t.split(': ')[1]}\nOutput check: ${PROG['E-'+e.id]?'passed':'not passed yet'}\nMy output:\n${g('out'+e.id)}\n`;e.qs.forEach((q,i)=>{s+=`Q${i+1}. ${q.replace(/<[^>]+>/g,'')}\n→ ${g('q'+e.id+'-'+i)}\n`});s+='\n'});
+ s+='BONUS (optional)\n'+g('bonus')+'\n\nREFLECTION\n'+g('refl')+'\n';const box=$('#copy-box');box.value=s;box.hidden=false;box.style.minHeight='200px';
+ const ok=()=>$('#copy-msg').textContent='Copied ✓ Paste it into your submission document.';
+ try{navigator.clipboard.writeText(s).then(ok,()=>{box.select();$('#copy-msg').textContent='Select the text below and copy it (Ctrl+C / ⌘C).'})}catch(e){box.select()}};
+
+/* ================= 75-minute plan + timer ================= */
+(()=>{const PLAN=[['Warm-up','#warmup',15,'s-butter'],['Ex 1 · Eager','#ex1',10,'s-sky'],['Ex 2 · Lazy','#ex2',12,'s-sage'],['Ex 3 · Threads','#ex3',20,'s-butter'],['Ex 4 · Enum','#ex4',13,'s-blush'],['Wrap-up','#wrapup',5,'s-lav']];
+ const TOTAL=75*60000;let tm=store.get('timer',{el:0,st:null});
+ $('#segs').innerHTML=PLAN.map((p,i)=>`<button type="button" class="seg-b ${p[3]}" data-i="${i}" title="${p[0]} · ${p[2]} min"><b>${p[0]}</b><small>${p[2]} min</small></button>`).join('');
+ const segs=$$('.seg-b');segs.forEach(b=>b.onclick=()=>goTo($(PLAN[+b.dataset.i][1])));
+ const el=()=>tm.el+(tm.st?Date.now()-tm.st:0);
+ const fmt=ms=>{const s=Math.floor(Math.abs(ms)/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+ function save(){store.set('timer',tm);tick()}
+ function toggle(){if(tm.st){tm.el=el();tm.st=null}else tm.st=Date.now();save()}
+ function tick(){const e=el(),rem=TOTAL-e,run=!!tm.st,b=$('#timer');
+  $('#tval').textContent=(rem<0?'+':'')+fmt(rem);b.classList.toggle('run',run);b.classList.toggle('over',rem<0);
+  b.setAttribute('aria-label',`Hands-on timer, ${fmt(rem)} ${rem<0?'over time':'left'}, ${run?'running. Click to pause':'paused. Click to start'}`);
+  $('#plan-go').textContent=run?'⏸ Pause timer':e>0?'▶ Resume timer':'▶ Start timer';
+  let acc=0,now=-1,min=e/60000;PLAN.forEach((p,i)=>{const f=Math.max(0,Math.min(1,(min-acc)/p[2]));segs[i].style.setProperty('--f',f);if(min>=acc&&min<acc+p[2])now=i;acc+=p[2]});
+  segs.forEach((s,i)=>s.classList.toggle('now',run&&i===now));
+  $('#plan-say').textContent=e===0?'Timer not started. It keeps running if you reload the page.':rem<0?`Time is up by ${fmt(rem)}. Finish the exercise you are on and go to the wrap-up.`:`${fmt(e)} spent · you should be on: ${PLAN[Math.max(0,now)][0]} · ${fmt(rem)} left.`}
+ $('#timer').onclick=toggle;$('#plan-go').onclick=toggle;$('#plan-rst').onclick=()=>{tm={el:0,st:null};save()};
+ tick();setInterval(tick,1000)})();
+
+/* ================= navigation + scroll animation ================= */
+function goTo(t){if(!t)return;t.scrollIntoView({behavior:REDUCE?'auto':'smooth',block:'start'});land(t)}
+function land(t){const h=t.classList.contains('part')?t.querySelector('.part-head'):t;if(!h||REDUCE)return;h.classList.remove('land');void h.offsetWidth;h.classList.add('land');setTimeout(()=>h.classList.remove('land'),2000)}
+document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;const t=$(a.getAttribute('href'));if(!t)return;e.preventDefault();goTo(t);try{history.replaceState(null,'',a.getAttribute('href'))}catch(_){}});
+$('#totop').onclick=()=>scrollTo({top:0,behavior:REDUCE?'auto':'smooth'});
+
+const PARTS=$$('#toc a'),PSEC=PARTS.map(a=>$(a.getAttribute('href'))),RAIL=$$('#rail a'),RSEC=RAIL.map(a=>$(a.getAttribute('href'))),STONES=$$('.stone');
+const ind=$('#toc-ind'),toc=$('#toc'),root=document.documentElement,hero=$('#start'),heads=$$('.part-head');
+let curPart=-2,booted=false,tTimer;
+function setPart(i){if(i===curPart)return;const prev=curPart;curPart=i;PARTS.forEach((a,j)=>a.classList.toggle('act',j===i));STONES.forEach((s,j)=>s.classList.toggle('act',j===i));
+ if(i<0){ind.style.opacity=0;return}const a=PARTS[i];ind.style.opacity=1;ind.style.width=a.offsetWidth+'px';ind.style.transform=`translateX(${a.offsetLeft}px)`;ind.style.background=a.style.getPropertyValue('--tc');
+ if(toc.scrollWidth>toc.clientWidth)toc.scrollTo({left:a.offsetLeft-toc.clientWidth/2+a.offsetWidth/2,behavior:REDUCE?'auto':'smooth'});
+ if(booted&&prev!==-2){const ts=$('#toast');ts.querySelector('span').textContent='Now in '+a.dataset.name;ts.querySelector('i').style.background=a.style.getPropertyValue('--tc');ts.classList.add('show');clearTimeout(tTimer);tTimer=setTimeout(()=>ts.classList.remove('show'),1800)}}
+let ticking=false;
+function onScroll(){ticking=false;const y=scrollY,max=Math.max(1,root.scrollHeight-innerHeight),p=Math.min(1,y/max);
+ root.style.setProperty('--sp',p.toFixed(4));
+ if(!REDUCE){const hh=hero.offsetHeight;hero.style.setProperty('--hy',Math.min(y,hh).toFixed(0));
+  heads.forEach(h=>{const r=h.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight)h.style.setProperty('--pp',(1-(r.top+r.height)/(innerHeight+r.height)).toFixed(3))})}
+ $('#totop').classList.toggle('show',y>600);
+ let c=-1;PSEC.forEach((s,i)=>{if(s.getBoundingClientRect().top<200)c=i});setPart(c);
+ let r=-1;RSEC.forEach((s,i)=>{if(s&&s.getBoundingClientRect().top<240)r=i});RAIL.forEach((a,i)=>{a.classList.toggle('act',i===r);a.classList.toggle('seen',i<r)})}
+addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(onScroll)}},{passive:true});
+addEventListener('resize',()=>{const c=curPart;curPart=-3;setPart(c)});
+onScroll();booted=true;
+
+/* keyboard: N / P jump between parts */
+addEventListener('keydown',e=>{if(e.metaKey||e.ctrlKey||e.altKey)return;const tg=e.target.tagName;if(/INPUT|TEXTAREA|SELECT/.test(tg)||e.target.isContentEditable)return;
+ const k=e.key.toLowerCase();if(k!=='n'&&k!=='p')return;const i=curPart+(k==='n'?1:-1);if(i<0){scrollTo({top:0,behavior:REDUCE?'auto':'smooth'});return}if(i<PSEC.length)goTo(PSEC[i])});
+
+/* scroll reveal: only elements below the fold, triggered as they enter */
+(()=>{if(REDUCE||!('IntersectionObserver' in window))return;
+ const els=$$('.stone,.part-head,.card,.sim,.tile,.wu,.ex,.sheet .item,.flip');
+ const io=new IntersectionObserver(es=>es.forEach(en=>{if(!en.isIntersecting)return;const el=en.target;io.unobserve(el);
+   const sib=[...el.parentElement.children].filter(x=>els.includes(x)),i=Math.max(0,sib.indexOf(el));el.style.setProperty('--d',Math.min(i*.08,.4)+'s');
+   el.classList.add('rv-in');el.addEventListener('animationend',function f(ev){if(ev.target!==el)return;el.removeEventListener('animationend',f);setTimeout(()=>el.classList.remove('rv-in'),400)})}),{threshold:0});
+ els.forEach(el=>{if(el.getBoundingClientRect().top>innerHeight)io.observe(el)})})();
+
+/* theme */
+$('#theme').onclick=()=>{const r=document.documentElement,c=r.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),n=c==='dark'?'light':'dark';r.dataset.theme=n;try{localStorage.setItem('sglab-theme',n)}catch(e){}};
+updProg();
+</script>
+
+</body></html>
