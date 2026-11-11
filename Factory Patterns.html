@@ -1,0 +1,1126 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Factory Patterns</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<script>try{var t=localStorage.getItem('fp-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<style>
+/* Layout: an assembly line. A dark "factory floor" hero, then seven numbered stations in one reading column, a progress rail on the left on wide screens, checkpoint quizzes between stations. Gradient = teal → indigo → coral, the three product colours. */
+:root{
+  --bg:#f5f6fb; --surface:#ffffff; --surface-2:#eef0f8; --ink:#171a33; --muted:#575e7e; --line:#dfe2ef;
+  --teal:#0b9d90; --indigo:#5b4ee6; --coral:#f0574a; --amber:#d98a06;
+  --teal-soft:#d6f3ef; --indigo-soft:#e7e4fd; --coral-soft:#ffe4e0; --amber-soft:#fcefd2;
+  --ok:#14866d; --ok-soft:#d8f2e9; --bad:#c8372d; --bad-soft:#fde2df;
+  --on-accent:#ffffff;
+  --grad:linear-gradient(115deg,#13b8a8 0%,#5b4ee6 48%,#f0574a 100%);
+  --hero:#0c0f2c; --hero-2:#171b45; --hero-ink:#f2f3ff; --hero-muted:#b6bbe0;
+  --code-bg:#0f1330; --code-ink:#e6e8ff; --code-k:#b7a8ff; --code-s:#7fe3c9; --code-c:#8a90b8; --code-t:#ffc57d; --code-a:#ff9a8e; --code-hi:#2a2f63;
+  --shadow:0 18px 40px -22px rgba(23,26,51,.35);
+  --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --f-body:"Onest","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1022; --surface:#151931; --surface-2:#1d2240; --ink:#eceefb; --muted:#a7adcc; --line:#2a3055;
+  --teal:#3fd3c4; --indigo:#9a91ff; --coral:#ff8a7d; --amber:#ffc55c;
+  --teal-soft:#123a3a; --indigo-soft:#272459; --coral-soft:#46232a; --amber-soft:#443514;
+  --ok:#6fdcb6; --ok-soft:#14372d; --bad:#ff8f84; --bad-soft:#47201f; --on-accent:#0d1022;
+  --shadow:0 18px 40px -22px rgba(0,0,0,.7); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1022; --surface:#151931; --surface-2:#1d2240; --ink:#eceefb; --muted:#a7adcc; --line:#2a3055;
+  --teal:#3fd3c4; --indigo:#9a91ff; --coral:#ff8a7d; --amber:#ffc55c;
+  --teal-soft:#123a3a; --indigo-soft:#272459; --coral-soft:#46232a; --amber-soft:#443514;
+  --ok:#6fdcb6; --ok-soft:#14372d; --bad:#ff8f84; --bad-soft:#47201f; --on-accent:#0d1022;
+  --shadow:0 18px 40px -22px rgba(0,0,0,.7); color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(72px + env(safe-area-inset-top,0px))}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 var(--f-body);overflow-wrap:break-word}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--surface)}
+h1,h2,h3,h4{font-family:var(--f-display);line-height:1.12;margin:0;text-wrap:balance;letter-spacing:-.015em}
+h2{font-size:clamp(30px,4.4vw,46px);font-weight:800}
+h3{font-size:clamp(21px,2.4vw,25px);font-weight:700;margin:34px 0 10px}
+h4{font-size:18px;font-weight:700}
+p{margin:10px 0;max-width:68ch}
+a{color:var(--indigo)}
+code{font:500 .86em var(--f-mono);background:var(--surface-2);padding:1px 6px;border-radius:6px;overflow-wrap:anywhere}
+ul,ol{padding-left:22px;margin:8px 0}
+li{margin:4px 0}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.gt{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.muted{color:var(--muted)}
+.small{font-size:14.5px}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;padding-block:10px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font:800 16px var(--f-display);white-space:nowrap}
+.brand i{width:26px;height:26px;border-radius:8px;background:var(--grad);display:grid;place-items:center;color:#fff;font:800 13px var(--f-mono);font-style:normal;transform:rotate(calc(var(--sp,0) * 360deg))}
+.steps-nav{display:flex;gap:4px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+.steps-nav::-webkit-scrollbar{display:none}
+.steps-nav a{flex:none;text-decoration:none;color:var(--muted);font:700 13.5px var(--f-body);padding:6px 11px;border-radius:99px;transition:background .3s,color .3s}
+.steps-nav a.act{background:var(--ink);color:var(--bg)}
+.steps-nav a:focus-visible{outline:3px solid var(--indigo);outline-offset:-2px}
+.score{flex:none;font:700 13px var(--f-mono);padding:6px 11px;border-radius:99px;background:var(--surface-2);font-variant-numeric:tabular-nums}
+.score b{color:var(--ok)}
+.iconbtn{flex:none;width:36px;height:36px;border:0;border-radius:10px;background:var(--surface-2);color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.iconbtn:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.progress{position:absolute;left:0;right:0;bottom:-1px;height:3px;background:var(--grad);transform-origin:0 50%;transform:scaleX(var(--sp,0))}
+@media(max-width:620px){.brand span{display:none}.score{display:none}}
+
+/* side rail */
+.rail{position:fixed;z-index:20;left:max(16px,env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%);display:none;flex-direction:column;gap:18px}
+@media(min-width:1260px){.rail{display:flex}}
+.rail::before{content:"";position:absolute;left:8px;top:8px;bottom:8px;width:2px;background:var(--line);border-radius:2px}
+.rail .fill{position:absolute;left:8px;top:8px;bottom:8px;width:2px;background:var(--grad);transform-origin:50% 0;transform:scaleY(var(--sp,0));border-radius:2px}
+.rail a{position:relative;display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--muted);font:700 12.5px var(--f-body)}
+.rail a i{width:18px;height:18px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 2px var(--line);display:grid;place-items:center;font:700 10px var(--f-mono);font-style:normal;transition:transform .35s cubic-bezier(.3,1.6,.5,1),background .3s,box-shadow .3s,color .3s;position:relative;z-index:1}
+.rail a span{opacity:0;transform:translateX(-6px);transition:opacity .25s,transform .3s;white-space:nowrap}
+.rail:hover a span{opacity:1;transform:none}
+@media(min-width:1440px){.rail a.act span{opacity:1;transform:none}}
+.rail a.seen i{background:var(--indigo);box-shadow:none;color:#fff}
+.rail a.act i{transform:scale(1.35);background:var(--coral);box-shadow:0 0 0 5px color-mix(in srgb,var(--coral) 30%,transparent);color:#fff}
+.rail a.act{color:var(--ink)}
+
+/* ---------- hero ---------- */
+.hero{position:relative;overflow:hidden;background:radial-gradient(1200px 500px at 85% -10%,#3b2f9a 0%,transparent 60%),radial-gradient(900px 500px at -10% 110%,#0d5f5f 0%,transparent 60%),var(--hero);color:var(--hero-ink)}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(420px circle at var(--mx,70%) var(--my,40%),rgba(255,138,125,.22),transparent 60%);pointer-events:none;transition:background .1s}
+.hero::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(180deg,#000 10%,transparent 90%);-webkit-mask-image:linear-gradient(180deg,#000 10%,transparent 90%);transform:translateY(calc(var(--hy,0) * .25px));pointer-events:none}
+.hero .wrap{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:24px;align-items:center;padding-block:46px 40px}
+@media(max-width:880px){.hero .wrap{grid-template-columns:minmax(0,1fr);padding-block:32px 18px}}
+.hero-txt{transform:translateY(calc(var(--hy,0) * .15px));opacity:calc(1 - var(--hy,0) / 800)}
+.hero-txt>*{animation:enter .9s cubic-bezier(.2,.7,.2,1) both}
+.hero-txt>*:nth-child(2){animation-delay:.1s}.hero-txt>*:nth-child(3){animation-delay:.2s}.hero-txt>*:nth-child(4){animation-delay:.3s}.hero-txt>*:nth-child(5){animation-delay:.4s}
+@keyframes enter{from{opacity:0;transform:translateY(22px)}}
+.kicker{font:700 12.5px var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:#8ff0e2}
+.hero h1{font-size:clamp(42px,6.6vw,76px);font-weight:800;margin:12px 0 14px;letter-spacing:-.03em;line-height:1}
+.hero h1 .gt{background:linear-gradient(100deg,#5ff0de,#a99fff 45%,#ff8a7d 80%,#5ff0de);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;animation:sheen 7s linear infinite}
+@keyframes sheen{to{background-position:-200% 0}}
+.lead{font-size:19px;color:var(--hero-muted);max-width:36em}
+.lead b{color:var(--hero-ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font:600 13.5px var(--f-body);padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);color:var(--hero-ink)}
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.btn{font:700 15px var(--f-body);border:0;border-radius:12px;padding:10px 18px;cursor:pointer;color:var(--ink);background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);display:inline-flex;align-items:center;gap:8px;text-decoration:none;transition:transform .18s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(1px)}
+.btn:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.btn.grad{background:var(--grad);color:#fff;box-shadow:0 12px 26px -12px rgba(91,78,230,.8)}
+.btn.ghost{background:rgba(255,255,255,.08);color:var(--hero-ink);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
+.btn.sm{padding:7px 13px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+
+/* 3D factory */
+.scene{height:380px;perspective:1100px;display:grid;place-items:center;transform:translateY(calc(var(--hy,0) * .35px))}
+@media(max-width:560px){.scene{height:300px}}
+.world{position:relative;width:0;height:0;transform-style:preserve-3d;transform:rotateX(calc(-26deg + var(--ty,0) * 1deg)) rotateY(calc(-38deg + var(--tx,0) * 1deg));transition:transform .25s ease-out}
+@media(max-width:560px){.world{scale:.72}}
+.cub{position:absolute;transform-style:preserve-3d}
+.cub>b{position:absolute;display:grid;place-items:center;text-align:center;backface-visibility:hidden;font:700 11px var(--f-mono);color:#fff}
+.floor{position:absolute;left:-210px;top:-210px;width:420px;height:420px;transform:rotateX(90deg) translateZ(-1px);background:radial-gradient(circle,rgba(127,120,255,.35),rgba(15,19,48,0) 68%);border-radius:50%}
+.floor::after{content:"";position:absolute;inset:60px;border-radius:50%;border:1px dashed rgba(255,255,255,.18);animation:spin 40s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.belt-move{position:absolute;transform-style:preserve-3d;animation:belt 6s linear infinite}
+@keyframes belt{0%{transform:translate3d(-20px,0,0) scale3d(.01,.01,.01)}8%{transform:translate3d(0,0,0) scale3d(1,1,1)}90%{transform:translate3d(170px,0,0) scale3d(1,1,1)}100%{transform:translate3d(190px,0,0) scale3d(.01,.01,.01)}}
+.smoke{position:absolute;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.35);filter:blur(4px);animation:smoke 3.4s ease-out infinite}
+@keyframes smoke{0%{transform:translate3d(0,0,0) scale(.4);opacity:0}20%{opacity:.8}100%{transform:translate3d(10px,-120px,0) scale(2.4);opacity:0}}
+.sign{position:absolute;left:-80px;top:-26px;width:160px;padding:6px 0;border-radius:10px;text-align:center;font:700 13px var(--f-mono);color:#fff;background:linear-gradient(90deg,#13b8a8,#5b4ee6,#f0574a);box-shadow:0 0 30px rgba(155,140,255,.6)}
+.scene-cap{position:absolute;bottom:6px;left:0;right:0;text-align:center;font:600 12.5px var(--f-mono);color:var(--hero-muted)}
+
+/* ---------- main ---------- */
+main{padding-block:16px 40px}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:26px 0 8px}
+.map a{position:relative;display:block;text-decoration:none;color:var(--ink);padding:14px;border-radius:16px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden;transition:transform .3s,box-shadow .3s}
+.map a::before{content:"";position:absolute;inset:0 0 auto;height:4px;background:var(--grad);transform:scaleX(.25);transform-origin:0 50%;transition:transform .45s}
+.map a:hover{transform:translateY(-4px);box-shadow:inset 0 0 0 1px var(--line),var(--shadow)}
+.map a:hover::before,.map a.seen::before{transform:scaleX(1)}
+.map a:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.map b{display:block;font:800 26px var(--f-display)}
+.map span{font-size:14px;color:var(--muted)}
+
+.step{margin-top:70px;position:relative}
+.step-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 20px;align-items:end;margin-bottom:18px}
+.step-n{font:800 clamp(64px,9vw,108px)/.8 var(--f-display);background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.04em;transform:translateY(calc(var(--pp,0) * -18px))}
+.step-head small{display:block;font:700 12.5px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--indigo);margin-bottom:6px}
+.learn{display:flex;flex-wrap:wrap;gap:6px;grid-column:1/-1;margin-top:10px}
+.learn span{font:600 13px var(--f-body);padding:5px 11px;border-radius:99px;background:var(--surface-2);color:var(--muted)}
+.learn span::before{content:"→ ";color:var(--teal)}
+
+.card{background:var(--surface);border-radius:22px;padding:24px;margin:18px 0;box-shadow:inset 0 0 0 1px var(--line)}
+@media(max-width:600px){.card{padding:18px 14px}}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.two.wide-l{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}
+@media(max-width:840px){.two,.two.wide-l{grid-template-columns:minmax(0,1fr)}}
+.grid3{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.grid3>*,.two>*{min-width:0}
+
+/* tilt cards with cursor spotlight */
+.tilt{position:relative;border-radius:18px;padding:18px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .2s ease-out,box-shadow .3s;overflow:hidden}
+.tilt::after{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(260px circle at var(--lx,50%) var(--ly,50%),color-mix(in srgb,var(--indigo) 16%,transparent),transparent 70%);opacity:0;transition:opacity .3s;pointer-events:none}
+.tilt:hover{box-shadow:inset 0 0 0 1px var(--line),var(--shadow)}
+.tilt:hover::after{opacity:1}
+.tilt h4{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.tilt p{font-size:15.5px;margin:6px 0 0;color:var(--muted)}
+.ico{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font:800 15px var(--f-mono);color:#fff;background:var(--c,var(--indigo))}
+
+.analogy{position:relative;border-radius:24px;padding:3px;background:var(--grad);margin:22px 0}
+.analogy>.in{background:var(--surface);border-radius:21px;padding:22px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:20px;align-items:center}
+@media(max-width:840px){.analogy>.in{grid-template-columns:minmax(0,1fr);padding:18px 14px}}
+.analogy .tag{display:inline-block;font:700 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--amber-soft);color:var(--amber)}
+.analogy svg{width:100%;height:auto;display:block}
+.map-t{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:4px 10px;font-size:15px;margin-top:10px}
+.map-t b{font-weight:700}
+.map-t i{font-style:normal;color:var(--muted)}
+
+.note{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;padding:16px 18px;border-radius:18px;background:var(--surface-2);margin:18px 0}
+.note .badge{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font:800 18px var(--f-display);color:#fff;background:linear-gradient(135deg,var(--amber),var(--coral))}
+.note h4{font-size:16px;margin-bottom:2px}
+.note p{margin:4px 0;font-size:15.5px}
+.note.def .badge{background:linear-gradient(135deg,var(--teal),var(--indigo))}
+.note.def{background:linear-gradient(110deg,var(--teal-soft),var(--indigo-soft))}
+.def-q{font:600 clamp(19px,2.4vw,23px)/1.4 var(--f-display);margin:4px 0 2px;max-width:none}
+
+/* code */
+.code{position:relative;background:var(--code-bg);color:var(--code-ink);border-radius:16px;padding:14px 0;margin:10px 0;overflow-x:auto;font:13.5px/1.65 var(--f-mono);tab-size:4;box-shadow:0 20px 40px -26px rgba(12,15,44,.9)}
+.code .ln{display:block;padding:0 16px;white-space:pre;min-width:max-content}
+.code .ln.new{background:var(--code-hi);box-shadow:inset 3px 0 0 #5ff0de;animation:lnin .5s both}
+@keyframes lnin{from{opacity:0;transform:translateX(-10px)}}
+.code .k{color:var(--code-k);font-weight:700}.code .s{color:var(--code-s)}.code .c{color:var(--code-c);font-style:italic}.code .t{color:var(--code-t)}.code .a{color:var(--code-a)}
+.code .bad{background:rgba(240,87,74,.22);box-shadow:inset 3px 0 0 #ff8a7d}
+.codebar{display:flex;gap:6px;padding:0 14px 10px;align-items:center}
+.codebar i{width:10px;height:10px;border-radius:50%;background:#ff6b6b}.codebar i:nth-child(2){background:#ffc55c}.codebar i:nth-child(3){background:#5ff0de}
+.codebar span{margin-left:8px;font:600 12px var(--f-mono);color:var(--code-c)}
+.copy{position:absolute;top:10px;right:10px;font:600 12px var(--f-body);padding:4px 10px;border-radius:8px;border:0;background:rgba(255,255,255,.1);color:var(--code-ink);cursor:pointer}
+.copy:focus-visible{outline:2px solid #5ff0de}
+
+/* builder */
+.builder{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:18px;align-items:start}
+@media(max-width:880px){.builder{grid-template-columns:minmax(0,1fr)}}
+.bpills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.bpills button{border:0;cursor:pointer;font:700 13px var(--f-body);padding:6px 11px;border-radius:99px;background:var(--surface-2);color:var(--muted);transition:background .3s,color .3s}
+.bpills button.on{background:var(--grad);color:#fff}
+.bpills button.done{color:var(--ink)}
+.bpills button:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.btext h4{font-size:20px;margin-bottom:6px}
+.btext{min-height:150px}
+.btext p{font-size:16px}
+.bnav{display:flex;gap:8px;margin-top:12px}
+
+/* roles + uml */
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.legend span{font:700 13px var(--f-body);padding:5px 12px;border-radius:99px;background:var(--rb);color:var(--rc);transition:transform .3s,box-shadow .3s}
+.legend span.on{transform:scale(1.07);box-shadow:0 0 0 2px var(--rc)}
+.r-prod{--rb:var(--teal-soft);--rc:var(--teal)}.r-cprod{--rb:var(--teal-soft);--rc:var(--teal)}
+.r-crea{--rb:var(--indigo-soft);--rc:var(--indigo)}.r-ccrea{--rb:var(--indigo-soft);--rc:var(--indigo)}
+.uml-wrap{overflow-x:auto;padding:6px 2px}
+.uml{display:grid;grid-template-columns:minmax(170px,1fr) 120px minmax(170px,1fr);grid-template-rows:auto 64px auto;min-width:540px;align-items:stretch}
+.box{border-radius:14px;background:var(--surface);box-shadow:inset 0 0 0 2px var(--bc,var(--line));font:13px/1.55 var(--f-mono);cursor:default;transition:transform .3s,box-shadow .3s,opacity .3s;overflow:hidden}
+.box .hd{padding:7px 10px;font:700 14px var(--f-display);text-align:center;background:var(--bb,var(--surface-2))}
+.box .hd small{display:block;font:500 11px var(--f-mono);opacity:.75}
+.box .bd{padding:7px 10px;border-top:1px solid var(--line)}
+.box.p{--bc:var(--teal);--bb:var(--teal-soft)}.box.c{--bc:var(--indigo);--bb:var(--indigo-soft)}
+.box.lit{transform:translateY(-4px) scale(1.03);box-shadow:inset 0 0 0 3px var(--bc),0 16px 30px -18px var(--bc)}
+.uml.dim .box:not(.lit){opacity:.45}
+.box:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.arr-h{position:relative;display:flex;align-items:center;justify-content:center}
+.arr-h::before{content:"";position:absolute;left:6px;right:10px;top:50%;border-top:2px dashed var(--muted)}
+.arr-h::after{content:"";position:absolute;right:4px;top:calc(50% - 6px);border:6px solid transparent;border-left:9px solid var(--muted)}
+.arr-h span{position:relative;background:var(--surface);padding:0 6px;font:600 11.5px var(--f-mono);color:var(--muted);transform:translateY(-14px)}
+.arr-v{position:relative;display:flex;justify-content:center}
+.arr-v::before{content:"";position:absolute;top:12px;bottom:0;left:50%;border-left:2px solid var(--muted)}
+.arr-v::after{content:"";position:absolute;top:0;left:calc(50% - 8px);border:8px solid transparent;border-bottom:12px solid var(--muted);border-top:0}
+.arr-v span{position:absolute;top:22px;left:calc(50% + 8px);font:600 11.5px var(--f-mono);color:var(--muted);white-space:nowrap}
+.role-say{min-height:54px;font-size:15.5px;padding:10px 14px;border-radius:14px;background:var(--surface-2);margin-top:12px}
+
+/* simulations */
+.sim{border-radius:26px;padding:3px;margin:22px 0;background:var(--grad);box-shadow:var(--shadow)}
+.sim>.in{background:var(--surface);border-radius:23px;padding:20px}
+@media(max-width:600px){.sim>.in{padding:16px 12px}}
+.sim-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:6px}
+.live{font:700 11.5px var(--f-mono);letter-spacing:.1em;padding:4px 10px;border-radius:99px;background:var(--ink);color:var(--bg);display:inline-flex;align-items:center;gap:6px}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:#5ff0de;animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.25}}
+.sim-h h4{font-size:19px}
+.row{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin:12px 0}
+.seg{display:inline-flex;flex-wrap:wrap;gap:4px;padding:4px;border-radius:12px;background:var(--surface-2)}
+.seg button{border:0;cursor:pointer;font:700 14px var(--f-body);padding:7px 12px;border-radius:9px;background:transparent;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 3px 10px -4px rgba(0,0,0,.3),inset 0 0 0 1px var(--line)}
+.seg button:focus-visible{outline:3px solid var(--indigo);outline-offset:1px}
+.say{border-radius:14px;padding:12px 16px;background:var(--surface-2);font-size:15.5px;margin-top:12px}
+.say b.g{color:var(--ok)}.say b.r{color:var(--bad)}
+.kpis{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.kpi{flex:1;min-width:120px;border-radius:14px;padding:10px 14px;background:var(--surface-2)}
+.kpi small{display:block;font:700 11.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.kpi b{font:800 26px var(--f-display);font-variant-numeric:tabular-nums}
+.kpi.bad b{color:var(--bad)}.kpi.ok b{color:var(--ok)}
+
+/* sim 1: codebase */
+.files{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.file{border-radius:14px;background:var(--code-bg);color:var(--code-ink);padding:10px 12px;font:12.5px/1.6 var(--f-mono);box-shadow:inset 0 0 0 2px transparent;transition:box-shadow .4s,transform .4s;min-width:0}
+.file .fn{font-weight:700;color:var(--code-t);margin-bottom:4px;display:flex;justify-content:space-between;gap:6px}
+.file .fn em{font-style:normal;font-size:11px;padding:1px 7px;border-radius:99px}
+.file pre{margin:0;white-space:pre-wrap;font:inherit;color:var(--code-ink)}
+.file .add{display:block;background:rgba(95,240,222,.16);color:#5ff0de;animation:lnin .5s both}
+.file.edit{box-shadow:inset 0 0 0 2px #ff8a7d;animation:shake .5s}
+.file.edit .fn em{background:#ff8a7d;color:#0f1330}
+.file.newf{box-shadow:inset 0 0 0 2px #5ff0de;animation:pop .5s both}
+.file.newf .fn em{background:#5ff0de;color:#0f1330}
+.file.small-edit{box-shadow:inset 0 0 0 2px #ffc55c}
+.file.small-edit .fn em{background:#ffc55c;color:#0f1330}
+@keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+@keyframes pop{from{opacity:0;transform:scale(.9) translateY(10px)}}
+
+/* sim 2: factory floor */
+.floor2{position:relative;border-radius:18px;padding:18px 14px 14px;background:linear-gradient(180deg,var(--surface-2),var(--surface));box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+.stations{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;position:relative;z-index:1}
+@media(max-width:600px){.stations{gap:5px}}
+.station{border-radius:14px;padding:10px 8px;text-align:center;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);transform:perspective(600px) rotateX(18deg);transform-origin:bottom;transition:transform .4s,box-shadow .4s,background .4s;min-width:0}
+.station b{display:block;font:700 12.5px var(--f-mono);overflow-wrap:anywhere}
+.station small{display:block;font-size:12px;color:var(--muted)}
+.station.on{transform:perspective(600px) rotateX(0) translateY(-6px);box-shadow:inset 0 0 0 2px var(--pc),0 14px 24px -14px var(--pc)}
+.station.fm b{color:var(--indigo)}
+.belt{position:relative;height:84px;margin-top:12px;perspective:700px}
+.belt .track{position:absolute;left:0;right:0;bottom:6px;height:34px;border-radius:12px;background:repeating-linear-gradient(90deg,var(--line) 0 14px,transparent 14px 28px),var(--surface-2);transform:rotateX(58deg);transform-origin:bottom;box-shadow:inset 0 0 0 2px var(--line)}
+.belt.run .track{animation:tread .6s linear infinite}
+@keyframes tread{to{background-position:28px 0,0 0}}
+.parcel{position:absolute;bottom:16px;left:4%;width:56px;height:56px;transform-style:preserve-3d;transition:left 1s cubic-bezier(.5,0,.3,1),opacity .4s;opacity:0}
+.parcel .cub{left:28px;top:28px}
+.parcel.show{opacity:1}
+.console{margin-top:12px;border-radius:14px;background:var(--code-bg);color:var(--code-ink);font:12.5px/1.7 var(--f-mono);padding:10px 14px;min-height:118px}
+.console div{animation:lnin .35s both}
+.console .c{color:var(--code-c)}.console .m{color:#5ff0de}.console .y{color:var(--code-t)}
+
+/* sim 3: mix-up */
+.kit3d{height:190px;perspective:800px;display:grid;place-items:center}
+.kitcube{position:relative;width:110px;height:110px;transform-style:preserve-3d;animation:kspin 14s linear infinite}
+@keyframes kspin{from{transform:rotateX(-18deg) rotateY(0)}to{transform:rotateX(-18deg) rotateY(360deg)}}
+.kitcube b{position:absolute;inset:0;display:grid;place-items:center;border-radius:14px;font:700 12.5px var(--f-mono);transition:background .6s,color .6s;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.kitcube b:nth-child(1){transform:translateZ(55px)}.kitcube b:nth-child(2){transform:rotateY(90deg) translateZ(55px)}.kitcube b:nth-child(3){transform:rotateY(180deg) translateZ(55px)}.kitcube b:nth-child(4){transform:rotateY(-90deg) translateZ(55px)}.kitcube b:nth-child(5){transform:rotateX(90deg) translateZ(55px)}.kitcube b:nth-child(6){transform:rotateX(-90deg) translateZ(55px)}
+.mock{border-radius:18px;padding:16px;transition:background .5s,color .5s,box-shadow .5s;min-height:210px}
+.mock h5{margin:0 0 10px;font:700 16px var(--f-display)}
+.w-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0}
+.w-btn,.w-chk,.w-card{transition:all .5s}
+.w-btn{border:0;padding:9px 16px;font:700 14px var(--f-body);cursor:default}
+.w-chk{display:inline-flex;align-items:center;gap:8px;font:600 14px var(--f-body)}
+.w-chk i{width:20px;height:20px;display:grid;place-items:center;font:800 13px var(--f-body);font-style:normal}
+.w-card{padding:12px 14px;font-size:14px;margin-top:8px}
+/* family looks: explicit, fixed colours because each family IS a look */
+.fam-day{background:#fff7e8;color:#3d2a0b;box-shadow:inset 0 0 0 1px #f1d9a8}
+.fam-night{background:#141838;color:#e7e9ff;box-shadow:inset 0 0 0 1px #2f3670}
+.fam-hc{background:#000;color:#fff;box-shadow:inset 0 0 0 2px #ffe600}
+.w-btn.day{background:#f5a524;color:#3d2a0b;border-radius:99px}
+.w-btn.night{background:#7b6dff;color:#fff;border-radius:8px}
+.w-btn.hc{background:#ffe600;color:#000;border-radius:0;outline:2px solid #fff}
+.w-chk.day i{background:#f5a524;color:#3d2a0b;border-radius:50%}
+.w-chk.night i{background:#7b6dff;color:#fff;border-radius:5px}
+.w-chk.hc i{background:#ffe600;color:#000;border-radius:0}
+.w-card.day{background:#ffeccb;color:#3d2a0b;border-radius:16px}
+.w-card.night{background:#232a5c;color:#e7e9ff;border-radius:8px}
+.w-card.hc{background:#000;color:#ffe600;border:2px solid #ffe600;border-radius:0}
+.pick{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 10px;align-items:center;font-size:14.5px}
+.pick select{font:600 14px var(--f-body);padding:6px 8px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.warn{margin-top:10px;font-weight:700;font-size:14.5px;padding:8px 12px;border-radius:12px}
+.warn.bad{background:var(--bad-soft);color:var(--bad)}.warn.ok{background:var(--ok-soft);color:var(--ok)}
+
+/* sim 4: matrix */
+.mx-wrap{overflow-x:auto;padding:4px 2px}
+.mx{display:grid;gap:8px;min-width:520px}
+.mx .cell{border-radius:12px;padding:10px;font:600 12.5px var(--f-mono);text-align:center;background:var(--surface-2);position:relative;transition:box-shadow .4s,background .4s;min-height:58px;display:grid;place-items:center}
+.mx .hdr{background:transparent;font:700 13px var(--f-display);color:var(--muted)}
+.mx .ifc{background:var(--teal-soft);color:var(--teal)}
+.mx .fac{background:var(--indigo-soft);color:var(--indigo)}
+.mx .cell em{position:absolute;top:-8px;right:-4px;font:700 10.5px var(--f-mono);font-style:normal;padding:2px 7px;border-radius:99px}
+.mx .cell.newc{box-shadow:inset 0 0 0 2px var(--ok);animation:pop .5s both}
+.mx .cell.newc em{background:var(--ok);color:var(--on-accent)}
+.mx .cell.edit{box-shadow:inset 0 0 0 2px var(--bad);animation:shake .5s}
+.mx .cell.edit em{background:var(--bad);color:var(--on-accent)}
+.mx .corner{background:var(--ink);color:var(--bg)}
+
+/* af uml */
+.af{display:grid;grid-template-columns:repeat(3,minmax(150px,1fr));gap:10px 14px;min-width:540px}
+.af .box{text-align:center}
+.af .sub{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.af .up{font:600 11px var(--f-mono);color:var(--muted);text-align:center}
+.box.fd{--bc:#e0951a;--bb:#ffeccb}.box.fn2{--bc:#6f62ef;--bb:#e2defd}
+:root[data-theme="dark"] .box.fd{--bb:#443514}:root[data-theme="dark"] .box.fn2{--bb:#272459}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .box.fd{--bb:#443514}:root:not([data-theme="light"]) .box.fn2{--bb:#272459}}
+.af.dim .box:not(.lit){opacity:.35}
+
+/* comparison */
+.vs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;perspective:1200px}
+@media(max-width:720px){.vs{grid-template-columns:minmax(0,1fr)}}
+.vs .side{border-radius:22px;padding:20px;color:#fff;transform-style:preserve-3d;transition:transform .5s}
+.vs .side:hover{transform:rotateY(var(--flip,4deg)) translateZ(10px)}
+.vs .s1{background:linear-gradient(140deg,#0e9a8e,#4a40c9);--flip:5deg}
+.vs .s2{background:linear-gradient(140deg,#5b4ee6,#e04f5f);--flip:-5deg}
+.vs .side h3{margin:0 0 8px;color:#fff}
+.vs .side dl{margin:0;display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:6px 12px;font-size:15px}
+.vs dt{font:700 11.5px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;opacity:.8;padding-top:3px}
+.vs dd{margin:0}
+.vs code{background:rgba(255,255,255,.16);color:#fff}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:700 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tbl{overflow-x:auto}
+
+/* decision helper */
+.tree{display:grid;gap:10px}
+.tq{border-radius:16px;padding:14px 16px;background:var(--surface-2);animation:pop .45s both}
+.tq p{margin:0 0 8px;font-weight:700}
+.tq .row{margin:0}
+.tq .btn.on{background:var(--ink);color:var(--bg);box-shadow:none}
+.verdict{border-radius:18px;padding:16px 18px;color:#fff;background:var(--grad);animation:pop .5s both}
+.verdict h4{color:#fff;font-size:20px}
+.verdict p{margin:6px 0 0}
+.verdict code{background:rgba(255,255,255,.18);color:#fff}
+
+/* quiz */
+.quiz{border-radius:26px;padding:3px;margin:30px 0;background:conic-gradient(from var(--qa,0deg),#13b8a8,#5b4ee6,#f0574a,#ffb547,#13b8a8);animation:qspin 8s linear infinite}
+@property --qa{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes qspin{to{--qa:360deg}}
+.quiz>.in{background:var(--surface);border-radius:23px;padding:22px}
+@media(max-width:600px){.quiz>.in{padding:16px 12px}}
+.quiz-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-bottom:6px}
+.quiz-h .tag{font:700 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;padding:5px 11px;border-radius:99px;background:var(--grad);color:#fff}
+.quiz-h .qs{margin-left:auto;font:700 13px var(--f-mono);color:var(--muted)}
+.qq{padding:14px 0;border-top:1px solid var(--line)}
+.qq:first-of-type{border-top:0}
+.qt{margin:0 0 10px;font-weight:600;max-width:none}
+.qt b{font:800 13px var(--f-mono);color:var(--indigo);margin-right:6px}
+.qo{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.opt{text-align:left;border:0;cursor:pointer;font:500 15px/1.45 var(--f-body);padding:11px 14px;border-radius:12px;background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);transition:transform .2s,box-shadow .2s,background .3s}
+.opt:hover:not(:disabled){transform:translateY(-2px);box-shadow:inset 0 0 0 2px var(--indigo)}
+.opt:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok-soft);box-shadow:inset 0 0 0 2px var(--ok)}
+.opt.wrong{background:var(--bad-soft);box-shadow:inset 0 0 0 2px var(--bad);animation:shake .45s}
+.opt.fade{opacity:.55}
+.qx{margin-top:10px;padding:10px 14px;border-radius:12px;font-size:15px;animation:pop .4s both}
+.qx.ok{background:var(--ok-soft)}.qx.no{background:var(--bad-soft)}
+.qx b{margin-right:4px}
+.quiz-end{margin-top:12px;font-weight:700;font-size:15.5px}
+
+/* summary */
+.sum{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.sum .tilt h4{font-size:17px}
+.sum ul{font-size:15px;color:var(--muted);padding-left:18px;margin:6px 0 0}
+footer{padding-block:30px 90px;text-align:center;color:var(--muted);font-size:14px}
+kbd{font:700 12px var(--f-mono);padding:1px 6px;border-radius:5px;background:var(--surface);box-shadow:inset 0 -2px 0 var(--line),inset 0 0 0 1px var(--line)}
+
+/* back to top */
+.totop{position:fixed;z-index:25;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:50px;height:50px;border:0;border-radius:50%;cursor:pointer;background:var(--surface);color:var(--ink);box-shadow:var(--shadow),inset 0 0 0 1px var(--line);display:grid;place-items:center;transform:scale(0);transition:transform .45s cubic-bezier(.3,1.5,.5,1)}
+.totop.show{transform:none}
+.totop svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.totop circle{fill:none;stroke-width:3}
+.totop .bg{stroke:var(--line)}.totop .fg{stroke:var(--indigo);stroke-linecap:round;stroke-dasharray:138.2;stroke-dashoffset:calc(138.2 * (1 - var(--sp,0)))}
+.totop:focus-visible{outline:3px solid var(--indigo);outline-offset:3px}
+
+/* svg illustration colours */
+.il-bg{fill:var(--surface-2)}.il-ink{fill:var(--ink)}.il-muted{fill:var(--muted)}.il-line{stroke:var(--muted);fill:none}
+.il-teal{fill:var(--teal)}.il-indigo{fill:var(--indigo)}.il-coral{fill:var(--coral)}.il-amber{fill:var(--amber)}
+.il-surface{fill:var(--surface)}.il-tsoft{fill:var(--teal-soft)}.il-isoft{fill:var(--indigo-soft)}.il-csoft{fill:var(--coral-soft)}.il-asoft{fill:var(--amber-soft)}
+.il-txt{font:700 13px var(--f-mono);fill:var(--ink)}.il-txt2{font:600 11px var(--f-body);fill:var(--muted)}
+.floaty{animation:floaty 4s ease-in-out infinite}
+@keyframes floaty{50%{transform:translateY(-6px)}}
+.dash{stroke-dasharray:6 6;animation:dash 1.2s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-12}}
+
+/* scroll reveal: visible at rest; animated only when an element enters from below */
+.rv{animation:rise .8s cubic-bezier(.2,.7,.2,1) both;animation-delay:var(--d,0s)}
+@keyframes rise{from{opacity:0;transform:translateY(40px) rotateX(8deg)}}
+.step-head.rv{animation:sweep .9s cubic-bezier(.2,.7,.2,1) both}
+@keyframes sweep{from{opacity:0;clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}.hero-txt,.scene,.hero::after,.step-n{transform:none!important;opacity:1!important}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top"><i>f()</i><span>Factory Patterns</span></a>
+    <nav class="steps-nav" id="snav" aria-label="Chapter steps">
+      <a href="#s1">1 · Problem</a><a href="#s2">2 · Simple factory</a><a href="#s3">3 · Factory Method</a><a href="#s4">4 · Families</a><a href="#s5">5 · Abstract Factory</a><a href="#s6">6 · Compare</a><a href="#s7">7 · In practice</a><a href="#final">Final check</a>
+    </nav>
+    <span class="score" id="score" title="Quiz answers correct">Quiz <b>0</b>/0</span>
+    <button class="iconbtn" id="theme" type="button" aria-label="Switch between light and dark theme"><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 2a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
+  </div>
+  <span class="progress" aria-hidden="true"></span>
+</header>
+
+<nav class="rail" id="rail" aria-label="Chapter progress">
+  <span class="fill" aria-hidden="true"></span>
+  <a href="#s1"><i>1</i><span>The problem with new</span></a>
+  <a href="#s2"><i>2</i><span>Simple factory</span></a>
+  <a href="#s3"><i>3</i><span>Factory Method</span></a>
+  <a href="#s4"><i>4</i><span>Families of objects</span></a>
+  <a href="#s5"><i>5</i><span>Abstract Factory</span></a>
+  <a href="#s6"><i>6</i><span>Side by side</span></a>
+  <a href="#s7"><i>7</i><span>In practice</span></a>
+  <a href="#final"><i>✓</i><span>Final check</span></a>
+</nav>
+<button class="totop" id="totop" type="button" aria-label="Back to top"><svg viewBox="0 0 50 50" aria-hidden="true"><circle class="bg" cx="25" cy="25" r="22"/><circle class="fg" cx="25" cy="25" r="22"/></svg><b aria-hidden="true">↑</b></button>
+
+<section class="hero" id="top">
+  <div class="wrap">
+    <div class="hero-txt">
+      <div class="kicker">Creational Design Patterns · Java</div>
+      <h1><span class="gt">Factory Method</span><br>&amp; Abstract Factory</h1>
+      <p class="lead">Every <code style="background:rgba(255,255,255,.12);color:#fff">new</code> in your code is a decision about <b>which class</b> to use. This chapter shows you how to move that decision to one place, so the rest of your program can grow without being rewritten.</p>
+      <div class="chips"><span class="chip">⏱ about 60 minutes</span><span class="chip">7 steps</span><span class="chip">5 simulations</span><span class="chip">4 checkpoints</span></div>
+      <div class="cta"><a class="btn grad" href="#s1">Start the chapter ↓</a><a class="btn ghost" href="#s6">Jump to the comparison</a></div>
+    </div>
+    <div class="scene" id="scene" aria-hidden="true">
+      <div class="world" id="world"><div class="floor"></div></div>
+      <div class="scene-cap">move your mouse over the factory</div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+  <nav class="map" aria-label="Chapter map">
+    <a href="#s1" data-i="0"><b>1</b><span>Why <code>new</code> becomes a problem</span></a>
+    <a href="#s2" data-i="1"><b>2</b><span>A first step: the simple factory</span></a>
+    <a href="#s3" data-i="2"><b>3</b><span>Factory Method, step by step</span></a>
+    <a href="#s4" data-i="3"><b>4</b><span>When objects come in families</span></a>
+    <a href="#s5" data-i="4"><b>5</b><span>Abstract Factory, step by step</span></a>
+    <a href="#s6" data-i="5"><b>6</b><span>Which one do I need?</span></a>
+    <a href="#s7" data-i="6"><b>7</b><span>Field notes and modern Java</span></a>
+  </nav>
+
+  <!-- =============== STEP 1 =============== -->
+  <section class="step" id="s1">
+    <div class="step-head"><div class="step-n">1</div><div><small>Step 1 · The problem</small><h2>Why <code style="font-size:.8em">new</code> becomes a problem</h2></div>
+      <div class="learn"><span>what coupling to a concrete class means</span><span>why change requests hurt</span><span>the idea of "who decides"</span></div></div>
+
+    <p>Imagine an online shop that notifies customers when an order ships. The first version only sends emails, so the developer writes <code>new EmailSender()</code> directly in the order code. It works. Then the business asks for SMS. Then push notifications. Each time, someone opens the order code and adds another <code>if</code>.</p>
+    <p>The real problem isn't the <code>new</code> keyword itself. The code that <b>uses</b> a notification also <b>decides which class</b> to create. Those are two different jobs, and they change for different reasons.</p>
+
+    <div class="code" data-code="smell"></div>
+
+    <div class="analogy"><div class="in">
+      <div>
+        <span class="tag">Analogy · the restaurant</span>
+        <h3 style="margin-top:10px">You order from the menu. You don't walk into the kitchen.</h3>
+        <p>As a customer you ask for "today's soup". You don't choose the pot, the stove or the cook. The kitchen decides how the soup is made, and it can change its recipe tomorrow without telling you.</p>
+        <div class="map-t"><b>Customer</b><i>→</i><span>the code that <b>uses</b> an object</span><b>Menu item</b><i>→</i><span>an interface, like <code>Channel</code></span><b>Kitchen</b><i>→</i><span>the factory, which <b>decides and creates</b></span></div>
+      </div>
+      <svg viewBox="0 0 420 260" role="img" aria-label="A customer orders soup at a counter; behind the counter, a kitchen with pots chooses how to make it">
+        <rect class="il-bg" x="0" y="0" width="420" height="260" rx="20"/>
+        <rect class="il-asoft" x="20" y="150" width="380" height="18" rx="6"/>
+        <g class="floaty"><circle class="il-indigo" cx="80" cy="96" r="22"/><rect class="il-indigo" x="56" y="120" width="48" height="40" rx="14"/>
+        <rect class="il-surface" x="104" y="58" width="104" height="38" rx="12"/><path class="il-surface" d="M118 94 l-8 12 18 -12z"/><text class="il-txt" x="116" y="82">"Soup, please"</text></g>
+        <rect class="il-isoft" x="220" y="30" width="180" height="120" rx="16"/>
+        <text class="il-txt2" x="236" y="52">KITCHEN · decides how</text>
+        <rect class="il-ink" x="240" y="110" width="140" height="10" rx="4"/>
+        <g><rect class="il-coral" x="250" y="80" width="40" height="30" rx="6"/><rect class="il-teal" x="300" y="86" width="34" height="24" rx="6"/><rect class="il-amber" x="342" y="76" width="30" height="34" rx="6"/></g>
+        <path class="il-line dash" d="M300 74 C300 60 310 60 310 50" stroke-width="2"/><path class="il-line dash" d="M266 74 C266 62 276 62 276 52" stroke-width="2"/>
+        <g class="floaty" style="animation-delay:-2s"><ellipse class="il-surface" cx="300" cy="212" rx="44" ry="12"/><path class="il-coral" d="M260 200 h80 a40 22 0 0 1 -80 0z"/><text class="il-txt2" x="268" y="246">served: a Soup</text></g>
+        <path class="il-line dash" d="M220 130 C190 170 210 200 250 206" stroke-width="2"/>
+      </svg>
+    </div></div>
+
+    <div class="sim"><div class="in">
+      <div class="sim-h"><span class="live">SIMULATION 1</span><h4>A change request arrives</h4></div>
+      <p class="small muted" style="margin-top:0">The business asks for a new <b>WhatsApp</b> channel. Count how many existing files you have to open, first in the original code, then after refactoring with a factory.</p>
+      <div class="row"><div class="seg" id="c1-mode"><button type="button" data-v="raw" class="on">Original: <code>new</code> everywhere</button><button type="button" data-v="fac">Refactored: one factory</button></div>
+        <button class="btn grad sm" id="c1-go" type="button">📨 Request: add WhatsApp</button><button class="btn sm" id="c1-rst" type="button">↺ Reset</button></div>
+      <div class="files" id="c1-files"></div>
+      <div class="kpis"><div class="kpi" id="c1-k1"><small>existing files edited</small><b>0</b></div><div class="kpi" id="c1-k2"><small>new files</small><b>0</b></div><div class="kpi" id="c1-k3"><small>risk of forgetting one</small><b>–</b></div></div>
+      <div class="say" id="c1-say">Choose a version, then send the change request.</div>
+    </div></div>
+
+    <div class="note"><div class="badge">!</div><div><h4>From practice</h4><p>On large projects, these scattered <code>if/else</code> chains are where bugs hide. Someone adds the new case in three places and forgets the fourth, and nobody notices until a customer in that one flow gets nothing. The goal of every factory pattern is to make the "which class?" decision in <b>one</b> place.</p></div></div>
+
+    <div class="quiz" id="q1"></div>
+  </section>
+
+  <!-- =============== STEP 2 =============== -->
+  <section class="step" id="s2">
+    <div class="step-head"><div class="step-n">2</div><div><small>Step 2 · A first step</small><h2>The simple factory</h2></div>
+      <div class="learn"><span>moving creation into one class</span><span>coding to an interface</span><span>its limit</span></div></div>
+    <p>The obvious first fix is to put all the <code>new</code> calls in one class. Every other class asks it for a <code>Channel</code> and never names <code>EmailChannel</code> or <code>SmsChannel</code>. This is often called a <b>simple factory</b>.</p>
+    <div class="two wide-l">
+      <div class="code" data-code="simple"></div>
+      <div class="grid3" style="grid-template-columns:minmax(0,1fr)">
+        <div class="tilt"><h4><span class="ico" style="--c:var(--teal)">✓</span>What we gained</h4><p>The order, invoice and reminder code only know the <code>Channel</code> interface. The "which class?" decision lives in one switch.</p></div>
+        <div class="tilt"><h4><span class="ico" style="--c:var(--coral)">✗</span>What is still wrong</h4><p>Every new channel still means <b>editing</b> <code>ChannelFactory</code>. The class is never closed for modification, and every team edits the same file.</p></div>
+      </div>
+    </div>
+    <div class="note def"><div class="badge">i</div><div><h4>Vocabulary check</h4><p>The simple factory is a useful <b>idiom</b>, not one of the 23 patterns in the Gang of Four book (Gamma, Helm, Johnson and Vlissides, 1994). It's the stepping stone. The two real patterns in this chapter fix its limit in two different ways: Factory Method uses <b>inheritance</b>, and Abstract Factory uses <b>an object you pass in</b>.</p></div></div>
+  </section>
+
+  <!-- =============== STEP 3 =============== -->
+  <section class="step" id="s3">
+    <div class="step-head"><div class="step-n">3</div><div><small>Step 3 · The first pattern</small><h2>Factory Method</h2></div>
+      <div class="learn"><span>the intent</span><span>the four roles</span><span>building it in 5 steps</span><span>watching it run</span></div></div>
+
+    <div class="note def"><div class="badge">≡</div><div><h4>Intent, in plain words</h4><p class="def-q">A base class declares a method that <span class="gt">creates</span> an object. Subclasses decide which concrete class that method returns.</p><p class="muted small">The base class runs the business logic and calls the method whenever it needs the object. It never writes <code>new</code> for a concrete product.</p></div></div>
+
+    <div class="analogy"><div class="in">
+      <div>
+        <span class="tag">Analogy · the coffee chain</span>
+        <h3 style="margin-top:10px">Head office writes the routine. Each branch picks its machine.</h3>
+        <p>A coffee chain's head office writes one routine for every branch: take the order, <b>make the drink</b>, serve, and record the sale. It leaves one step open: <i>which machine makes the drink</i>. The Rome branch uses an espresso machine, the Kyoto branch a matcha whisk, and the London branch a filter brewer.</p>
+        <p>The routine never changes when a new branch opens. The new branch only answers one question: "what machine do you use?"</p>
+        <div class="map-t"><b>Head office routine</b><i>→</i><span>the <b>Creator</b> with its business logic</span><b>"make the drink" step</b><i>→</i><span>the <b>factory method</b></span><b>Each branch</b><i>→</i><span>a <b>Concrete Creator</b></span><b>Each machine</b><i>→</i><span>a <b>Concrete Product</b></span></div>
+      </div>
+      <svg viewBox="0 0 420 300" role="img" aria-label="A head office building with a routine card sends arrows to three branches, each with a different coffee machine">
+        <rect class="il-bg" x="0" y="0" width="420" height="300" rx="20"/>
+        <g class="floaty"><rect class="il-indigo" x="150" y="20" width="120" height="86" rx="12"/><rect class="il-isoft" x="166" y="36" width="88" height="56" rx="8"/>
+        <text class="il-txt" x="174" y="54" style="font-size:11px">1 take order</text><text class="il-txt" x="174" y="68" style="font-size:11px;fill:var(--coral)">2 make drink ?</text><text class="il-txt" x="174" y="82" style="font-size:11px">3 serve · 4 log</text>
+        <text class="il-txt2" x="166" y="122">HEAD OFFICE</text></g>
+        <path class="il-line dash" d="M180 128 C140 150 90 150 74 176" stroke-width="2"/><path class="il-line dash" d="M210 128 L210 176" stroke-width="2"/><path class="il-line dash" d="M240 128 C280 150 330 150 346 176" stroke-width="2"/>
+        <g><rect class="il-surface" x="24" y="180" width="104" height="96" rx="14"/><rect class="il-coral" x="52" y="200" width="48" height="44" rx="8"/><rect class="il-ink" x="62" y="244" width="28" height="6" rx="3"/><circle class="il-surface" cx="76" cy="222" r="9"/><text class="il-txt2" x="40" y="268">Rome · espresso</text></g>
+        <g><rect class="il-surface" x="158" y="180" width="104" height="96" rx="14"/><ellipse class="il-teal" cx="210" cy="230" rx="30" ry="18"/><rect class="il-amber" x="206" y="196" width="8" height="26" rx="3"/><text class="il-txt2" x="172" y="268">Kyoto · matcha</text></g>
+        <g><rect class="il-surface" x="292" y="180" width="104" height="96" rx="14"/><path class="il-indigo" d="M320 200 h48 l-12 30 h-24z"/><rect class="il-indigo" x="330" y="234" width="28" height="12" rx="3"/><text class="il-txt2" x="304" y="268">London · filter</text></g>
+      </svg>
+    </div></div>
+
+    <h3>The four roles</h3>
+    <p>Hover or focus a box to see what each role does. Notice the dashed arrow: the creator only knows the <b>interface</b>.</p>
+    <div class="legend" id="fm-legend"><span class="r-prod" data-r="prod">Product</span><span class="r-cprod" data-r="cprod">Concrete Product</span><span class="r-crea" data-r="crea">Creator</span><span class="r-ccrea" data-r="ccrea">Concrete Creator</span></div>
+    <div class="uml-wrap"><div class="uml" id="fm-uml">
+      <div class="box c" tabindex="0" data-r="crea"><div class="hd"><small>abstract class</small>Notifier</div><div class="bd"># <i>createChannel()</i> : Channel<br>+ send(to, text)</div></div>
+      <div class="arr-h"><span>uses</span></div>
+      <div class="box p" tabindex="0" data-r="prod"><div class="hd"><small>«interface»</small>Channel</div><div class="bd">+ deliver(to, text)</div></div>
+      <div class="arr-v"><span>extends</span></div><div></div><div class="arr-v"><span>implements</span></div>
+      <div class="box c" tabindex="0" data-r="ccrea"><div class="hd"><small>class</small>EmailNotifier · SmsNotifier</div><div class="bd"># createChannel() : Channel<br><span class="muted">return new EmailChannel()</span></div></div>
+      <div class="arr-h"><span>creates</span></div>
+      <div class="box p" tabindex="0" data-r="cprod"><div class="hd"><small>class</small>EmailChannel · SmsChannel</div><div class="bd">+ deliver(to, text)</div></div>
+    </div></div>
+    <div class="role-say" id="fm-say" aria-live="polite">Each box is one role. Hover one to read its job.</div>
+
+    <h3>Build it, one step at a time</h3>
+    <div class="card"><div class="builder" id="fm-builder"></div></div>
+
+    <div class="sim"><div class="in">
+      <div class="sim-h"><span class="live">SIMULATION 2</span><h4>The factory floor: watch <code>send()</code> run</h4></div>
+      <p class="small muted" style="margin-top:0">Pick a concrete creator and press <b>send()</b>. The same four-station routine runs every time. Only the station marked <span style="color:var(--indigo);font-weight:700">factory method</span> behaves differently.</p>
+      <div class="row"><div class="seg" id="ff-pick"><button type="button" data-v="email" class="on">EmailNotifier</button><button type="button" data-v="sms">SmsNotifier</button><button type="button" data-v="push">PushNotifier</button></div><button class="btn grad sm" id="ff-go" type="button">▶ notifier.send("Nadia", …)</button></div>
+      <div class="floor2">
+        <div class="stations" id="ff-st">
+          <div class="station fm"><b>createChannel()</b><small>factory method</small></div>
+          <div class="station"><b>format text</b><small>same for all</small></div>
+          <div class="station"><b>deliver()</b><small>called on Channel</small></div>
+          <div class="station"><b>log</b><small>same for all</small></div>
+        </div>
+        <div class="belt" id="ff-belt"><div class="track"></div><div class="parcel" id="ff-parcel"></div></div>
+      </div>
+      <div class="console" id="ff-con" aria-live="polite"><div class="c">// console output appears here</div></div>
+    </div></div>
+
+    <div class="note"><div class="badge">!</div><div><h4>From practice</h4><p>Notice that <code>send()</code> is a <b>template</b>: fixed steps with one variable step. Factory Method is often used inside a Template Method like this. When you read a framework and see an <code>abstract</code> or overridable <code>create…()</code> method called from inside a longer algorithm, you are looking at a Factory Method.</p></div></div>
+
+    <div class="quiz" id="q2"></div>
+  </section>
+
+  <!-- =============== STEP 4 =============== -->
+  <section class="step" id="s4">
+    <div class="step-head"><div class="step-n">4</div><div><small>Step 4 · A new kind of problem</small><h2>When objects come in families</h2></div>
+      <div class="learn"><span>what a product family is</span><span>why mixing families is a bug</span></div></div>
+    <p>Factory Method creates <b>one</b> product. Some designs need several products that <b>must match each other</b>. A dashboard app with a <b>Daylight</b> theme and a <b>Midnight</b> theme is a good example. Each theme has its own button, checkbox and card. A Daylight button on a Midnight card isn't just ugly. It is a bug that users will report.</p>
+
+    <div class="analogy"><div class="in">
+      <div>
+        <span class="tag">Analogy · the meal kit</span>
+        <h3 style="margin-top:10px">Order one kit, and everything inside matches.</h3>
+        <p>A meal-kit company sells a Japanese kit and an Italian kit. You never open the Italian box and find chopsticks and miso. You pick <b>one kit</b>, and the company guarantees that every item in it belongs together.</p>
+        <div class="map-t"><b>Kit catalogue</b><i>→</i><span>the <b>Abstract Factory</b> interface</span><b>Japanese kit, Italian kit</b><i>→</i><span><b>Concrete Factories</b></span><b>Bowl, utensils, drink</b><i>→</i><span>the <b>product types</b></span></div>
+      </div>
+      <div>
+        <div class="kit3d"><div class="kitcube" id="kitcube"><b>Button</b><b>Checkbox</b><b>Card</b><b>Button</b><b>Checkbox</b><b>Card</b></div></div>
+        <p class="small muted" style="text-align:center;margin:0">The kit box changes colour as a whole. That is the guarantee.</p>
+      </div>
+    </div></div>
+
+    <div class="sim"><div class="in">
+      <div class="sim-h"><span class="live">SIMULATION 3</span><h4>The mix-up machine</h4></div>
+      <p class="small muted" style="margin-top:0">On the left, each widget is chosen separately, as it would be with three independent factory methods. On the right, one factory creates all three. Press <b>New developer</b> to see what happens when different people make the choices.</p>
+      <div class="two">
+        <div>
+          <h4 style="margin-bottom:8px">A · Each widget chosen separately</h4>
+          <div class="pick">
+            <label for="mx-b">Button</label><select id="mx-b"><option value="day">Daylight</option><option value="night">Midnight</option></select>
+            <label for="mx-c">Checkbox</label><select id="mx-c"><option value="day">Daylight</option><option value="night">Midnight</option></select>
+            <label for="mx-k">Card</label><select id="mx-k"><option value="day">Daylight</option><option value="night">Midnight</option></select>
+          </div>
+          <div class="row"><button class="btn sm" id="mx-rand" type="button">🎲 New developer</button></div>
+          <div class="mock" id="mock-a"></div><div class="warn" id="warn-a"></div>
+        </div>
+        <div>
+          <h4 style="margin-bottom:8px">B · One <code>ThemeFactory</code></h4>
+          <div class="pick"><label for="mx-f">Factory</label><select id="mx-f"><option value="day">DaylightFactory</option><option value="night">MidnightFactory</option></select></div>
+          <div class="row"><button class="btn sm" id="mx-rand2" type="button">🎲 New developer</button></div>
+          <div class="mock" id="mock-b"></div><div class="warn" id="warn-b"></div>
+        </div>
+      </div>
+    </div></div>
+
+    <div class="note def"><div class="badge">i</div><div><h4>Key idea</h4><p>A <b>product family</b> is a set of objects designed to be used together. The design must make it <b>impossible</b> to mix families by accident. Discipline and code reviews aren't enough. On side B, the mistake simply can't be written.</p></div></div>
+  </section>
+
+  <!-- =============== STEP 5 =============== -->
+  <section class="step" id="s5">
+    <div class="step-head"><div class="step-n">5</div><div><small>Step 5 · The second pattern</small><h2>Abstract Factory</h2></div>
+      <div class="learn"><span>the intent</span><span>the structure</span><span>building it in 5 steps</span><span>its cost: the axis of change</span></div></div>
+
+    <div class="note def"><div class="badge">≡</div><div><h4>Intent, in plain words</h4><p class="def-q">One interface with a <span class="gt">create method for each product</span> in a family. Each implementation creates one complete, matching family.</p><p class="muted small">The client receives a factory object and asks it for products. It never names a concrete class and can't mix families.</p></div></div>
+
+    <h3>The structure</h3>
+    <p>Hover a <b>concrete factory</b> to light up the family it produces.</p>
+    <div class="uml-wrap"><div class="af" id="af-uml">
+      <div class="box c" tabindex="0"><div class="hd"><small>«interface»</small>ThemeFactory</div><div class="bd">createButton()<br>createCheckbox()</div></div>
+      <div class="box p" tabindex="0"><div class="hd"><small>«interface»</small>Button</div><div class="bd">render()</div></div>
+      <div class="box p" tabindex="0"><div class="hd"><small>«interface»</small>Checkbox</div><div class="bd">render()</div></div>
+      <div class="up">▲ implements</div><div class="up">▲ implements</div><div class="up">▲ implements</div>
+      <div class="sub"><div class="box fd" tabindex="0" data-fam="day"><div class="hd">Daylight<br>Factory</div></div><div class="box fn2" tabindex="0" data-fam="night"><div class="hd">Midnight<br>Factory</div></div></div>
+      <div class="sub"><div class="box fd" data-of="day"><div class="hd">Daylight<br>Button</div></div><div class="box fn2" data-of="night"><div class="hd">Midnight<br>Button</div></div></div>
+      <div class="sub"><div class="box fd" data-of="day"><div class="hd">Daylight<br>Checkbox</div></div><div class="box fn2" data-of="night"><div class="hd">Midnight<br>Checkbox</div></div></div>
+    </div></div>
+    <div class="role-say" id="af-say" aria-live="polite">Columns are product types. Each colour is one family. A concrete factory produces exactly one colour.</div>
+
+    <h3>Build it, one step at a time</h3>
+    <div class="card"><div class="builder" id="af-builder"></div></div>
+
+    <h3>The price: think in a matrix</h3>
+    <p>Here is the most useful way to reason about Abstract Factory. Draw a table: <b>rows are families</b> (one concrete factory each) and <b>columns are product types</b> (one create method each). Then ask which way your system will grow.</p>
+    <div class="sim"><div class="in">
+      <div class="sim-h"><span class="live">SIMULATION 4</span><h4>Grow the matrix</h4></div>
+      <div class="row"><button class="btn grad sm" id="mt-row" type="button">+ Add a family: High Contrast</button><button class="btn grad sm" id="mt-col" type="button">+ Add a product: Slider</button><button class="btn sm" id="mt-rst" type="button">↺ Reset</button></div>
+      <div class="mx-wrap"><div class="mx" id="mt"></div></div>
+      <div class="kpis"><div class="kpi bad" id="mt-k1"><small>existing classes edited</small><b>0</b></div><div class="kpi ok" id="mt-k2"><small>new classes</small><b>0</b></div></div>
+      <div class="say" id="mt-say">Try both buttons, one at a time. Reset in between to compare.</div>
+    </div></div>
+    <div class="note"><div class="badge">!</div><div><h4>From practice</h4><p>Abstract Factory makes adding a <b>family</b> cheap and adding a <b>product type</b> expensive. Before you choose it, ask the people who own the product: "Next year, will we add more themes, or more kinds of widgets?" If the honest answer is "more kinds of widgets", this pattern will fight you.</p></div></div>
+
+    <div class="quiz" id="q3"></div>
+  </section>
+
+  <!-- =============== STEP 6 =============== -->
+  <section class="step" id="s6">
+    <div class="step-head"><div class="step-n">6</div><div><small>Step 6 · Putting it together</small><h2>Side by side</h2></div>
+      <div class="learn"><span>the key differences</span><span>how they work together</span><span>choosing the right one</span></div></div>
+    <div class="vs">
+      <div class="side s1"><h3>Factory Method</h3><dl>
+        <dt>Creates</dt><dd>one product</dd>
+        <dt>Mechanism</dt><dd><b>inheritance</b>: a subclass overrides a method</dd>
+        <dt>Who chooses</dt><dd>the subclass you instantiate</dd>
+        <dt>Shape</dt><dd>one method in a class that does other work</dd>
+        <dt>Example</dt><dd><code>Notifier.createChannel()</code></dd></dl></div>
+      <div class="side s2"><h3>Abstract Factory</h3><dl>
+        <dt>Creates</dt><dd>a family of related products</dd>
+        <dt>Mechanism</dt><dd><b>composition</b>: the client receives a factory object</dd>
+        <dt>Who chooses</dt><dd>whoever passes the factory in</dd>
+        <dt>Shape</dt><dd>an object whose only job is creating</dd>
+        <dt>Example</dt><dd><code>ThemeFactory.createButton()</code></dd></dl></div>
+    </div>
+    <div class="grid3" style="margin-top:14px">
+      <div class="tilt"><h4><span class="ico" style="--c:var(--teal)">↔</span>They work together</h4><p>Each create method of an Abstract Factory is itself a factory method. GoF describes concrete factories as often implemented with factory methods.</p></div>
+      <div class="tilt"><h4><span class="ico" style="--c:var(--indigo)">1</span>Factories are often singletons</h4><p>An application usually needs one <code>MidnightFactory</code>. That links this chapter to the Singleton lab: an <code>enum</code> factory works well.</p></div>
+      <div class="tilt"><h4><span class="ico" style="--c:var(--coral)">→</span>Designs evolve</h4><p>Many designs start with Factory Method and grow into Abstract Factory once a second, matching product appears.</p></div>
+    </div>
+
+    <h3>Decision helper</h3>
+    <div class="card"><div class="tree" id="tree"></div></div>
+  </section>
+
+  <!-- =============== STEP 7 =============== -->
+  <section class="step" id="s7">
+    <div class="step-head"><div class="step-n">7</div><div><small>Step 7 · Field notes</small><h2>In practice and in modern Java</h2></div>
+      <div class="learn"><span>where the JDK uses these patterns</span><span>lighter modern forms</span><span>common mistakes</span></div></div>
+
+    <h3>You already use them</h3>
+    <div class="tbl"><table>
+      <tr><th>In the JDK</th><th>Pattern</th><th>Why it fits</th></tr>
+      <tr><td><code>Collection.iterator()</code></td><td>Factory Method</td><td><code>ArrayList</code> and <code>HashSet</code> each return their own iterator class. You only see <code>Iterator</code>.</td></tr>
+      <tr><td><code>Connection.createStatement()</code>, <code>prepareStatement()</code> (JDBC)</td><td>Abstract Factory</td><td>A connection from the PostgreSQL driver creates a matching family of PostgreSQL statements. You never mix drivers.</td></tr>
+      <tr><td><code>DocumentBuilderFactory.newInstance()</code></td><td>Abstract Factory</td><td>Returns a factory for the XML parser implementation available at runtime. Your code never names it.</td></tr>
+      <tr><td><code>List.of()</code>, <code>Integer.valueOf()</code>, <code>Optional.of()</code></td><td>Static factory method</td><td>A static method that returns an instance. It's an idiom, not GoF's Factory Method, because there is no subclass overriding.</td></tr>
+    </table></div>
+
+    <h3>Lighter forms in modern Java</h3>
+    <p>Since Java 8, a factory doesn't always need its own class hierarchy. When the only variation is "which constructor?", a function is enough.</p>
+    <div class="two">
+      <div><h4>A registry of constructors</h4><div class="code" data-code="registry"></div><p class="small muted">Adding WhatsApp is one new line here and one new class. This is the usual way to remove the switch from the simple factory.</p></div>
+      <div><h4>A <code>Supplier</code> passed in</h4><div class="code" data-code="supplier"></div><p class="small muted"><code>Supplier&lt;Channel&gt;</code> is a one-method factory interface. It is Factory Method without the subclass.</p></div>
+    </div>
+
+    <h3>Mistakes to avoid</h3>
+    <div class="grid3">
+      <div class="tilt"><h4><span class="ico" style="--c:var(--coral)">1</span>A factory for one class</h4><p>If there is one implementation and no real reason for a second, write <code>new</code>. Add the factory when the second variant appears.</p></div>
+      <div class="tilt"><h4><span class="ico" style="--c:var(--coral)">2</span>Leaking concrete types</h4><p>A factory that returns <code>EmailChannel</code> instead of <code>Channel</code> gives the coupling straight back to the caller.</p></div>
+      <div class="tilt"><h4><span class="ico" style="--c:var(--coral)">3</span>Parallel hierarchies</h4><p>With Factory Method, every new product often needs a new creator subclass. Watch for two hierarchies growing in lockstep; a registry or a <code>Supplier</code> may be simpler.</p></div>
+      <div class="tilt"><h4><span class="ico" style="--c:var(--coral)">4</span>Choosing the factory everywhere</h4><p>Decide which concrete factory to use <b>once</b>, at startup in <code>main</code> (the "composition root"), then pass it in. Repeating that <code>if</code> around the code brings back step 1.</p></div>
+    </div>
+    <div class="note"><div class="badge">!</div><div><h4>Naming conventions you will meet</h4><p><code>createX()</code> and <code>newX()</code> usually return a fresh object. <code>of()</code>, <code>from()</code> and <code>valueOf()</code> convert or wrap values. <code>getInstance()</code> may return a shared object, as in the Singleton lab. Reading names this way tells you a lot about an API before you open the docs.</p></div></div>
+  </section>
+
+  <!-- =============== FINAL =============== -->
+  <section class="step" id="final">
+    <div class="step-head"><div class="step-n">✓</div><div><small>Final checkpoint</small><h2>Summary and final check</h2></div></div>
+    <div class="sum">
+      <div class="tilt"><h4><span class="ico" style="--c:var(--teal)">1</span>The problem</h4><ul><li>Using an object and choosing its class are two jobs.</li><li>Put the choice in one place.</li></ul></div>
+      <div class="tilt"><h4><span class="ico" style="--c:var(--indigo)">FM</span>Factory Method</h4><ul><li>One product.</li><li>A subclass overrides <code>createX()</code>.</li><li>Base class logic uses only the interface.</li></ul></div>
+      <div class="tilt"><h4><span class="ico" style="--c:var(--coral)">AF</span>Abstract Factory</h4><ul><li>A family of matching products.</li><li>The client receives a factory object.</li><li>New family: cheap. New product: expensive.</li></ul></div>
+      <div class="tilt"><h4><span class="ico" style="--c:var(--amber)">★</span>Rules of thumb</h4><ul><li>No second variant? Use <code>new</code>.</li><li>Choose the factory once, in <code>main</code>.</li><li>Return interfaces, never concrete types.</li></ul></div>
+    </div>
+    <div class="quiz" id="q4"></div>
+  </section>
+</main>
+<footer>Factory Method &amp; Abstract Factory · Creational Design Patterns · Java<br>Press <kbd>N</kbd> for the next step and <kbd>P</kbd> for the previous one.</footer>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+/* ---------- Java highlighting ---------- */
+const KW=new Set('abstract boolean case class default else enum extends final for if implements import interface new private protected public return static switch this throw var void null true false String'.split(' '));
+function cidx(l){let q=false;for(let i=0;i<l.length-1;i++){const c=l[i];if(c==='\\'){i++;continue}if(c==='"')q=!q;else if(!q&&c==='/'&&l[i+1]==='/')return i}return -1}
+function hlLine(line){const ci=cidx(line);const code=ci>=0?line.slice(0,ci):line,com=ci>=0?line.slice(ci):'';
+ let h=esc(code).replace(/(&quot;(?:[^&]|&(?!quot;))*?&quot;)|(@\w+)|\b([A-Za-z_]\w*)\b/g,(m,s,a,w)=>s?`<span class="s">${s}</span>`:a?`<span class="a">${a}</span>`:KW.has(w)&&w!=='String'?`<span class="k">${w}</span>`:/^[A-Z][a-z]/.test(w)?`<span class="t">${w}</span>`:w);
+ return h+(com?`<span class="c">${esc(com)}</span>`:'')}
+function copyBtn(host,src){const b=document.createElement('button');b.className='copy';b.type='button';b.textContent='Copy';
+ b.onclick=()=>{const ok=()=>{b.textContent='Copied ✓';setTimeout(()=>b.textContent='Copy',1400)};try{navigator.clipboard.writeText(src).then(ok,()=>selectEl(host))}catch(e){selectEl(host)}};host.append(b)}
+function selectEl(el){const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r)}
+function renderCode(el,src,file,bad){el.innerHTML=(file?`<div class="codebar"><i></i><i></i><i></i><span>${file}</span></div>`:'')+src.split('\n').map((l,i)=>`<span class="ln${bad&&bad.includes(i)?' bad':''}">${hlLine(l)||' '}</span>`).join('');copyBtn(el,src)}
+
+const SNIP={
+ smell:{f:'OrderService.java',bad:[4,5,6],src:`public class OrderService {
+    public void ship(Order order) {
+        // ... pack, label, hand over to the courier ...
+        Sender sender;
+        if (order.channel().equals("email"))    sender = new EmailSender();
+        else if (order.channel().equals("sms")) sender = new SmsSender();
+        else                                    sender = new PushSender();
+        sender.send(order.customer(), "Your order has shipped");
+    }
+}`},
+ simple:{f:'ChannelFactory.java',src:`public final class ChannelFactory {
+    public static Channel create(String type) {
+        return switch (type) {
+            case "email" -> new EmailChannel();
+            case "sms"   -> new SmsChannel();
+            case "push"  -> new PushChannel();
+            default -> throw new IllegalArgumentException(type);
+        };
+    }
+}
+
+// in OrderService, InvoiceService, ReminderJob...
+Channel channel = ChannelFactory.create(order.channel());
+channel.deliver(order.customer(), "Your order has shipped");`},
+ registry:{f:'Channels.java',src:`import java.util.Map;
+import java.util.function.Supplier;
+
+public final class Channels {
+    private static final Map<String, Supplier<Channel>> REGISTRY = Map.of(
+        "email", EmailChannel::new,
+        "sms",   SmsChannel::new,
+        "push",  PushChannel::new
+    );
+
+    public static Channel create(String type) {
+        Supplier<Channel> maker = REGISTRY.get(type);
+        if (maker == null) throw new IllegalArgumentException(type);
+        return maker.get();
+    }
+}`},
+ supplier:{f:'Notifier.java',src:`import java.util.function.Supplier;
+
+public class Notifier {
+    private final Supplier<Channel> channels;
+
+    public Notifier(Supplier<Channel> channels) {
+        this.channels = channels;
+    }
+
+    public void send(String to, String text) {
+        channels.get().deliver(to, text.strip());
+    }
+}
+
+// composition root
+Notifier n = new Notifier(SmsChannel::new);`}};
+$$('[data-code]').forEach(el=>{const s=SNIP[el.dataset.code];renderCode(el,s.src,s.f,s.bad)});
+
+/* ---------- quizzes ---------- */
+let QT=0,QC=0,QA=0;const updScore=()=>{$('#score').innerHTML=`Quiz <b>${QC}</b>/${QT}`};
+function quiz(id,title,sub,qs){const el=$('#'+id);QT+=qs.length;let done=0,right=0;
+ el.innerHTML=`<div class="in"><div class="quiz-h"><span class="tag">${title}</span><h4>${sub}</h4><span class="qs" id="${id}-s">0 / ${qs.length}</span></div>`+
+ qs.map((q,i)=>{const order=shuffle(q.o.map((t,j)=>j));return`<div class="qq" data-i="${i}"><p class="qt"><b>Q${i+1}</b>${q.q}</p><div class="qo">${order.map(j=>`<button type="button" class="opt" data-j="${j}">${q.o[j]}</button>`).join('')}</div></div>`}).join('')+`<div class="quiz-end" id="${id}-end"></div></div>`;
+ el.querySelectorAll('.qq').forEach(box=>{const q=qs[+box.dataset.i];box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+  const j=+b.dataset.j,ok=j===q.a;box.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(+x.dataset.j===q.a)x.classList.add('right');else if(x!==b)x.classList.add('fade')});
+  if(!ok)b.classList.add('wrong');done++;QA++;if(ok){right++;QC++}
+  box.insertAdjacentHTML('beforeend',`<div class="qx ${ok?'ok':'no'}"><b>${ok?'✓ Correct.':'✗ Not quite.'}</b>${q.x}</div>`);
+  $('#'+id+'-s').textContent=`${right} / ${qs.length} correct`;updScore();
+  if(done===qs.length)$('#'+id+'-end').innerHTML=right===qs.length?'🎉 Perfect. You are ready for the next step.':right>=qs.length/2?'👍 Good. Reread the explanations of the ones you missed before moving on.':'↺ Reread this step, then reload the page to try again.'})})
+ updScore()}
+
+quiz('q1','Checkpoint 1','Why is new a problem?',[
+ {q:'What is the main problem with writing <code>new EmailSender()</code> inside <code>OrderService</code>?',o:['It is slower than calling a method','The class that uses the object also decides its concrete class, so every new type means editing it','Java does not allow <code>new</code> inside a service class','It uses more memory than a factory'],a:1,x:' The issue is coupling: <code>OrderService</code> must change whenever the set of channels changes, even though shipping logic did not change.'},
+ {q:'In the restaurant analogy, who plays the role of the factory?',o:['The customer','The menu','The kitchen','The bill'],a:2,x:' The kitchen decides how the dish is made and creates it. The customer only asks through the menu, which plays the role of the interface.'},
+ {q:'In Simulation 1, why is the refactored version safer?',o:['It runs faster','The "which class?" decision is in one place, so you cannot forget a file','It has fewer classes','It does not need an interface'],a:1,x:' One new class plus one registration line. The shipping, invoice and reminder code are not touched.'}]);
+quiz('q2','Checkpoint 2','Factory Method',[
+ {q:'In Factory Method, who decides which concrete product is created?',o:['The client, with an if/else','A subclass of the creator, by overriding the factory method','The product itself','The JVM, at class loading time'],a:1,x:' <code>EmailNotifier</code> overrides <code>createChannel()</code> and returns <code>new EmailChannel()</code>. The base class never names a concrete product.'},
+ {q:'Which statement about <code>Notifier.send()</code> is true?',o:['It contains <code>new EmailChannel()</code>','It depends only on the <code>Channel</code> interface','Every subclass must override it','It must be static'],a:1,x:' <code>send()</code> calls <code>createChannel()</code> and then <code>deliver()</code> on whatever comes back. That is why it never changes.'},
+ {q:'To add a WhatsApp channel, what do you write?',o:['Edit <code>Notifier.send()</code> with a new if','A new <code>WhatsAppChannel</code> and a new <code>WhatsAppNotifier</code>; no existing class changes','Edit every existing notifier subclass','Nothing: it is automatic'],a:1,x:' This is the open/closed principle in action: open for extension (new classes), closed for modification (existing ones untouched).'},
+ {q:'Factory Method relies mainly on…',o:['Inheritance','An object passed into the constructor','Reflection','Static imports'],a:0,x:' The variation point is a method that a subclass overrides. Abstract Factory, in contrast, uses composition.'}]);
+quiz('q3','Checkpoint 3','Abstract Factory',[
+ {q:'What does an Abstract Factory create?',o:['Exactly one object','A family of related objects meant to be used together','Only singletons','Subclasses at runtime'],a:1,x:' One create method per product type, and each concrete factory returns one consistent family.'},
+ {q:'In the matrix, which change is expensive?',o:['Adding a new family, such as High Contrast','Adding a new product type, such as Slider','Renaming the client class','Both are equally cheap'],a:1,x:' A new product type adds a method to the interface, so every existing concrete factory must be edited.'},
+ {q:'How does <code>SettingsScreen</code> get its widgets?',o:['It calls <code>new DaylightButton()</code> itself','It receives a <code>ThemeFactory</code> and asks it for each widget','It extends <code>DaylightFactory</code>','It reads a static field'],a:1,x:' The factory is passed in (composition). The screen works with any family and cannot mix them.'},
+ {q:'Why can side B of the mix-up machine never show a mixed UI?',o:['Because the CSS prevents it','Because all widgets come from the same factory object','Because there are fewer widgets','Because it uses a singleton'],a:1,x:' One factory, one family. The mistake cannot be expressed in code.'}]);
+quiz('q4','Final check','Mixed questions',[
+ {q:'<code>Collection.iterator()</code> is a classic example of…',o:['Abstract Factory','Factory Method','Singleton','A static factory method'],a:1,x:' Each collection class overrides <code>iterator()</code> to return its own iterator type, and callers only see <code>Iterator</code>.'},
+ {q:'Is <code>List.of(1, 2, 3)</code> the GoF Factory Method pattern?',o:['Yes, any method that creates an object is Factory Method','No, it is a static factory method: there is no subclass overriding a method'],a:1,x:' Static factory methods are a useful idiom with good names and caching options, but the GoF pattern is about subclasses overriding a creation method.'},
+ {q:'You have exactly one implementation of <code>ReportPrinter</code> and no plans for another. What should you do?',o:['Create a Factory Method hierarchy','Create an Abstract Factory','Just use <code>new</code>','Use reflection'],a:2,x:' Patterns have a cost. Add a factory when the second variant actually appears.'},
+ {q:'Where should the program choose between <code>DaylightFactory</code> and <code>MidnightFactory</code>?',o:['In every class that draws widgets','Once, at startup in <code>main</code>, then pass it in','Inside each widget class','In the <code>ThemeFactory</code> interface'],a:1,x:' This single place is called the composition root. Repeating the choice everywhere brings back the scattered if/else from step 1.'},
+ {q:'Concrete factories are often implemented as…',o:['Singletons','Records','Abstract classes with no methods','Exceptions'],a:0,x:' An application usually needs one instance of each concrete factory, so an enum or another singleton is common.'}]);
+
+/* ---------- simulation 1: change request ---------- */
+(()=>{const F=['OrderService','InvoiceService','ReminderJob','Campaign'];let mode='raw',sent=false;
+ const raw=n=>`if ("email".equals(t)) s = new EmailSender();\nelse if ("sms".equals(t)) s = new SmsSender();\nelse s = new PushSender();`;
+ function draw(){let html='',edit=0,nw=0;
+  if(mode==='raw'){html=F.map((f,i)=>`<div class="file${sent?' edit':''}" style="animation-delay:${i*.08}s"><div class="fn">${f}.java<em>${sent?'edit':''}</em></div><pre>${esc(raw())}${sent?`\n<span class="add">else if ("whatsapp".equals(t))\n    s = new WhatsAppSender();</span>`:''}</pre></div>`).join('');edit=sent?F.length:0;nw=sent?1:0;
+   if(sent)html+=`<div class="file newf"><div class="fn">WhatsAppSender.java<em>new</em></div><pre>class WhatsAppSender\n    implements Sender { … }</pre></div>`}
+  else{html=F.map(f=>`<div class="file"><div class="fn">${f}.java<em></em></div><pre>Channel c = ChannelFactory\n    .create(type);\nc.deliver(to, text);</pre></div>`).join('')+
+   `<div class="file${sent?' small-edit':''}"><div class="fn">ChannelFactory.java<em>${sent?'+1 line':''}</em></div><pre>case "email" -> new EmailChannel();\ncase "sms"   -> new SmsChannel();${sent?'\n<span class="add">case "whatsapp" -> new WhatsAppChannel();</span>':''}</pre></div>`+
+   (sent?`<div class="file newf"><div class="fn">WhatsAppChannel.java<em>new</em></div><pre>class WhatsAppChannel\n    implements Channel { … }</pre></div>`:'');edit=sent?1:0;nw=sent?1:0}
+  $('#c1-files').innerHTML=html;
+  $('#c1-k1 b').textContent=edit;$('#c1-k2 b').textContent=nw;
+  const k3=$('#c1-k3');k3.className='kpi '+(sent?(mode==='raw'?'bad':'ok'):'');k3.querySelector('b').textContent=sent?(mode==='raw'?'High':'Low'):'–';
+  $('#c1-say').innerHTML=!sent?'Choose a version, then send the change request.':mode==='raw'?'<b class="r">4 existing files edited.</b> Each one contains the same decision. In a real codebase you would also have to <i>find</i> them all first. Now switch to the refactored version.':'<b class="g">1 small edit in one known place, plus 1 new class.</b> The shipping, invoice, reminder and campaign code did not change. In step 7 you will see how to remove even that one edit.';
+  $('#c1-go').disabled=sent}
+ $$('#c1-mode button').forEach(b=>b.onclick=()=>{mode=b.dataset.v;$$('#c1-mode button').forEach(x=>x.classList.toggle('on',x===b));sent=false;draw()});
+ $('#c1-go').onclick=()=>{sent=true;draw()};$('#c1-rst').onclick=()=>{sent=false;draw()};draw()})();
+
+/* ---------- step builders ---------- */
+function builder(id,steps,src){const el=$('#'+id);const lines=src.split('\n').map(l=>{const m=l.match(/^(\d)\|(.*)$/);return m?[+m[1],m[2]]:[0,l]});let k=0;
+ el.innerHTML=`<div><div class="bpills">${steps.map((s,i)=>`<button type="button" data-k="${i}">${i+1}. ${s.t}</button>`).join('')}</div><div class="btext" aria-live="polite"></div><div class="bnav"><button class="btn sm" type="button" data-d="-1">← Back</button><button class="btn grad sm" type="button" data-d="1">Next step →</button></div></div><div class="code" tabindex="0" aria-label="Code so far"></div>`;
+ const pills=el.querySelectorAll('.bpills button'),txt=el.querySelector('.btext'),code=el.querySelector('.code'),nav=el.querySelectorAll('.bnav button');
+ function go(n){k=Math.max(0,Math.min(steps.length-1,n));pills.forEach((p,i)=>{p.classList.toggle('on',i===k);p.classList.toggle('done',i<k)});
+  txt.innerHTML=`<h4>${steps[k].t}</h4>${steps[k].d}`;const vis=lines.filter(l=>l[0]<=k+1);
+  code.innerHTML=`<div class="codebar"><i></i><i></i><i></i><span>${steps[k].f||'App.java'}</span></div>`+vis.map(l=>`<span class="ln${l[0]===k+1?' new':''}">${hlLine(l[1])||' '}</span>`).join('');
+  copyBtn(code,vis.map(l=>l[1]).join('\n'));nav[0].disabled=k===0;nav[1].disabled=k===steps.length-1;nav[1].textContent=k===steps.length-2?'Last step →':'Next step →'}
+ pills.forEach(p=>p.onclick=()=>go(+p.dataset.k));nav.forEach(b=>b.onclick=()=>go(k+ +b.dataset.d));go(0)}
+
+builder('fm-builder',[
+ {t:'Product',d:'<p>Start with what every product can do. This interface is all the business logic will ever see.</p><p class="small muted">Role: <b>Product</b>.</p>'},
+ {t:'Concrete products',d:'<p>Write one class per real channel. Each one implements <code>Channel</code> in its own way.</p><p class="small muted">Role: <b>Concrete Product</b>.</p>'},
+ {t:'Creator',d:'<p>The base class declares the <b>factory method</b> <code>createChannel()</code> and uses it inside <code>send()</code>. It has no idea which channel it will get.</p><p class="small muted">Role: <b>Creator</b>. The highlighted method is the heart of the pattern.</p>'},
+ {t:'Concrete creators',d:'<p>Each subclass answers one question: which channel? These are the only places where <code>new EmailChannel()</code> and <code>new SmsChannel()</code> appear.</p><p class="small muted">Role: <b>Concrete Creator</b>.</p>'},
+ {t:'Client',d:'<p>The client chooses a creator <b>once</b> and then calls <code>send()</code>. Adding WhatsApp later means two new classes and no edits to existing ones.</p><p class="small muted">Run it with <code>java App.java sms</code> to see the SMS line.</p>'}],
+`1|// 1. Product: what every channel can do
+1|interface Channel {
+1|    void deliver(String to, String text);
+1|}
+1|
+2|// 2. Concrete products
+2|class EmailChannel implements Channel {
+2|    public void deliver(String to, String text) {
+2|        System.out.println("[email] to " + to + ": " + text);
+2|    }
+2|}
+2|class SmsChannel implements Channel {
+2|    public void deliver(String to, String text) {
+2|        System.out.println("[sms] to " + to + ": " + text);
+2|    }
+2|}
+2|
+3|// 3. Creator: business logic + the factory method
+3|abstract class Notifier {
+3|    protected abstract Channel createChannel();   // the factory method
+3|
+3|    public void send(String to, String text) {
+3|        Channel channel = createChannel();        // no "new" here
+3|        channel.deliver(to, text.strip());
+3|        System.out.println("logged: message for " + to);
+3|    }
+3|}
+3|
+4|// 4. Concrete creators: each one picks a product
+4|class EmailNotifier extends Notifier {
+4|    @Override protected Channel createChannel() { return new EmailChannel(); }
+4|}
+4|class SmsNotifier extends Notifier {
+4|    @Override protected Channel createChannel() { return new SmsChannel(); }
+4|}
+4|
+5|// 5. Client: choose the creator once, then just use it
+5|public class App {
+5|    public static void main(String[] args) {
+5|        Notifier notifier = args.length > 0 && args[0].equals("sms")
+5|                ? new SmsNotifier()
+5|                : new EmailNotifier();
+5|        notifier.send("Nadia", "  Your order has shipped  ");
+5|    }
+5|}`);
+
+builder('af-builder',[
+ {t:'Product types',d:'<p>One interface per <b>kind</b> of product. These are the columns of the matrix.</p><p class="small muted">Role: <b>Abstract Product</b>.</p>'},
+ {t:'Abstract factory',d:'<p>One interface with one create method per product type. It promises a complete family.</p><p class="small muted">Role: <b>Abstract Factory</b>.</p>'},
+ {t:'Two families',d:'<p>Each family implements every product type in its own style.</p><p class="small muted">Role: <b>Concrete Products</b>, grouped by family.</p>'},
+ {t:'Concrete factories',d:'<p>Each factory creates only its own family. This is where the guarantee comes from: <code>DaylightFactory</code> can only return Daylight widgets.</p><p class="small muted">Role: <b>Concrete Factory</b>. Each create method is a small factory method.</p>'},
+ {t:'Client',d:'<p>The screen receives a factory and asks it for widgets. <code>main</code> picks the family <b>once</b>. The screen works with any family, including ones written next year.</p>'}],
+`1|// 1. Product types (the columns)
+1|interface Button   { String render(); }
+1|interface Checkbox { String render(); }
+1|
+2|// 2. The abstract factory: one create method per product type
+2|interface ThemeFactory {
+2|    Button createButton();
+2|    Checkbox createCheckbox();
+2|}
+2|
+3|// 3. Two families of products (the rows)
+3|class DaylightButton   implements Button   { public String render() { return "( Save ) daylight"; } }
+3|class DaylightCheckbox implements Checkbox { public String render() { return "(x) daylight"; } }
+3|class MidnightButton   implements Button   { public String render() { return "[ Save ] midnight"; } }
+3|class MidnightCheckbox implements Checkbox { public String render() { return "[x] midnight"; } }
+3|
+4|// 4. Concrete factories: each one creates exactly one family
+4|class DaylightFactory implements ThemeFactory {
+4|    public Button createButton()     { return new DaylightButton(); }
+4|    public Checkbox createCheckbox() { return new DaylightCheckbox(); }
+4|}
+4|class MidnightFactory implements ThemeFactory {
+4|    public Button createButton()     { return new MidnightButton(); }
+4|    public Checkbox createCheckbox() { return new MidnightCheckbox(); }
+4|}
+4|
+5|// 5. Client: receives a factory, never names a concrete widget
+5|class SettingsScreen {
+5|    private final Button save;
+5|    private final Checkbox notifications;
+5|
+5|    SettingsScreen(ThemeFactory theme) {
+5|        save = theme.createButton();
+5|        notifications = theme.createCheckbox();
+5|    }
+5|    void show() {
+5|        System.out.println(notifications.render() + "  " + save.render());
+5|    }
+5|}
+5|
+5|public class App {
+5|    public static void main(String[] args) {
+5|        boolean dark = args.length > 0 && args[0].equals("dark");
+5|        ThemeFactory theme = dark ? new MidnightFactory() : new DaylightFactory();
+5|        new SettingsScreen(theme).show();
+5|    }
+5|}`);
+
+/* ---------- FM roles ---------- */
+(()=>{const SAY={prod:'<b>Product</b> · the interface every created object implements. The creator depends only on this.',cprod:'<b>Concrete Product</b> · a real implementation, such as <code>EmailChannel</code>. Only concrete creators mention it.',crea:'<b>Creator</b> · declares the factory method <code>createChannel()</code> and contains the business logic <code>send()</code> that calls it.',ccrea:'<b>Concrete Creator</b> · overrides the factory method to return one concrete product. Its only job is that choice.'};
+ const uml=$('#fm-uml'),boxes=uml.querySelectorAll('.box'),leg=$$('#fm-legend span');
+ const on=r=>{uml.classList.toggle('dim',!!r);boxes.forEach(b=>b.classList.toggle('lit',b.dataset.r===r));leg.forEach(l=>l.classList.toggle('on',l.dataset.r===r));if(r)$('#fm-say').innerHTML=SAY[r]};
+ [...boxes,...leg].forEach(b=>{b.addEventListener('mouseenter',()=>on(b.dataset.r));b.addEventListener('focus',()=>on(b.dataset.r));b.addEventListener('mouseleave',()=>on(null));b.addEventListener('blur',()=>on(null))})})();
+
+/* ---------- AF family highlight ---------- */
+(()=>{const af=$('#af-uml');const SAY={day:'<b>DaylightFactory</b> creates <code>DaylightButton</code> and <code>DaylightCheckbox</code>, and nothing else.',night:'<b>MidnightFactory</b> creates <code>MidnightButton</code> and <code>MidnightCheckbox</code>, and nothing else.'};
+ af.querySelectorAll('[data-fam]').forEach(f=>{const on=v=>{af.classList.toggle('dim',v);af.querySelectorAll('.box').forEach(b=>b.classList.toggle('lit',v&&(b===f||b.dataset.of===f.dataset.fam)));if(v)$('#af-say').innerHTML=SAY[f.dataset.fam]};
+  f.addEventListener('mouseenter',()=>on(true));f.addEventListener('focus',()=>on(true));f.addEventListener('mouseleave',()=>on(false));f.addEventListener('blur',()=>on(false))})})();
+
+/* ---------- 3D helpers ---------- */
+function cuboid(parent,{w,h,d,x=0,y=0,z=0,c,top,label,lc}){const el=document.createElement('div');el.className='cub';el.style.transform=`translate3d(${x}px,${y}px,${z}px)`;
+ const face=(fw,fh,t,shade,txt)=>`<b style="left:${-fw/2}px;top:${-fh/2}px;width:${fw}px;height:${fh}px;transform:${t};background:${shade}">${txt||''}</b>`;
+ const sh=(k)=>`color-mix(in srgb,${c} ${k}%,#000)`;
+ el.innerHTML=face(w,h,`translateZ(${d/2}px)`,sh(100),label)+face(w,h,`rotateY(180deg) translateZ(${d/2}px)`,sh(70))+face(d,h,`rotateY(90deg) translateZ(${w/2}px)`,sh(78))+face(d,h,`rotateY(-90deg) translateZ(${w/2}px)`,sh(86),label&&w<80?label:'')+face(w,d,`rotateX(90deg) translateZ(${h/2}px)`,top||`color-mix(in srgb,${c} 80%,#fff)`)+face(w,d,`rotateX(-90deg) translateZ(${h/2}px)`,sh(60));
+ if(lc)el.querySelectorAll('b').forEach(b=>b.style.color=lc);parent.append(el);return el}
+
+/* hero factory */
+(()=>{const w=$('#world');
+ cuboid(w,{w:150,h:110,d:120,x:-70,y:-55,z:-10,c:'#5b4ee6',label:'Factory'});
+ cuboid(w,{w:70,h:50,d:120,x:30,y:-25,z:-10,c:'#3b33a8'});
+ cuboid(w,{w:26,h:90,d:26,x:-110,y:-155,z:-40,c:'#2a2f63'});
+ cuboid(w,{w:22,h:70,d:22,x:-60,y:-145,z:-40,c:'#2a2f63'});
+ const belt=cuboid(w,{w:240,h:10,d:46,x:150,y:-5,z:30,c:'#1d2240',top:'repeating-linear-gradient(90deg,#3a4180 0 12px,#232a5c 12px 24px)'});
+ const sign=document.createElement('div');sign.className='sign';sign.textContent='createProduct()';sign.style.transform='translate3d(-70px,-145px,52px)';w.append(sign);
+ ['#13b8a8','#5b4ee6','#f0574a','#ffb547'].forEach((c,i)=>{const m=document.createElement('div');m.className='belt-move';m.style.transform='translate3d(40px,-30px,30px)';m.style.left='40px';m.style.top='-24px';m.style.animationDelay=(-i*1.5)+'s';w.append(m);m.style.position='absolute';
+  const holder=document.createElement('div');holder.style.cssText='position:absolute;transform-style:preserve-3d;transform:translate3d(40px,0,30px)';m.append(holder);cuboid(holder,{w:30,h:30,d:30,c})});
+ [[-110,-205],[-60,-185]].forEach(([x,y],i)=>{for(let k=0;k<2;k++){const s=document.createElement('div');s.className='smoke';s.style.left=(x-13)+'px';s.style.top=(y-13)+'px';s.style.transform='translateZ(-40px)';s.style.animationDelay=(-(i*1.1+k*1.7))+'s';w.append(s)}});
+ const hero=$('#top'),scene=$('#scene');
+ hero.addEventListener('pointermove',e=>{const r=hero.getBoundingClientRect(),px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;hero.style.setProperty('--mx',(px*100)+'%');hero.style.setProperty('--my',(py*100)+'%');if(REDUCE)return;w.style.setProperty('--tx',((px-.5)*40).toFixed(2));w.style.setProperty('--ty',((.5-py)*-16).toFixed(2))});
+ hero.addEventListener('pointerleave',()=>{w.style.setProperty('--tx',0);w.style.setProperty('--ty',0)})})();
+
+/* ---------- simulation 2: factory floor ---------- */
+(()=>{const P={email:{n:'EmailNotifier',p:'EmailChannel',c:'#5b4ee6',l:'[email] to Nadia: Your order has shipped'},sms:{n:'SmsNotifier',p:'SmsChannel',c:'#13b8a8',l:'[sms] to Nadia: Your order has shipped'},push:{n:'PushNotifier',p:'PushChannel',c:'#f0574a',l:'[push] to Nadia: Your order has shipped'}};
+ let pick='email',busy=false;const st=$$('#ff-st .station'),parcel=$('#ff-parcel'),belt=$('#ff-belt'),con=$('#ff-con');
+ $$('#ff-pick button').forEach(b=>b.onclick=()=>{if(busy)return;pick=b.dataset.v;$$('#ff-pick button').forEach(x=>x.classList.toggle('on',x===b))});
+ const wait=ms=>new Promise(r=>setTimeout(r,REDUCE?0:ms));
+ const log=(h)=>{con.insertAdjacentHTML('beforeend',`<div>${h}</div>`);while(con.children.length>7)con.firstChild.remove()};
+ $('#ff-go').onclick=async()=>{if(busy)return;busy=true;$('#ff-go').disabled=true;const p=P[pick];con.innerHTML='';
+  st.forEach(s=>{s.classList.remove('on');s.style.setProperty('--pc',p.c)});parcel.innerHTML='';parcel.classList.remove('show');parcel.style.transition='none';parcel.style.left='4%';void parcel.offsetWidth;parcel.style.transition='';
+  log(`<span class="c">// notifier is a ${p.n}</span>`);log(`<span class="y">notifier.send("Nadia", "  Your order has shipped  ")</span>`);
+  belt.classList.add('run');const xs=['4%','29%','54%','79%'];
+  for(let i=0;i<4;i++){st.forEach((s,j)=>s.classList.toggle('on',j===i));parcel.style.left=xs[i];
+   if(i===0){await wait(350);const c=document.createElement('div');c.className='cub';c.style.transform='rotateX(-24deg) rotateY(-32deg)';parcel.append(c);cuboid(c,{w:40,h:40,d:40,c:p.c,label:p.p.replace('Channel','')});parcel.classList.add('show');log(`→ createChannel() <span class="c">// overridden in ${p.n}</span>`);log(`  returns <span class="m">new ${p.p}()</span>`)}
+   if(i===1)log('→ text.strip()  <span class="c">// same code for every notifier</span>');
+   if(i===2)log(`→ channel.deliver(…)  <span class="m">${p.l}</span>`);
+   if(i===3)log('→ logged: message for Nadia');
+   await wait(1000)}
+  belt.classList.remove('run');st.forEach(s=>s.classList.remove('on'));log(`<span class="c">// send() never mentioned ${p.p}. Try another notifier.</span>`);busy=false;$('#ff-go').disabled=false}})();
+
+/* ---------- simulation 3: mix-up ---------- */
+(()=>{const NAME={day:'Daylight',night:'Midnight'};
+ function mock(el,b,c,k,fam){el.className='mock fam-'+fam;el.innerHTML=`<h5>Settings</h5><div class="w-row"><span class="w-chk ${c}"><i>✓</i>Email me updates</span></div><div class="w-row"><button type="button" tabindex="-1" class="w-btn ${b}">Save changes</button></div><div class="w-card ${k}">Card · last saved 2 minutes ago</div>`}
+ function drawA(){const b=$('#mx-b').value,c=$('#mx-c').value,k=$('#mx-k').value,fam=k;mock($('#mock-a'),b,c,k,fam);const mixed=!(b===c&&c===k);const w=$('#warn-a');w.className='warn '+(mixed?'bad':'ok');w.textContent=mixed?`✗ Mixed families: ${NAME[b]} button, ${NAME[c]} checkbox, ${NAME[k]} card.`:`✓ Consistent, but only because everyone happened to choose ${NAME[b]}.`}
+ function drawB(){const f=$('#mx-f').value;mock($('#mock-b'),f,f,f,f);const w=$('#warn-b');w.className='warn ok';w.textContent=`✓ Always consistent: every widget comes from ${NAME[f]}Factory.`;
+  const cube=$('#kitcube');cube.querySelectorAll('b').forEach(x=>{x.style.background=f==='day'?'linear-gradient(135deg,#ffd27a,#f5a524)':'linear-gradient(135deg,#7b6dff,#2b2f7a)';x.style.color=f==='day'?'#3d2a0b':'#fff'})}
+ ['#mx-b','#mx-c','#mx-k'].forEach(s=>$(s).onchange=drawA);$('#mx-f').onchange=drawB;
+ $('#mx-rand').onclick=()=>{['#mx-b','#mx-c','#mx-k'].forEach(s=>$(s).value=Math.random()<.5?'day':'night');drawA()};
+ $('#mx-rand2').onclick=()=>{$('#mx-f').value=Math.random()<.5?'day':'night';drawB()};
+ $('#mx-c').value='night';drawA();drawB()})();
+
+/* ---------- simulation 4: matrix ---------- */
+(()=>{let fams=['Daylight','Midnight'],prods=['Button','Checkbox','Card'],newF=null,newP=null;
+ function draw(){const m=$('#mt');m.style.gridTemplateColumns=`minmax(130px,1.2fr) repeat(${prods.length},minmax(96px,1fr))`;let h=`<div class="cell corner">ThemeFactory</div>`;let edit=0,nw=0;
+  prods.forEach(p=>{const isN=p===newP;if(isN)nw++;h+=`<div class="cell ifc${isN?' newc':''}">«interface»<br>${p}${isN?'<em>new</em>':''}</div>`});
+  if(newP){edit++;h=h.replace('<div class="cell corner">ThemeFactory</div>',`<div class="cell corner edit">ThemeFactory<br>+ create${newP}()<em>edit</em></div>`)}
+  fams.forEach(f=>{const fN=f===newF;let row='';if(fN)nw++;if(newP&&!fN)edit++;
+   row+=`<div class="cell fac${fN?' newc':newP?' edit':''}">${f}Factory${fN?'<em>new</em>':newP?'<em>edit</em>':''}</div>`;
+   prods.forEach(p=>{const n=fN||p===newP;if(n)nw++;row+=`<div class="cell${n?' newc':''}">${f}${p}${n?'<em>new</em>':''}</div>`});h+=row});
+  m.innerHTML=h;$('#mt-k1 b').textContent=edit;$('#mt-k2 b').textContent=nw;
+  $('#mt-row').disabled=!!newF||!!newP;$('#mt-col').disabled=!!newF||!!newP;
+  $('#mt-say').innerHTML=newF?`<b class="g">Adding a family touched 0 existing classes.</b> You wrote ${nw} new classes: one factory and one class per product. Nothing that already worked had to change.`:newP?`<b class="r">Adding a product type edited ${edit} existing classes:</b> the <code>ThemeFactory</code> interface and every concrete factory. With 10 families, that is 11 edits.`:'Try both buttons, one at a time. Reset in between to compare.'}
+ $('#mt-row').onclick=()=>{newF='HighContrast';fams=[...fams,newF];draw()};
+ $('#mt-col').onclick=()=>{newP='Slider';prods=[...prods,newP];draw()};
+ $('#mt-rst').onclick=()=>{fams=['Daylight','Midnight'];prods=['Button','Checkbox','Card'];newF=newP=null;draw()};draw()})();
+
+/* ---------- decision helper ---------- */
+(()=>{const T={q:'Do you need to create one kind of object, or several kinds that must match each other?',a:[['One kind',{q:'Will there be several variants, or should subclasses or plugins decide which one?',a:[['Yes, variants will be added',{q:'Is the creation part of a larger algorithm in a base class?',a:[['Yes',{v:'Factory Method',d:'Put a <code>protected abstract createX()</code> in the base class and let subclasses override it.'}],['No, I just need to pick a class',{v:'Registry or Supplier',d:'A <code>Map&lt;String, Supplier&lt;X&gt;&gt;</code> or a <code>Supplier&lt;X&gt;</code> passed in is lighter than a class hierarchy. See step 7.'}]]}],['No, only one implementation',{v:'Just use new',d:'Or a static factory method like <code>of()</code> if a good name helps. Add a factory when the second variant actually appears.'}]]}],['Several that must match',{q:'Will you add new families more often than new product types?',a:[['Yes, new families',{v:'Abstract Factory',d:'One <code>XFactory</code> interface with a create method per product, one concrete factory per family. Choose the factory once in <code>main</code>.'}],['No, new product types',{v:'Rethink first',d:'Abstract Factory makes new product types expensive. Consider a more generic factory such as <code>create(Class&lt;T&gt;)</code>, or keep separate factory methods until the design settles.'}]]}]]};
+ const root=$('#tree');let path=[];
+ function draw(){let node=T,h='';for(let i=0;;i++){if(node.v){h+=`<div class="verdict"><h4>→ ${node.v}</h4><p>${node.d}</p></div>`;break}
+   h+=`<div class="tq"><p>${node.q}</p><div class="row">${node.a.map((a,j)=>`<button type="button" class="btn sm${path[i]===j?' on':''}" data-i="${i}" data-j="${j}">${a[0]}</button>`).join('')}</div></div>`;
+   if(path[i]===undefined)break;node=node.a[path[i]][1]}
+  root.innerHTML=h;root.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{path=path.slice(0,+b.dataset.i);path[+b.dataset.i]=+b.dataset.j;draw()})}
+ draw()})();
+
+/* ---------- tilt cards with spotlight ---------- */
+if(!REDUCE)$$('.tilt').forEach(t=>{t.addEventListener('pointermove',e=>{const r=t.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;t.style.setProperty('--ry',((x-.5)*10).toFixed(2)+'deg');t.style.setProperty('--rx',((.5-y)*8).toFixed(2)+'deg');t.style.setProperty('--lx',(x*100)+'%');t.style.setProperty('--ly',(y*100)+'%')});
+ t.addEventListener('pointerleave',()=>{t.style.setProperty('--rx','0deg');t.style.setProperty('--ry','0deg')})});
+
+/* ---------- navigation + scroll ---------- */
+const root=document.documentElement,hero=$('#top'),STEPS=['#s1','#s2','#s3','#s4','#s5','#s6','#s7','#final'].map(s=>$(s));
+const NAV=$$('#snav a'),RAIL=$$('#rail a'),MAP=$$('.map a'),HEADS=$$('.step-head');let cur=-2,ticking=false;
+function setCur(i){if(i===cur)return;cur=i;NAV.forEach((a,j)=>a.classList.toggle('act',j===i));RAIL.forEach((a,j)=>{a.classList.toggle('act',j===i);a.classList.toggle('seen',j<i)});MAP.forEach((a,j)=>a.classList.toggle('seen',j<=i));
+ const a=NAV[i],nav=$('#snav');if(a&&nav.scrollWidth>nav.clientWidth)nav.scrollTo({left:a.offsetLeft-nav.clientWidth/2+a.offsetWidth/2,behavior:REDUCE?'auto':'smooth'})}
+function onScroll(){ticking=false;const y=scrollY,max=Math.max(1,root.scrollHeight-innerHeight);root.style.setProperty('--sp',Math.min(1,y/max).toFixed(4));
+ if(!REDUCE){hero.style.setProperty('--hy',Math.min(y,hero.offsetHeight).toFixed(0));HEADS.forEach(h=>{const r=h.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight)h.style.setProperty('--pp',(1-(r.top+r.height)/(innerHeight+r.height)).toFixed(3))})}
+ $('#totop').classList.toggle('show',y>700);let c=-1;STEPS.forEach((s,i)=>{if(s.getBoundingClientRect().top<220)c=i});setCur(c)}
+addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(onScroll)}},{passive:true});onScroll();
+$('#totop').onclick=()=>scrollTo({top:0,behavior:REDUCE?'auto':'smooth'});
+addEventListener('keydown',e=>{if(e.metaKey||e.ctrlKey||e.altKey||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;const k=e.key.toLowerCase();if(k!=='n'&&k!=='p')return;const i=cur+(k==='n'?1:-1);if(i<0)scrollTo({top:0,behavior:REDUCE?'auto':'smooth'});else if(i<STEPS.length)STEPS[i].scrollIntoView({behavior:REDUCE?'auto':'smooth'})});
+
+/* scroll reveal: only for elements below the first screen, triggered on entry */
+(()=>{if(REDUCE||!('IntersectionObserver' in window))return;const els=$$('.step-head,.card,.sim,.analogy,.note,.quiz,.tilt,.code,.uml-wrap,.vs,.tbl,.map a');
+ const io=new IntersectionObserver(es=>es.forEach(en=>{if(!en.isIntersecting)return;const el=en.target;io.unobserve(el);const sib=[...el.parentElement.children].filter(x=>els.includes(x));el.style.setProperty('--d',Math.min(Math.max(0,sib.indexOf(el))*.08,.4)+'s');el.classList.add('rv');
+  el.addEventListener('animationend',function f(ev){if(ev.target!==el)return;el.removeEventListener('animationend',f);setTimeout(()=>el.classList.remove('rv'),300)})}),{threshold:0});
+ els.forEach(el=>{if(el.getBoundingClientRect().top>innerHeight)io.observe(el)})})();
+
+$('#theme').onclick=()=>{const c=root.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),n=c==='dark'?'light':'dark';root.dataset.theme=n;try{localStorage.setItem('fp-theme',n)}catch(e){}};
+</script>
+
+</body></html>

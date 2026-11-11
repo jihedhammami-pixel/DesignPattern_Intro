@@ -1,0 +1,1329 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Factory Lab Answer Key</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<script>try{var t=localStorage.getItem('fp-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<style>
+/* Layout: an assembly line. A dark "factory floor" hero, then seven numbered stations in one reading column, a progress rail on the left on wide screens, checkpoint quizzes between stations. Gradient = teal → indigo → coral, the three product colours. */
+:root{
+  --bg:#f5f6fb; --surface:#ffffff; --surface-2:#eef0f8; --ink:#171a33; --muted:#575e7e; --line:#dfe2ef;
+  --teal:#0b9d90; --indigo:#5b4ee6; --coral:#f0574a; --amber:#d98a06;
+  --teal-soft:#d6f3ef; --indigo-soft:#e7e4fd; --coral-soft:#ffe4e0; --amber-soft:#fcefd2;
+  --ok:#14866d; --ok-soft:#d8f2e9; --bad:#c8372d; --bad-soft:#fde2df;
+  --on-accent:#ffffff;
+  --grad:linear-gradient(115deg,#13b8a8 0%,#5b4ee6 48%,#f0574a 100%);
+  --hero:#0c0f2c; --hero-2:#171b45; --hero-ink:#f2f3ff; --hero-muted:#b6bbe0;
+  --code-bg:#0f1330; --code-ink:#e6e8ff; --code-k:#b7a8ff; --code-s:#7fe3c9; --code-c:#8a90b8; --code-t:#ffc57d; --code-a:#ff9a8e; --code-hi:#2a2f63;
+  --shadow:0 18px 40px -22px rgba(23,26,51,.35);
+  --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --f-body:"Onest","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1022; --surface:#151931; --surface-2:#1d2240; --ink:#eceefb; --muted:#a7adcc; --line:#2a3055;
+  --teal:#3fd3c4; --indigo:#9a91ff; --coral:#ff8a7d; --amber:#ffc55c;
+  --teal-soft:#123a3a; --indigo-soft:#272459; --coral-soft:#46232a; --amber-soft:#443514;
+  --ok:#6fdcb6; --ok-soft:#14372d; --bad:#ff8f84; --bad-soft:#47201f; --on-accent:#0d1022;
+  --shadow:0 18px 40px -22px rgba(0,0,0,.7); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1022; --surface:#151931; --surface-2:#1d2240; --ink:#eceefb; --muted:#a7adcc; --line:#2a3055;
+  --teal:#3fd3c4; --indigo:#9a91ff; --coral:#ff8a7d; --amber:#ffc55c;
+  --teal-soft:#123a3a; --indigo-soft:#272459; --coral-soft:#46232a; --amber-soft:#443514;
+  --ok:#6fdcb6; --ok-soft:#14372d; --bad:#ff8f84; --bad-soft:#47201f; --on-accent:#0d1022;
+  --shadow:0 18px 40px -22px rgba(0,0,0,.7); color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(72px + env(safe-area-inset-top,0px))}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 var(--f-body);overflow-wrap:break-word}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--surface)}
+h1,h2,h3,h4{font-family:var(--f-display);line-height:1.12;margin:0;text-wrap:balance;letter-spacing:-.015em}
+h2{font-size:clamp(30px,4.4vw,46px);font-weight:800}
+h3{font-size:clamp(21px,2.4vw,25px);font-weight:700;margin:34px 0 10px}
+h4{font-size:18px;font-weight:700}
+p{margin:10px 0;max-width:68ch}
+a{color:var(--indigo)}
+code{font:500 .86em var(--f-mono);background:var(--surface-2);padding:1px 6px;border-radius:6px;overflow-wrap:anywhere}
+ul,ol{padding-left:22px;margin:8px 0}
+li{margin:4px 0}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.gt{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.muted{color:var(--muted)}
+.small{font-size:14.5px}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;padding-block:10px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font:800 16px var(--f-display);white-space:nowrap}
+.brand i{width:26px;height:26px;border-radius:8px;background:var(--grad);display:grid;place-items:center;color:#fff;font:800 13px var(--f-mono);font-style:normal;transform:rotate(calc(var(--sp,0) * 360deg))}
+.steps-nav{display:flex;gap:4px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+.steps-nav::-webkit-scrollbar{display:none}
+.steps-nav a{flex:none;text-decoration:none;color:var(--muted);font:700 13.5px var(--f-body);padding:6px 11px;border-radius:99px;transition:background .3s,color .3s}
+.steps-nav a.act{background:var(--ink);color:var(--bg)}
+.steps-nav a:focus-visible{outline:3px solid var(--indigo);outline-offset:-2px}
+.score{flex:none;font:700 13px var(--f-mono);padding:6px 11px;border-radius:99px;background:var(--surface-2);font-variant-numeric:tabular-nums}
+.score b{color:var(--ok)}
+.iconbtn{flex:none;width:36px;height:36px;border:0;border-radius:10px;background:var(--surface-2);color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.iconbtn:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.progress{position:absolute;left:0;right:0;bottom:-1px;height:3px;background:var(--grad);transform-origin:0 50%;transform:scaleX(var(--sp,0))}
+@media(max-width:620px){.brand span{display:none}.score{display:none}}
+
+/* side rail */
+.rail{position:fixed;z-index:20;left:max(16px,env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%);display:none;flex-direction:column;gap:18px}
+@media(min-width:1260px){.rail{display:flex}}
+.rail::before{content:"";position:absolute;left:8px;top:8px;bottom:8px;width:2px;background:var(--line);border-radius:2px}
+.rail .fill{position:absolute;left:8px;top:8px;bottom:8px;width:2px;background:var(--grad);transform-origin:50% 0;transform:scaleY(var(--sp,0));border-radius:2px}
+.rail a{position:relative;display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--muted);font:700 12.5px var(--f-body)}
+.rail a i{width:18px;height:18px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 2px var(--line);display:grid;place-items:center;font:700 10px var(--f-mono);font-style:normal;transition:transform .35s cubic-bezier(.3,1.6,.5,1),background .3s,box-shadow .3s,color .3s;position:relative;z-index:1}
+.rail a span{opacity:0;transform:translateX(-6px);transition:opacity .25s,transform .3s;white-space:nowrap}
+.rail:hover a span{opacity:1;transform:none}
+@media(min-width:1440px){.rail a.act span{opacity:1;transform:none}}
+.rail a.seen i{background:var(--indigo);box-shadow:none;color:#fff}
+.rail a.act i{transform:scale(1.35);background:var(--coral);box-shadow:0 0 0 5px color-mix(in srgb,var(--coral) 30%,transparent);color:#fff}
+.rail a.act{color:var(--ink)}
+
+/* ---------- hero ---------- */
+.hero{position:relative;overflow:hidden;background:radial-gradient(1200px 500px at 85% -10%,#3b2f9a 0%,transparent 60%),radial-gradient(900px 500px at -10% 110%,#0d5f5f 0%,transparent 60%),var(--hero);color:var(--hero-ink)}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(420px circle at var(--mx,70%) var(--my,40%),rgba(255,138,125,.22),transparent 60%);pointer-events:none;transition:background .1s}
+.hero::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(180deg,#000 10%,transparent 90%);-webkit-mask-image:linear-gradient(180deg,#000 10%,transparent 90%);transform:translateY(calc(var(--hy,0) * .25px));pointer-events:none}
+.hero .wrap{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:24px;align-items:center;padding-block:46px 40px}
+@media(max-width:880px){.hero .wrap{grid-template-columns:minmax(0,1fr);padding-block:32px 18px}}
+.hero-txt{transform:translateY(calc(var(--hy,0) * .15px));opacity:calc(1 - var(--hy,0) / 800)}
+.hero-txt>*{animation:enter .9s cubic-bezier(.2,.7,.2,1) both}
+.hero-txt>*:nth-child(2){animation-delay:.1s}.hero-txt>*:nth-child(3){animation-delay:.2s}.hero-txt>*:nth-child(4){animation-delay:.3s}.hero-txt>*:nth-child(5){animation-delay:.4s}
+@keyframes enter{from{opacity:0;transform:translateY(22px)}}
+.kicker{font:700 12.5px var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:#8ff0e2}
+.hero h1{font-size:clamp(42px,6.6vw,76px);font-weight:800;margin:12px 0 14px;letter-spacing:-.03em;line-height:1}
+.hero h1 .gt{background:linear-gradient(100deg,#5ff0de,#a99fff 45%,#ff8a7d 80%,#5ff0de);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;animation:sheen 7s linear infinite}
+@keyframes sheen{to{background-position:-200% 0}}
+.lead{font-size:19px;color:var(--hero-muted);max-width:36em}
+.lead b{color:var(--hero-ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font:600 13.5px var(--f-body);padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);color:var(--hero-ink)}
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.btn{font:700 15px var(--f-body);border:0;border-radius:12px;padding:10px 18px;cursor:pointer;color:var(--ink);background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);display:inline-flex;align-items:center;gap:8px;text-decoration:none;transition:transform .18s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(1px)}
+.btn:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.btn.grad{background:var(--grad);color:#fff;box-shadow:0 12px 26px -12px rgba(91,78,230,.8)}
+.btn.ghost{background:rgba(255,255,255,.08);color:var(--hero-ink);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
+.btn.sm{padding:7px 13px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+
+/* 3D factory */
+.scene{height:380px;perspective:1100px;display:grid;place-items:center;transform:translateY(calc(var(--hy,0) * .35px))}
+@media(max-width:560px){.scene{height:300px}}
+.world{position:relative;width:0;height:0;transform-style:preserve-3d;transform:rotateX(calc(-26deg + var(--ty,0) * 1deg)) rotateY(calc(-38deg + var(--tx,0) * 1deg));transition:transform .25s ease-out}
+@media(max-width:560px){.world{scale:.72}}
+.cub{position:absolute;transform-style:preserve-3d}
+.cub>b{position:absolute;display:grid;place-items:center;text-align:center;backface-visibility:hidden;font:700 11px var(--f-mono);color:#fff}
+.floor{position:absolute;left:-210px;top:-210px;width:420px;height:420px;transform:rotateX(90deg) translateZ(-1px);background:radial-gradient(circle,rgba(127,120,255,.35),rgba(15,19,48,0) 68%);border-radius:50%}
+.floor::after{content:"";position:absolute;inset:60px;border-radius:50%;border:1px dashed rgba(255,255,255,.18);animation:spin 40s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.belt-move{position:absolute;transform-style:preserve-3d;animation:belt 6s linear infinite}
+@keyframes belt{0%{transform:translate3d(-20px,0,0) scale3d(.01,.01,.01)}8%{transform:translate3d(0,0,0) scale3d(1,1,1)}90%{transform:translate3d(170px,0,0) scale3d(1,1,1)}100%{transform:translate3d(190px,0,0) scale3d(.01,.01,.01)}}
+.smoke{position:absolute;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.35);filter:blur(4px);animation:smoke 3.4s ease-out infinite}
+@keyframes smoke{0%{transform:translate3d(0,0,0) scale(.4);opacity:0}20%{opacity:.8}100%{transform:translate3d(10px,-120px,0) scale(2.4);opacity:0}}
+.sign{position:absolute;left:-80px;top:-26px;width:160px;padding:6px 0;border-radius:10px;text-align:center;font:700 13px var(--f-mono);color:#fff;background:linear-gradient(90deg,#13b8a8,#5b4ee6,#f0574a);box-shadow:0 0 30px rgba(155,140,255,.6)}
+.scene-cap{position:absolute;bottom:6px;left:0;right:0;text-align:center;font:600 12.5px var(--f-mono);color:var(--hero-muted)}
+
+/* ---------- main ---------- */
+main{padding-block:16px 40px}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:26px 0 8px}
+.map a{position:relative;display:block;text-decoration:none;color:var(--ink);padding:14px;border-radius:16px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden;transition:transform .3s,box-shadow .3s}
+.map a::before{content:"";position:absolute;inset:0 0 auto;height:4px;background:var(--grad);transform:scaleX(.25);transform-origin:0 50%;transition:transform .45s}
+.map a:hover{transform:translateY(-4px);box-shadow:inset 0 0 0 1px var(--line),var(--shadow)}
+.map a:hover::before,.map a.seen::before{transform:scaleX(1)}
+.map a:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.map b{display:block;font:800 26px var(--f-display)}
+.map span{font-size:14px;color:var(--muted)}
+
+.step{margin-top:70px;position:relative}
+.step-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 20px;align-items:end;margin-bottom:18px}
+.step-n{font:800 clamp(64px,9vw,108px)/.8 var(--f-display);background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.04em;transform:translateY(calc(var(--pp,0) * -18px))}
+.step-head small{display:block;font:700 12.5px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--indigo);margin-bottom:6px}
+.learn{display:flex;flex-wrap:wrap;gap:6px;grid-column:1/-1;margin-top:10px}
+.learn span{font:600 13px var(--f-body);padding:5px 11px;border-radius:99px;background:var(--surface-2);color:var(--muted)}
+.learn span::before{content:"→ ";color:var(--teal)}
+
+.card{background:var(--surface);border-radius:22px;padding:24px;margin:18px 0;box-shadow:inset 0 0 0 1px var(--line)}
+@media(max-width:600px){.card{padding:18px 14px}}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.two.wide-l{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}
+@media(max-width:840px){.two,.two.wide-l{grid-template-columns:minmax(0,1fr)}}
+.grid3{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.grid3>*,.two>*{min-width:0}
+
+/* tilt cards with cursor spotlight */
+.tilt{position:relative;border-radius:18px;padding:18px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .2s ease-out,box-shadow .3s;overflow:hidden}
+.tilt::after{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(260px circle at var(--lx,50%) var(--ly,50%),color-mix(in srgb,var(--indigo) 16%,transparent),transparent 70%);opacity:0;transition:opacity .3s;pointer-events:none}
+.tilt:hover{box-shadow:inset 0 0 0 1px var(--line),var(--shadow)}
+.tilt:hover::after{opacity:1}
+.tilt h4{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.tilt p{font-size:15.5px;margin:6px 0 0;color:var(--muted)}
+.ico{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font:800 15px var(--f-mono);color:#fff;background:var(--c,var(--indigo))}
+
+.analogy{position:relative;border-radius:24px;padding:3px;background:var(--grad);margin:22px 0}
+.analogy>.in{background:var(--surface);border-radius:21px;padding:22px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:20px;align-items:center}
+@media(max-width:840px){.analogy>.in{grid-template-columns:minmax(0,1fr);padding:18px 14px}}
+.analogy .tag{display:inline-block;font:700 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--amber-soft);color:var(--amber)}
+.analogy svg{width:100%;height:auto;display:block}
+.map-t{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:4px 10px;font-size:15px;margin-top:10px}
+.map-t b{font-weight:700}
+.map-t i{font-style:normal;color:var(--muted)}
+
+.note{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;padding:16px 18px;border-radius:18px;background:var(--surface-2);margin:18px 0}
+.note .badge{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font:800 18px var(--f-display);color:#fff;background:linear-gradient(135deg,var(--amber),var(--coral))}
+.note h4{font-size:16px;margin-bottom:2px}
+.note p{margin:4px 0;font-size:15.5px}
+.note.def .badge{background:linear-gradient(135deg,var(--teal),var(--indigo))}
+.note.def{background:linear-gradient(110deg,var(--teal-soft),var(--indigo-soft))}
+.def-q{font:600 clamp(19px,2.4vw,23px)/1.4 var(--f-display);margin:4px 0 2px;max-width:none}
+
+/* code */
+.code{position:relative;background:var(--code-bg);color:var(--code-ink);border-radius:16px;padding:14px 0;margin:10px 0;overflow-x:auto;font:13.5px/1.65 var(--f-mono);tab-size:4;box-shadow:0 20px 40px -26px rgba(12,15,44,.9)}
+.code .ln{display:block;padding:0 16px;white-space:pre;min-width:max-content}
+.code .ln.new{background:var(--code-hi);box-shadow:inset 3px 0 0 #5ff0de;animation:lnin .5s both}
+@keyframes lnin{from{opacity:0;transform:translateX(-10px)}}
+.code .k{color:var(--code-k);font-weight:700}.code .s{color:var(--code-s)}.code .c{color:var(--code-c);font-style:italic}.code .t{color:var(--code-t)}.code .a{color:var(--code-a)}
+.code .bad{background:rgba(240,87,74,.22);box-shadow:inset 3px 0 0 #ff8a7d}
+.codebar{display:flex;gap:6px;padding:0 14px 10px;align-items:center}
+.codebar i{width:10px;height:10px;border-radius:50%;background:#ff6b6b}.codebar i:nth-child(2){background:#ffc55c}.codebar i:nth-child(3){background:#5ff0de}
+.codebar span{margin-left:8px;font:600 12px var(--f-mono);color:var(--code-c)}
+.copy{position:absolute;top:10px;right:10px;font:600 12px var(--f-body);padding:4px 10px;border-radius:8px;border:0;background:rgba(255,255,255,.1);color:var(--code-ink);cursor:pointer}
+.copy:focus-visible{outline:2px solid #5ff0de}
+
+/* builder */
+.builder{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:18px;align-items:start}
+@media(max-width:880px){.builder{grid-template-columns:minmax(0,1fr)}}
+.bpills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.bpills button{border:0;cursor:pointer;font:700 13px var(--f-body);padding:6px 11px;border-radius:99px;background:var(--surface-2);color:var(--muted);transition:background .3s,color .3s}
+.bpills button.on{background:var(--grad);color:#fff}
+.bpills button.done{color:var(--ink)}
+.bpills button:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.btext h4{font-size:20px;margin-bottom:6px}
+.btext{min-height:150px}
+.btext p{font-size:16px}
+.bnav{display:flex;gap:8px;margin-top:12px}
+
+/* roles + uml */
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.legend span{font:700 13px var(--f-body);padding:5px 12px;border-radius:99px;background:var(--rb);color:var(--rc);transition:transform .3s,box-shadow .3s}
+.legend span.on{transform:scale(1.07);box-shadow:0 0 0 2px var(--rc)}
+.r-prod{--rb:var(--teal-soft);--rc:var(--teal)}.r-cprod{--rb:var(--teal-soft);--rc:var(--teal)}
+.r-crea{--rb:var(--indigo-soft);--rc:var(--indigo)}.r-ccrea{--rb:var(--indigo-soft);--rc:var(--indigo)}
+.uml-wrap{overflow-x:auto;padding:6px 2px}
+.uml{display:grid;grid-template-columns:minmax(170px,1fr) 120px minmax(170px,1fr);grid-template-rows:auto 64px auto;min-width:540px;align-items:stretch}
+.box{border-radius:14px;background:var(--surface);box-shadow:inset 0 0 0 2px var(--bc,var(--line));font:13px/1.55 var(--f-mono);cursor:default;transition:transform .3s,box-shadow .3s,opacity .3s;overflow:hidden}
+.box .hd{padding:7px 10px;font:700 14px var(--f-display);text-align:center;background:var(--bb,var(--surface-2))}
+.box .hd small{display:block;font:500 11px var(--f-mono);opacity:.75}
+.box .bd{padding:7px 10px;border-top:1px solid var(--line)}
+.box.p{--bc:var(--teal);--bb:var(--teal-soft)}.box.c{--bc:var(--indigo);--bb:var(--indigo-soft)}
+.box.lit{transform:translateY(-4px) scale(1.03);box-shadow:inset 0 0 0 3px var(--bc),0 16px 30px -18px var(--bc)}
+.uml.dim .box:not(.lit){opacity:.45}
+.box:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.arr-h{position:relative;display:flex;align-items:center;justify-content:center}
+.arr-h::before{content:"";position:absolute;left:6px;right:10px;top:50%;border-top:2px dashed var(--muted)}
+.arr-h::after{content:"";position:absolute;right:4px;top:calc(50% - 6px);border:6px solid transparent;border-left:9px solid var(--muted)}
+.arr-h span{position:relative;background:var(--surface);padding:0 6px;font:600 11.5px var(--f-mono);color:var(--muted);transform:translateY(-14px)}
+.arr-v{position:relative;display:flex;justify-content:center}
+.arr-v::before{content:"";position:absolute;top:12px;bottom:0;left:50%;border-left:2px solid var(--muted)}
+.arr-v::after{content:"";position:absolute;top:0;left:calc(50% - 8px);border:8px solid transparent;border-bottom:12px solid var(--muted);border-top:0}
+.arr-v span{position:absolute;top:22px;left:calc(50% + 8px);font:600 11.5px var(--f-mono);color:var(--muted);white-space:nowrap}
+.role-say{min-height:54px;font-size:15.5px;padding:10px 14px;border-radius:14px;background:var(--surface-2);margin-top:12px}
+
+/* simulations */
+.sim{border-radius:26px;padding:3px;margin:22px 0;background:var(--grad);box-shadow:var(--shadow)}
+.sim>.in{background:var(--surface);border-radius:23px;padding:20px}
+@media(max-width:600px){.sim>.in{padding:16px 12px}}
+.sim-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:6px}
+.live{font:700 11.5px var(--f-mono);letter-spacing:.1em;padding:4px 10px;border-radius:99px;background:var(--ink);color:var(--bg);display:inline-flex;align-items:center;gap:6px}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:#5ff0de;animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.25}}
+.sim-h h4{font-size:19px}
+.row{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin:12px 0}
+.seg{display:inline-flex;flex-wrap:wrap;gap:4px;padding:4px;border-radius:12px;background:var(--surface-2)}
+.seg button{border:0;cursor:pointer;font:700 14px var(--f-body);padding:7px 12px;border-radius:9px;background:transparent;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 3px 10px -4px rgba(0,0,0,.3),inset 0 0 0 1px var(--line)}
+.seg button:focus-visible{outline:3px solid var(--indigo);outline-offset:1px}
+.say{border-radius:14px;padding:12px 16px;background:var(--surface-2);font-size:15.5px;margin-top:12px}
+.say b.g{color:var(--ok)}.say b.r{color:var(--bad)}
+.kpis{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.kpi{flex:1;min-width:120px;border-radius:14px;padding:10px 14px;background:var(--surface-2)}
+.kpi small{display:block;font:700 11.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.kpi b{font:800 26px var(--f-display);font-variant-numeric:tabular-nums}
+.kpi.bad b{color:var(--bad)}.kpi.ok b{color:var(--ok)}
+
+/* sim 1: codebase */
+.files{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.file{border-radius:14px;background:var(--code-bg);color:var(--code-ink);padding:10px 12px;font:12.5px/1.6 var(--f-mono);box-shadow:inset 0 0 0 2px transparent;transition:box-shadow .4s,transform .4s;min-width:0}
+.file .fn{font-weight:700;color:var(--code-t);margin-bottom:4px;display:flex;justify-content:space-between;gap:6px}
+.file .fn em{font-style:normal;font-size:11px;padding:1px 7px;border-radius:99px}
+.file pre{margin:0;white-space:pre-wrap;font:inherit;color:var(--code-ink)}
+.file .add{display:block;background:rgba(95,240,222,.16);color:#5ff0de;animation:lnin .5s both}
+.file.edit{box-shadow:inset 0 0 0 2px #ff8a7d;animation:shake .5s}
+.file.edit .fn em{background:#ff8a7d;color:#0f1330}
+.file.newf{box-shadow:inset 0 0 0 2px #5ff0de;animation:pop .5s both}
+.file.newf .fn em{background:#5ff0de;color:#0f1330}
+.file.small-edit{box-shadow:inset 0 0 0 2px #ffc55c}
+.file.small-edit .fn em{background:#ffc55c;color:#0f1330}
+@keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+@keyframes pop{from{opacity:0;transform:scale(.9) translateY(10px)}}
+
+/* sim 2: factory floor */
+.floor2{position:relative;border-radius:18px;padding:18px 14px 14px;background:linear-gradient(180deg,var(--surface-2),var(--surface));box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+.stations{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;position:relative;z-index:1}
+@media(max-width:600px){.stations{gap:5px}}
+.station{border-radius:14px;padding:10px 8px;text-align:center;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);transform:perspective(600px) rotateX(18deg);transform-origin:bottom;transition:transform .4s,box-shadow .4s,background .4s;min-width:0}
+.station b{display:block;font:700 12.5px var(--f-mono);overflow-wrap:anywhere}
+.station small{display:block;font-size:12px;color:var(--muted)}
+.station.on{transform:perspective(600px) rotateX(0) translateY(-6px);box-shadow:inset 0 0 0 2px var(--pc),0 14px 24px -14px var(--pc)}
+.station.fm b{color:var(--indigo)}
+.belt{position:relative;height:84px;margin-top:12px;perspective:700px}
+.belt .track{position:absolute;left:0;right:0;bottom:6px;height:34px;border-radius:12px;background:repeating-linear-gradient(90deg,var(--line) 0 14px,transparent 14px 28px),var(--surface-2);transform:rotateX(58deg);transform-origin:bottom;box-shadow:inset 0 0 0 2px var(--line)}
+.belt.run .track{animation:tread .6s linear infinite}
+@keyframes tread{to{background-position:28px 0,0 0}}
+.parcel{position:absolute;bottom:16px;left:4%;width:56px;height:56px;transform-style:preserve-3d;transition:left 1s cubic-bezier(.5,0,.3,1),opacity .4s;opacity:0}
+.parcel .cub{left:28px;top:28px}
+.parcel.show{opacity:1}
+.console{margin-top:12px;border-radius:14px;background:var(--code-bg);color:var(--code-ink);font:12.5px/1.7 var(--f-mono);padding:10px 14px;min-height:118px}
+.console div{animation:lnin .35s both}
+.console .c{color:var(--code-c)}.console .m{color:#5ff0de}.console .y{color:var(--code-t)}
+
+/* sim 3: mix-up */
+.kit3d{height:190px;perspective:800px;display:grid;place-items:center}
+.kitcube{position:relative;width:110px;height:110px;transform-style:preserve-3d;animation:kspin 14s linear infinite}
+@keyframes kspin{from{transform:rotateX(-18deg) rotateY(0)}to{transform:rotateX(-18deg) rotateY(360deg)}}
+.kitcube b{position:absolute;inset:0;display:grid;place-items:center;border-radius:14px;font:700 12.5px var(--f-mono);transition:background .6s,color .6s;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.kitcube b:nth-child(1){transform:translateZ(55px)}.kitcube b:nth-child(2){transform:rotateY(90deg) translateZ(55px)}.kitcube b:nth-child(3){transform:rotateY(180deg) translateZ(55px)}.kitcube b:nth-child(4){transform:rotateY(-90deg) translateZ(55px)}.kitcube b:nth-child(5){transform:rotateX(90deg) translateZ(55px)}.kitcube b:nth-child(6){transform:rotateX(-90deg) translateZ(55px)}
+.mock{border-radius:18px;padding:16px;transition:background .5s,color .5s,box-shadow .5s;min-height:210px}
+.mock h5{margin:0 0 10px;font:700 16px var(--f-display)}
+.w-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0}
+.w-btn,.w-chk,.w-card{transition:all .5s}
+.w-btn{border:0;padding:9px 16px;font:700 14px var(--f-body);cursor:default}
+.w-chk{display:inline-flex;align-items:center;gap:8px;font:600 14px var(--f-body)}
+.w-chk i{width:20px;height:20px;display:grid;place-items:center;font:800 13px var(--f-body);font-style:normal}
+.w-card{padding:12px 14px;font-size:14px;margin-top:8px}
+/* family looks: explicit, fixed colours because each family IS a look */
+.fam-day{background:#fff7e8;color:#3d2a0b;box-shadow:inset 0 0 0 1px #f1d9a8}
+.fam-night{background:#141838;color:#e7e9ff;box-shadow:inset 0 0 0 1px #2f3670}
+.fam-hc{background:#000;color:#fff;box-shadow:inset 0 0 0 2px #ffe600}
+.w-btn.day{background:#f5a524;color:#3d2a0b;border-radius:99px}
+.w-btn.night{background:#7b6dff;color:#fff;border-radius:8px}
+.w-btn.hc{background:#ffe600;color:#000;border-radius:0;outline:2px solid #fff}
+.w-chk.day i{background:#f5a524;color:#3d2a0b;border-radius:50%}
+.w-chk.night i{background:#7b6dff;color:#fff;border-radius:5px}
+.w-chk.hc i{background:#ffe600;color:#000;border-radius:0}
+.w-card.day{background:#ffeccb;color:#3d2a0b;border-radius:16px}
+.w-card.night{background:#232a5c;color:#e7e9ff;border-radius:8px}
+.w-card.hc{background:#000;color:#ffe600;border:2px solid #ffe600;border-radius:0}
+.pick{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 10px;align-items:center;font-size:14.5px}
+.pick select{font:600 14px var(--f-body);padding:6px 8px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.warn{margin-top:10px;font-weight:700;font-size:14.5px;padding:8px 12px;border-radius:12px}
+.warn.bad{background:var(--bad-soft);color:var(--bad)}.warn.ok{background:var(--ok-soft);color:var(--ok)}
+
+/* sim 4: matrix */
+.mx-wrap{overflow-x:auto;padding:4px 2px}
+.mx{display:grid;gap:8px;min-width:520px}
+.mx .cell{border-radius:12px;padding:10px;font:600 12.5px var(--f-mono);text-align:center;background:var(--surface-2);position:relative;transition:box-shadow .4s,background .4s;min-height:58px;display:grid;place-items:center}
+.mx .hdr{background:transparent;font:700 13px var(--f-display);color:var(--muted)}
+.mx .ifc{background:var(--teal-soft);color:var(--teal)}
+.mx .fac{background:var(--indigo-soft);color:var(--indigo)}
+.mx .cell em{position:absolute;top:-8px;right:-4px;font:700 10.5px var(--f-mono);font-style:normal;padding:2px 7px;border-radius:99px}
+.mx .cell.newc{box-shadow:inset 0 0 0 2px var(--ok);animation:pop .5s both}
+.mx .cell.newc em{background:var(--ok);color:var(--on-accent)}
+.mx .cell.edit{box-shadow:inset 0 0 0 2px var(--bad);animation:shake .5s}
+.mx .cell.edit em{background:var(--bad);color:var(--on-accent)}
+.mx .corner{background:var(--ink);color:var(--bg)}
+
+/* af uml */
+.af{display:grid;grid-template-columns:repeat(3,minmax(150px,1fr));gap:10px 14px;min-width:540px}
+.af .box{text-align:center}
+.af .sub{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.af .up{font:600 11px var(--f-mono);color:var(--muted);text-align:center}
+.box.fd{--bc:#e0951a;--bb:#ffeccb}.box.fn2{--bc:#6f62ef;--bb:#e2defd}
+:root[data-theme="dark"] .box.fd{--bb:#443514}:root[data-theme="dark"] .box.fn2{--bb:#272459}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .box.fd{--bb:#443514}:root:not([data-theme="light"]) .box.fn2{--bb:#272459}}
+.af.dim .box:not(.lit){opacity:.35}
+
+/* comparison */
+.vs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;perspective:1200px}
+@media(max-width:720px){.vs{grid-template-columns:minmax(0,1fr)}}
+.vs .side{border-radius:22px;padding:20px;color:#fff;transform-style:preserve-3d;transition:transform .5s}
+.vs .side:hover{transform:rotateY(var(--flip,4deg)) translateZ(10px)}
+.vs .s1{background:linear-gradient(140deg,#0e9a8e,#4a40c9);--flip:5deg}
+.vs .s2{background:linear-gradient(140deg,#5b4ee6,#e04f5f);--flip:-5deg}
+.vs .side h3{margin:0 0 8px;color:#fff}
+.vs .side dl{margin:0;display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:6px 12px;font-size:15px}
+.vs dt{font:700 11.5px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;opacity:.8;padding-top:3px}
+.vs dd{margin:0}
+.vs code{background:rgba(255,255,255,.16);color:#fff}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:700 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tbl{overflow-x:auto}
+
+/* decision helper */
+.tree{display:grid;gap:10px}
+.tq{border-radius:16px;padding:14px 16px;background:var(--surface-2);animation:pop .45s both}
+.tq p{margin:0 0 8px;font-weight:700}
+.tq .row{margin:0}
+.tq .btn.on{background:var(--ink);color:var(--bg);box-shadow:none}
+.verdict{border-radius:18px;padding:16px 18px;color:#fff;background:var(--grad);animation:pop .5s both}
+.verdict h4{color:#fff;font-size:20px}
+.verdict p{margin:6px 0 0}
+.verdict code{background:rgba(255,255,255,.18);color:#fff}
+
+/* quiz */
+.quiz{border-radius:26px;padding:3px;margin:30px 0;background:conic-gradient(from var(--qa,0deg),#13b8a8,#5b4ee6,#f0574a,#ffb547,#13b8a8);animation:qspin 8s linear infinite}
+@property --qa{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes qspin{to{--qa:360deg}}
+.quiz>.in{background:var(--surface);border-radius:23px;padding:22px}
+@media(max-width:600px){.quiz>.in{padding:16px 12px}}
+.quiz-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-bottom:6px}
+.quiz-h .tag{font:700 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;padding:5px 11px;border-radius:99px;background:var(--grad);color:#fff}
+.quiz-h .qs{margin-left:auto;font:700 13px var(--f-mono);color:var(--muted)}
+.qq{padding:14px 0;border-top:1px solid var(--line)}
+.qq:first-of-type{border-top:0}
+.qt{margin:0 0 10px;font-weight:600;max-width:none}
+.qt b{font:800 13px var(--f-mono);color:var(--indigo);margin-right:6px}
+.qo{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.opt{text-align:left;border:0;cursor:pointer;font:500 15px/1.45 var(--f-body);padding:11px 14px;border-radius:12px;background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);transition:transform .2s,box-shadow .2s,background .3s}
+.opt:hover:not(:disabled){transform:translateY(-2px);box-shadow:inset 0 0 0 2px var(--indigo)}
+.opt:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok-soft);box-shadow:inset 0 0 0 2px var(--ok)}
+.opt.wrong{background:var(--bad-soft);box-shadow:inset 0 0 0 2px var(--bad);animation:shake .45s}
+.opt.fade{opacity:.55}
+.qx{margin-top:10px;padding:10px 14px;border-radius:12px;font-size:15px;animation:pop .4s both}
+.qx.ok{background:var(--ok-soft)}.qx.no{background:var(--bad-soft)}
+.qx b{margin-right:4px}
+.quiz-end{margin-top:12px;font-weight:700;font-size:15.5px}
+
+/* summary */
+.sum{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.sum .tilt h4{font-size:17px}
+.sum ul{font-size:15px;color:var(--muted);padding-left:18px;margin:6px 0 0}
+footer{padding-block:30px 90px;text-align:center;color:var(--muted);font-size:14px}
+kbd{font:700 12px var(--f-mono);padding:1px 6px;border-radius:5px;background:var(--surface);box-shadow:inset 0 -2px 0 var(--line),inset 0 0 0 1px var(--line)}
+
+/* back to top */
+.totop{position:fixed;z-index:25;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:50px;height:50px;border:0;border-radius:50%;cursor:pointer;background:var(--surface);color:var(--ink);box-shadow:var(--shadow),inset 0 0 0 1px var(--line);display:grid;place-items:center;transform:scale(0);transition:transform .45s cubic-bezier(.3,1.5,.5,1)}
+.totop.show{transform:none}
+.totop svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.totop circle{fill:none;stroke-width:3}
+.totop .bg{stroke:var(--line)}.totop .fg{stroke:var(--indigo);stroke-linecap:round;stroke-dasharray:138.2;stroke-dashoffset:calc(138.2 * (1 - var(--sp,0)))}
+.totop:focus-visible{outline:3px solid var(--indigo);outline-offset:3px}
+
+/* svg illustration colours */
+.il-bg{fill:var(--surface-2)}.il-ink{fill:var(--ink)}.il-muted{fill:var(--muted)}.il-line{stroke:var(--muted);fill:none}
+.il-teal{fill:var(--teal)}.il-indigo{fill:var(--indigo)}.il-coral{fill:var(--coral)}.il-amber{fill:var(--amber)}
+.il-surface{fill:var(--surface)}.il-tsoft{fill:var(--teal-soft)}.il-isoft{fill:var(--indigo-soft)}.il-csoft{fill:var(--coral-soft)}.il-asoft{fill:var(--amber-soft)}
+.il-txt{font:700 13px var(--f-mono);fill:var(--ink)}.il-txt2{font:600 11px var(--f-body);fill:var(--muted)}
+.floaty{animation:floaty 4s ease-in-out infinite}
+@keyframes floaty{50%{transform:translateY(-6px)}}
+.dash{stroke-dasharray:6 6;animation:dash 1.2s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-12}}
+
+/* scroll reveal: visible at rest; animated only when an element enters from below */
+.rv{animation:rise .8s cubic-bezier(.2,.7,.2,1) both;animation-delay:var(--d,0s)}
+@keyframes rise{from{opacity:0;transform:translateY(40px) rotateX(8deg)}}
+.step-head.rv{animation:sweep .9s cubic-bezier(.2,.7,.2,1) both}
+@keyframes sweep{from{opacity:0;clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}.hero-txt,.scene,.hero::after,.step-n{transform:none!important;opacity:1!important}}
+</style>
+<style>
+/* ---------- lab additions on top of the chapter tokens ---------- */
+.timer{flex:none;display:flex;align-items:center;gap:7px;border:0;cursor:pointer;border-radius:10px;padding:0 11px;height:36px;background:var(--surface-2);color:var(--ink);font:700 14px var(--f-mono);font-variant-numeric:tabular-nums}
+.timer .td{width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.timer.run .td{background:var(--ok);animation:blink 1s infinite}
+.timer.over{background:var(--amber-soft);color:var(--amber)}
+.timer:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.plan-h{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.plan-h h3{margin:0}
+.segs{display:grid;grid-template-columns:10fr 10fr 10fr 15fr 12fr 3fr;gap:6px;margin-top:14px}
+@media(max-width:640px){.segs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.seg-b{position:relative;overflow:hidden;border:0;cursor:pointer;text-align:left;border-radius:12px;padding:9px 9px 8px;background:var(--surface-2);color:var(--ink);min-width:0;font:inherit;transition:transform .25s}
+.seg-b:hover{transform:translateY(-3px)}
+.seg-b:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.seg-b::before{content:"";position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(var(--f,0));background:var(--grad);opacity:.3;transition:transform .9s cubic-bezier(.2,.7,.2,1)}
+.seg-b b,.seg-b small{position:relative;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg-b b{font:800 13px var(--f-display)}
+.seg-b small{font:700 12px var(--f-mono);color:var(--muted)}
+.seg-b.now{box-shadow:0 0 0 3px var(--indigo)}
+.ladder{display:flex;align-items:flex-end;gap:8px;height:120px;margin:16px 0 4px}
+.ladder a{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;text-decoration:none;color:var(--ink)}
+.ladder a i{display:block;border-radius:12px 12px 4px 4px;height:var(--h);background:var(--grad);background-size:600% 100%;background-position:var(--bp) 0;transform-origin:bottom;transition:transform .35s cubic-bezier(.3,1.5,.5,1)}
+.ladder a:hover i,.ladder a:focus-visible i{transform:scaleY(1.08)}
+.ladder a:focus-visible{outline:none}
+.ladder a:focus-visible b{text-decoration:underline}
+.ladder b{font:700 12.5px var(--f-body);margin-top:6px;text-align:center;overflow-wrap:anywhere}
+.ladder small{display:block;text-align:center;font:600 11.5px var(--f-mono);color:var(--muted)}
+
+.wu{border-radius:22px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);padding:20px;margin:16px 0}
+.wu-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:10px}
+.wu-h .tag{font:800 12px var(--f-mono);letter-spacing:.1em;padding:4px 10px;border-radius:99px;background:var(--grad);color:#fff}
+.wu-h .mins{font:700 12.5px var(--f-mono);color:var(--muted)}
+.wu-h .st{margin-left:auto;font:700 13px var(--f-mono);color:var(--muted)}
+.wu-h .st.ok{color:var(--ok)}
+.roles{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.roles>div{min-width:0;border-radius:14px;background:var(--surface-2);padding:10px}
+.roles .code{margin:0 0 8px;font-size:12.5px;padding:10px 0}
+.roles select,.sel{font:600 14px var(--f-body);padding:7px 9px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);width:100%}
+.sel.good,.roles select.good{border-color:var(--ok);background:var(--ok-soft)}
+.sel.bad,.roles select.bad{border-color:var(--bad);background:var(--bad-soft)}
+.scen{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.scen:last-child{border-bottom:0}
+@media(max-width:640px){.scen{grid-template-columns:minmax(0,1fr)}}
+.scen .seg button.good{background:var(--ok-soft);color:var(--ok)}
+.scen .seg button.bad{background:var(--bad-soft);color:var(--bad)}
+textarea{width:100%;min-height:84px;border-radius:12px;border:1px solid var(--line);padding:10px 12px;font:15px/1.5 var(--f-body);background:var(--surface);color:var(--ink);resize:vertical}
+textarea.mono{font:13.5px/1.55 var(--f-mono)}
+textarea:focus{outline:2px solid var(--indigo);outline-offset:1px}
+.result{border-radius:12px;padding:10px 14px;font-weight:700;margin-top:8px;font-size:15px;animation:pop .4s both}
+.result.ok{background:var(--ok-soft);color:var(--ok)}.result.err{background:var(--bad-soft);color:var(--bad)}.result.warn{background:var(--amber-soft);color:var(--amber)}
+
+.ex{border-radius:28px;padding:3px;margin:26px 0;background:var(--grad);box-shadow:var(--shadow)}
+.ex>.in{background:var(--surface);border-radius:25px;padding:24px}
+@media(max-width:600px){.ex>.in{padding:16px 12px}}
+.ex-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-bottom:8px}
+.lvl{font:800 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:99px;color:#fff;background:var(--lc)}
+.you{font:700 12px var(--f-mono);padding:5px 11px;border-radius:99px;background:var(--surface-2);color:var(--muted)}
+.ex-top .time{margin-left:auto;font:700 13px var(--f-mono);color:var(--muted)}
+.ex h3{margin:4px 0 8px;font-size:clamp(23px,3vw,30px)}
+.meter{display:flex;gap:4px;align-items:center}
+.meter i{width:16px;height:8px;border-radius:4px;background:var(--line)}
+.meter i.on{background:var(--lc)}
+.reqs{list-style:none;padding:0;margin:8px 0;display:flex;flex-direction:column;gap:2px}
+.reqs label{display:flex;gap:10px;align-items:flex-start;cursor:pointer;padding:6px 8px;border-radius:10px;transition:background .3s}
+.reqs label:hover{background:var(--surface-2)}
+.reqs input{width:18px;height:18px;margin-top:4px;accent-color:var(--indigo);flex:none}
+.reqs input:checked+span{color:var(--muted);text-decoration:line-through}
+.reqbar{height:6px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin:2px 0 10px}
+.reqbar i{display:block;height:100%;background:var(--grad);transform-origin:0 50%;transform:scaleX(var(--rq,0));transition:transform .6s cubic-bezier(.3,1.3,.5,1)}
+.lbl{font:700 12px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:16px 0 6px}
+details.hint{border-radius:12px;padding:9px 14px;margin:10px 0;background:var(--amber-soft)}
+details.hint summary{cursor:pointer;font-weight:700;color:var(--amber)}
+details.bonus{border-radius:12px;padding:9px 14px;margin:12px 0;background:var(--indigo-soft)}
+details.bonus summary{cursor:pointer;font-weight:700;color:var(--indigo)}
+.checker{border-radius:16px;background:var(--surface-2);padding:12px 14px;margin:12px 0}
+.qa{margin:12px 0}
+.qa p{margin:4px 0 6px;font-weight:600;max-width:none}
+.out{white-space:pre}
+
+/* Ex4 impact predictor */
+.chips2{display:flex;flex-wrap:wrap;gap:8px}
+.cls{border:0;cursor:pointer;font:600 13.5px var(--f-mono);padding:8px 12px;border-radius:12px;background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);transition:transform .2s,background .3s,box-shadow .3s;display:inline-flex;gap:8px;align-items:center}
+.cls:hover{transform:translateY(-2px)}
+.cls:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.cls em{font:800 10.5px var(--f-mono);font-style:normal;padding:2px 7px;border-radius:99px;background:var(--line);color:var(--muted)}
+.cls.edit{background:var(--bad-soft);box-shadow:inset 0 0 0 2px var(--bad)}.cls.edit em{background:var(--bad);color:var(--on-accent)}
+.cls.new{background:var(--ok-soft);box-shadow:inset 0 0 0 2px var(--ok)}.cls.new em{background:var(--ok);color:var(--on-accent)}
+.cls.miss{animation:shake .45s}
+.legend2{display:flex;flex-wrap:wrap;gap:14px;font-size:14px;color:var(--muted);margin:8px 0}
+
+/* world cube */
+.wcube{position:relative;width:120px;height:120px;transform-style:preserve-3d;animation:kspin 16s linear infinite}
+.wcube b{position:absolute;inset:0;display:grid;place-items:center;text-align:center;border-radius:16px;font:700 12px var(--f-mono);padding:8px;transition:background .6s,color .6s;box-shadow:inset 0 0 0 2px rgba(255,255,255,.4)}
+.wcube b:nth-child(1){transform:translateZ(60px)}.wcube b:nth-child(2){transform:rotateY(90deg) translateZ(60px)}.wcube b:nth-child(3){transform:rotateY(180deg) translateZ(60px)}.wcube b:nth-child(4){transform:rotateY(-90deg) translateZ(60px)}.wcube b:nth-child(5){transform:rotateX(90deg) translateZ(60px)}.wcube b:nth-child(6){transform:rotateX(-90deg) translateZ(60px)}
+
+/* teacher */
+.keyband{background:repeating-linear-gradient(135deg,var(--ok-soft) 0 14px,color-mix(in srgb,var(--ok-soft) 55%,var(--surface)) 14px 28px);border-bottom:1px solid var(--line)}
+.keyband .wrap{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding-block:10px;font:600 14.5px var(--f-body);color:var(--ok)}
+.keyband b{font:800 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:99px;background:var(--surface)}
+details.key{margin:12px 0;border-radius:16px;background:color-mix(in srgb,var(--ok-soft) 70%,var(--surface));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ok) 35%,transparent)}
+details.key>summary{cursor:pointer;padding:10px 16px;font:800 14.5px var(--f-body);color:var(--ok)}
+details.key>.kb{padding:0 16px 14px;font-size:15.5px}
+details.key>.kb p{margin:6px 0;max-width:none}
+details.key code{background:var(--surface)}
+details.key table{font-size:14.5px}
+.tnote{border-radius:14px;padding:12px 16px;margin:12px 0;background:var(--amber-soft);font-size:15px}
+.tnote b.h{display:block;font:800 12px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:4px}
+.tnote ul{margin:4px 0;padding-left:20px}
+.keybtn{width:auto;padding:0 12px;gap:6px;display:flex;align-items:center;font:800 13px var(--f-body);background:var(--ok-soft);color:var(--ok)}
+.keybtn[aria-pressed="false"]{background:var(--surface-2);color:var(--muted)}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top"><i>f()</i><span>Factory Lab</span></a>
+    <nav class="steps-nav" id="snav" aria-label="Lab sections">
+      <a href="#warmup">Warm-up</a><a href="#ex1">Ex 1</a><a href="#ex2">Ex 2</a><a href="#ex3">Ex 3</a><a href="#ex4">Ex 4</a><a href="#wrap">Wrap-up</a>
+    </nav>
+    <button class="timer" id="timer" type="button" title="60-minute lab timer"><span class="td"></span><span id="tval">60:00</span></button>
+    <span class="score" id="score" title="Progress saved in this browser">Done <b>0</b>%</span>
+    <button class="iconbtn keybtn" id="keyt" type="button" aria-pressed="true" title="Show or hide every answer (A)"><span aria-hidden="true">✅</span><span>Answers</span></button>
+    <button class="iconbtn" id="theme" type="button" aria-label="Switch between light and dark theme"><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 2a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
+  </div>
+  <span class="progress" aria-hidden="true"></span>
+</header>
+<div class="keyband"><div class="wrap"><b>Teacher version</b><span>Solutions, model answers and teaching notes are open below. Press <kbd>A</kbd> or the Answers button to hide them before projecting.</span></div></div>
+
+<nav class="rail" id="rail" aria-label="Lab progress">
+  <span class="fill" aria-hidden="true"></span>
+  <a href="#warmup"><i>W</i><span>Warm-up</span></a>
+  <a href="#ex1"><i>1</i><span>Ex 1 · Factory Method</span></a>
+  <a href="#ex2"><i>2</i><span>Ex 2 · Registry</span></a>
+  <a href="#ex3"><i>3</i><span>Ex 3 · Abstract Factory</span></a>
+  <a href="#ex4"><i>4</i><span>Ex 4 · New product</span></a>
+  <a href="#wrap"><i>✓</i><span>Wrap-up</span></a>
+</nav>
+<button class="totop" id="totop" type="button" aria-label="Back to top"><svg viewBox="0 0 50 50" aria-hidden="true"><circle class="bg" cx="25" cy="25" r="22"/><circle class="fg" cx="25" cy="25" r="22"/></svg><b aria-hidden="true">↑</b></button>
+
+<section class="hero" id="top">
+  <div class="wrap">
+    <div class="hero-txt">
+      <div class="kicker" id="kicker">Creational Design Patterns · Lab · Teacher version</div>
+      <h1><span class="gt">Factory</span> Lab</h1>
+      <p class="lead">One hour, four exercises, each a little harder than the last. You will <b>extend</b> a Factory Method, <b>replace</b> a switch with a registry, <b>build</b> an Abstract Factory, and then <b>feel its cost</b> when a new product type arrives.</p>
+      <div class="chips"><span class="chip">⏱ 60 minutes</span><span class="chip">3 warm-ups</span><span class="chip">4 coding exercises</span><span class="chip">☕ JDK 21+</span><span class="chip">💾 saved in this browser</span></div>
+      <div class="cta"><a class="btn grad" href="#plan">See the plan ↓</a><a class="btn ghost" href="https://claude.ai/artifact/MBuovngbz9gntWWb5qeySs">Reread the chapter ↗</a></div>
+    </div>
+    <div class="scene" id="scene" aria-hidden="true">
+      <div class="world" id="world"><div class="floor"></div></div>
+      <div class="scene-cap">move your mouse over the factory</div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="card" id="plan" style="margin-top:28px">
+    <div class="plan-h"><div><h3>Your 60-minute plan</h3><p class="small muted" style="margin:2px 0 0">Start the timer when you begin the warm-up. Each bar fills as time passes.</p></div><div class="row" style="margin:0"><button class="btn grad sm" id="plan-go" type="button">▶ Start timer</button><button class="btn sm" id="plan-rst" type="button">↺ Reset</button></div></div>
+    <div class="segs" id="segs"></div>
+    <p class="small muted" id="plan-say" aria-live="polite" style="margin-bottom:0"></p>
+    <h3>Difficulty ladder</h3>
+    <div class="ladder">
+      <a href="#warmup" style="--h:24px;--bp:0%"><i></i><b>Warm-up</b><small>recognise</small></a>
+      <a href="#ex1" style="--h:40px;--bp:20%"><i></i><b>Ex 1</b><small>extend</small></a>
+      <a href="#ex2" style="--h:56px;--bp:40%"><i></i><b>Ex 2</b><small>refactor</small></a>
+      <a href="#ex3" style="--h:76px;--bp:70%"><i></i><b>Ex 3</b><small>build</small></a>
+      <a href="#ex4" style="--h:96px;--bp:100%"><i></i><b>Ex 4</b><small>evolve</small></a>
+    </div>
+  </div>
+
+  <div class="grid3">
+    <div class="tilt"><h4><span class="ico" style="--c:var(--teal)">🎯</span>By the end you can</h4><p>add a product with Factory Method, replace a switch with a registry, build an Abstract Factory from scratch, and explain the cost of adding a product type.</p></div>
+    <div class="tilt"><h4><span class="ico" style="--c:var(--indigo)">🛠</span>Before you start</h4><p>Create a folder <code>lab-factory</code>. Each exercise is one file that runs with <code>java File.java</code>. No <code>javac</code> or build tool needed.</p></div>
+    <div class="tilt"><h4><span class="ico" style="--c:var(--coral)">📌</span>How it works</h4><p>Copy the starter code, complete every <code>TODO</code>, run it, and paste the output into the checker. Warm-ups tell you <b>if</b> you are right, never the answer.</p></div>
+  </div>
+
+  <div class="note def"><div class="badge">≡</div><div><h4>Two-minute recap</h4>
+    <p><b>Factory Method:</b> a base class (the <b>creator</b>) calls an abstract <code>createX()</code> method inside its own logic. Each subclass overrides it to return one concrete product.</p>
+    <p><b>Abstract Factory:</b> an interface with one create method per product type. Each implementation creates one complete, matching <b>family</b>. The client receives the factory and asks it for products.</p>
+    <p><b>The cost:</b> a new family is cheap; a new product type means editing every factory.</p></div></div>
+
+  <!-- ================= WARM-UP ================= -->
+  <section class="step" id="warmup">
+    <div class="step-head"><div class="step-n">W</div><div><small>Warm-up · 10 minutes</small><h2>Recognise the patterns</h2></div>
+      <div class="learn"><span>name each role</span><span>pick the right pattern</span><span>trace a factory method</span></div></div>
+
+    <div class="wu" id="w1"><div class="wu-h"><span class="tag">W1</span><h4>Name the role</h4><span class="mins">4 min</span><span class="st"></span></div>
+      <p class="small muted" style="margin-top:0">Choose the role each fragment plays. The six fragments come from two small programs.</p>
+      <div class="roles" id="w1-body"></div>
+      <div class="row"><button class="btn grad sm" id="w1-chk" type="button">Check</button></div></div>
+
+    <div class="wu" id="w2"><div class="wu-h"><span class="tag">W2</span><h4>Which pattern fits?</h4><span class="mins">3 min</span><span class="st"></span></div>
+      <div id="w2-body"></div>
+      <div class="row"><button class="btn grad sm" id="w2-chk" type="button">Check</button></div></div>
+
+    <div class="wu" id="w3"><div class="wu-h"><span class="tag">W3</span><h4>Predict the output</h4><span class="mins">3 min</span><span class="st"></span></div>
+      <div class="two"><div class="code" id="w3-code"></div>
+        <div><div class="lbl" style="margin-top:0">Your prediction, one line per output line</div><textarea id="w3-in" class="mono" data-save="w3" rows="5" placeholder="line 1&#10;line 2&#10;…" aria-label="Your predicted output"></textarea>
+          <div class="row"><button class="btn grad sm" id="w3-chk" type="button">Check</button></div><div id="w3-fb" aria-live="polite"></div>
+          <details class="hint"><summary>💡 Hint</summary><code>open()</code> is written once in <code>Bakery</code>. Which <code>bake()</code> runs depends on the object, not on the variable's type.</details></div></div></div>
+  </section>
+
+  <!-- ================= EXERCISES ================= -->
+  <section class="step" id="ex">
+    <div id="ex-list"></div>
+  </section>
+
+  <!-- ================= WRAP-UP ================= -->
+  <section class="step" id="wrap">
+    <div class="step-head"><div class="step-n">✓</div><div><small>Wrap-up · 3 minutes</small><h2>Reflect and submit</h2></div></div>
+    <div class="card">
+      <div class="two">
+        <div><h3 style="margin-top:0">Your progress</h3><div class="kpis" id="kpis"></div></div>
+        <div><h3 style="margin-top:0">Reflection</h3><p class="small" style="margin-top:0">In 2–3 sentences: when would you choose Abstract Factory over Factory Method, and what would make you avoid it?</p><textarea id="refl" data-save="refl" aria-label="Your reflection"></textarea></div>
+      </div>
+      <div class="grid3" style="margin-top:14px">
+        <div class="tilt"><h4><span class="ico" style="--c:var(--teal)">📦</span>What to submit</h4><p><code>ReportExport.java</code>, <code>RideApp.java</code>, <code>GameWorlds.java</code> (the Exercise 4 version), and your answers. Each file must run with <code>java File.java</code>.</p></div>
+        <div class="tilt"><h4><span class="ico" style="--c:var(--coral)">🚀</span>Going further (at home)</h4><p>Add a <b>Desert</b> world to Exercise 4 and count the classes you edit. Then make every world factory an <code>enum</code> singleton.</p></div>
+      </div>
+      <div class="row" style="margin-top:14px"><button class="btn grad" id="copy-all" type="button">📋 Copy all my answers</button><span class="small muted" id="copy-msg">Paste them into your submission document.</span></div>
+      <textarea id="copy-box" class="mono" hidden readonly aria-label="All your answers"></textarea>
+    </div>
+  </section>
+</main>
+<footer>Factory Lab · Creational Design Patterns · Java<br>Press <kbd>N</kbd> for the next section and <kbd>P</kbd> for the previous one.</footer>
+
+<script>
+const TEACHER=true;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const PFX=TEACHER?'fpl-t:':'fpl-s:';
+const store={get(k,d){try{const v=localStorage.getItem(PFX+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(PFX+k,JSON.stringify(v))}catch(e){}}};
+const fold=s=>s.toLowerCase().replace(/\s+/g,' ').trim();
+const hash=s=>{let h=0;for(const c of fold(s))h=(h*31+c.charCodeAt(0))|0;return h};
+
+/* ---------- Java highlighting ---------- */
+const KW=new Set('abstract boolean case catch class default else enum extends final for if implements import interface new private protected public return static switch this throw try var void null true false'.split(' '));
+function cidx(l){let q=false;for(let i=0;i<l.length-1;i++){const c=l[i];if(c==='\\'){i++;continue}if(c==='"')q=!q;else if(!q&&c==='/'&&l[i+1]==='/')return i}return -1}
+function hlLine(line){const ci=cidx(line);const code=ci>=0?line.slice(0,ci):line,com=ci>=0?line.slice(ci):'';
+ let h=esc(code).replace(/(&quot;(?:[^&]|&(?!quot;))*?&quot;)|(@\w+)|\b([A-Za-z_]\w*)\b/g,(m,s,a,w)=>s?`<span class="s">${s}</span>`:a?`<span class="a">${a}</span>`:KW.has(w)?`<span class="k">${w}</span>`:/^[A-Z][a-z]/.test(w)?`<span class="t">${w}</span>`:w);
+ return h+(com?(/TODO/.test(com)?`<span class="c" style="color:#ffc57d;font-style:normal;font-weight:700">${esc(com)}</span>`:`<span class="c">${esc(com)}</span>`):'')}
+function selectEl(el){const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r)}
+function copyBtn(host,src){const b=document.createElement('button');b.className='copy';b.type='button';b.textContent='Copy';
+ b.onclick=()=>{const ok=()=>{b.textContent='Copied ✓';setTimeout(()=>b.textContent='Copy',1400)};try{navigator.clipboard.writeText(src).then(ok,()=>selectEl(host))}catch(e){selectEl(host)}};host.append(b)}
+function renderCode(el,src,file){el.innerHTML=(file?`<div class="codebar"><i></i><i></i><i></i><span>${file}</span></div>`:'')+src.split('\n').map(l=>`<span class="ln">${hlLine(l)||' '}</span>`).join('');copyBtn(el,src)}
+const codeHTML=(src,file)=>{const d=document.createElement('div');d.className='code';renderCode(d,src,file);return d.outerHTML};
+
+/* ---------- progress ---------- */
+const PROG={},PK=[];const track=k=>{PK.push(k);PROG[k]=store.get('p:'+k,false)};
+function mark(k,v){if(PROG[k]===v)return;PROG[k]=v;store.set('p:'+k,v);upd()}
+function upd(){const d=PK.filter(k=>PROG[k]).length,p=PK.length?Math.round(d/PK.length*100):0;$('#score').innerHTML=`Done <b>${p}</b>%`;
+ const K=$('#kpis');if(K){const g=pre=>{const ks=PK.filter(k=>k.startsWith(pre));return`${ks.filter(k=>PROG[k]).length}/${ks.length}`};
+  K.innerHTML=`<div class="kpi"><small>warm-ups</small><b>${g('W')}</b></div><div class="kpi"><small>outputs correct</small><b>${g('E')}</b></div><div class="kpi ${p===100?'ok':''}"><small>overall</small><b>${p}%</b></div>`}}
+
+/* ================= KEY (filled only in the teacher version) ================= */
+const KEY={};
+
+/* ================= WARM-UP ================= */
+const ROLES=['Product','Concrete Product','Creator','Concrete Creator','Abstract Factory','Concrete Factory'];
+const W1=[[`interface Shape {\n    double area();\n}`,0],[`class Circle implements Shape {\n    public double area() { return 3.14; }\n}`,1],
+ [`abstract class Editor {\n    abstract Shape newShape();\n    void draw() { Shape s = newShape(); /*...*/ }\n}`,2],[`class CircleEditor extends Editor {\n    Shape newShape() { return new Circle(); }\n}`,3],
+ [`interface UiKit {\n    Button button();\n    Menu menu();\n}`,4],[`class RetroKit implements UiKit {\n    public Button button() { return new RetroButton(); }\n    public Menu menu() { return new RetroMenu(); }\n}`,5]];
+(()=>{const v=store.get('w1',{});$('#w1-body').innerHTML=W1.map((w,i)=>`<div>${codeHTML(w[0])}<label class="small muted" for="w1-${i}">Fragment ${String.fromCharCode(65+i)} is a…</label><select id="w1-${i}" data-i="${i}"><option value="">choose a role</option>${ROLES.map((r,j)=>`<option value="${j}"${v[i]==j?' selected':''}>${r}</option>`).join('')}</select></div>`).join('');
+ $$('#w1-body select').forEach(s=>s.onchange=()=>{s.classList.remove('good','bad');v[s.dataset.i]=s.value;store.set('w1',v)});
+ $('#w1-chk').onclick=()=>{let ok=0;$$('#w1-body select').forEach(s=>{const g=s.value!==''&&+s.value===W1[+s.dataset.i][1];s.classList.toggle('good',g);s.classList.toggle('bad',!g);if(g)ok++});
+  const st=$('#w1 .st');st.textContent=`${ok} / 6 correct`;st.classList.toggle('ok',ok===6);if(ok===6)mark('W1',true)}})();
+track('W1');
+
+const W2=[['A report tool must create a matching header, table and footer for two styles: Print and Web.',1],
+ ['A base class <code>Game</code> runs the turn loop. Each game subclass decides which <code>Board</code> it creates.',0],
+ ['A class <code>Invoice</code> has one implementation and nobody plans a second one.',2],
+ ['A database library must give you statements, results and transactions that all belong to the same driver.',1]];
+const W2O=['Factory Method','Abstract Factory','Just use new'];
+(()=>{const v=store.get('w2',{});$('#w2-body').innerHTML=W2.map((w,i)=>`<div class="scen" data-i="${i}"><div>${i+1}. ${w[0]}</div><div class="seg">${W2O.map((o,j)=>`<button type="button" data-j="${j}" class="${v[i]===j?'on':''}">${o}</button>`).join('')}</div></div>`).join('');
+ $$('#w2-body .scen').forEach(r=>r.querySelectorAll('button').forEach(b=>b.onclick=()=>{r.querySelectorAll('button').forEach(x=>x.classList.remove('on','good','bad'));b.classList.add('on');v[r.dataset.i]=+b.dataset.j;store.set('w2',v)}));
+ $('#w2-chk').onclick=()=>{let ok=0;$$('#w2-body .scen').forEach(r=>{const s=r.querySelector('button.on');r.querySelectorAll('button').forEach(x=>x.classList.remove('good','bad'));if(!s)return;const g=+s.dataset.j===W2[+r.dataset.i][1];s.classList.add(g?'good':'bad');if(g)ok++});
+  const st=$('#w2 .st');st.textContent=`${ok} / 4 correct`;st.classList.toggle('ok',ok===4);if(ok===4)mark('W2',true)}})();
+track('W2');
+
+const W3SRC=`public class W3 {
+    public static void main(String[] args) {
+        Bakery x = new Kyoto();
+        x.open();
+        new Paris().open();
+    }
+}
+
+interface Bread { String name(); }
+
+abstract class Bakery {
+    abstract Bread bake();                 // factory method
+    void open() {
+        System.out.println("open");
+        Bread b = bake();
+        System.out.println(b.name());
+    }
+}
+class Paris extends Bakery { Bread bake() { return () -> "baguette"; } }
+class Kyoto extends Bakery { Bread bake() { return () -> "melon pan"; } }`;
+const W3H=[3417674,832780720,3417674,-2049756595];
+renderCode($('#w3-code'),W3SRC,'W3.java');
+$('#w3-chk').onclick=()=>{const L=$('#w3-in').value.split('\n').map(x=>x.trim()).filter(Boolean);let ok=0;const m=W3H.map((h,i)=>{const g=L[i]!==undefined&&hash(L[i])===h;if(g)ok++;return`<span style="color:var(--${g?'ok':'bad'})">line ${i+1} ${g?'✓':'✗'}</span>`});
+ const all=ok===4&&L.length===4;$('#w3-fb').innerHTML=`<div class="result ${all?'ok':'warn'}">${m.join(' · ')}${L.length>4?' · extra lines':''}</div>`;const st=$('#w3 .st');st.textContent=`${ok} / 4 lines`;st.classList.toggle('ok',all);if(all)mark('W3',true)};
+track('W3');
+
+/* ================= EXERCISES ================= */
+const EX=[
+ {id:1,lvl:'Level 1 · Easy',lc:'#0b9d90',m:1,you:'~10 lines',t:'Extend a Factory Method',time:'10 min',file:'ReportExport.java',
+  intro:'A reporting tool exports sales figures. The <code>Exporter</code> base class already runs the export routine and calls a factory method to get a <code>Formatter</code>. PDF export works. Your job is to add <b>CSV export</b> without touching any existing class.',
+  reqs:['Write <code>CsvFormatter</code> that implements <code>Formatter</code>. It returns the title and the rows joined by <code>;</code>, for example <code>Sales;Jan=120;Feb=95</code>.','Write <code>CsvExporter</code> that extends <code>Exporter</code>. Its factory method returns a <code>CsvFormatter</code>.','In <code>main</code>, export <code>"Sales"</code> with a <code>PdfExporter</code>, then with a <code>CsvExporter</code>.','Check: you did not edit <code>Exporter</code>, <code>PdfFormatter</code> or <code>PdfExporter</code>.'],
+  hint:'<code>String.join(";", rows)</code> joins a list. The whole method body fits in one line: <code>return title + ";" + String.join(";", rows);</code>',
+  starter:`import java.util.List;
+
+public class ReportExport {
+    public static void main(String[] args) {
+        List<String> rows = List.of("Jan=120", "Feb=95");
+        // TODO 3: export "Sales" with a PdfExporter, then with a CsvExporter
+    }
+}
+
+// GIVEN: the product
+interface Formatter {
+    String format(String title, List<String> rows);
+}
+
+// GIVEN: one concrete product
+class PdfFormatter implements Formatter {
+    public String format(String title, List<String> rows) {
+        return "%PDF " + title + " (" + rows.size() + " rows)";
+    }
+}
+
+// GIVEN: the creator, with its factory method
+abstract class Exporter {
+    protected abstract Formatter createFormatter();   // factory method
+
+    public final void export(String title, List<String> rows) {
+        Formatter formatter = createFormatter();
+        System.out.println(formatter.format(title, rows));
+        System.out.println("exported " + rows.size() + " rows");
+    }
+}
+
+// GIVEN: one concrete creator
+class PdfExporter extends Exporter {
+    @Override protected Formatter createFormatter() { return new PdfFormatter(); }
+}
+
+// TODO 1: class CsvFormatter implements Formatter
+//         example result: Sales;Jan=120;Feb=95
+
+// TODO 2: class CsvExporter extends Exporter`,
+  out:`%PDF Sales (2 rows)
+exported 2 rows
+Sales;Jan=120;Feb=95
+exported 2 rows`,sim:'floor',
+  qs:['Which method of <code>Exporter</code> runs the CSV export, even though you never edited it? Why does it work without changes?','Why is <code>export()</code> declared <code>final</code>? What could go wrong if a subclass could override it?']},
+ {id:2,lvl:'Level 2 · Easy+',lc:'#2f86c9',m:2,you:'~10 lines',t:'Replace a switch with a registry',time:'10 min',file:'RideApp.java',
+  intro:'A ride-booking app chose its vehicle with a <code>switch</code> that was copied into three classes. You will replace it with one <b>registry</b>: a map from a name to a constructor. This is the lightweight factory from step 7 of the chapter.',
+  reqs:['Declare <code>private static final Map&lt;String, Supplier&lt;Vehicle&gt;&gt; REGISTRY</code> with <code>"bike"</code>, <code>"car"</code> and <code>"scooter"</code>.','Use constructor references such as <code>Bike::new</code>, not lambdas with <code>new</code> inside.','Write <code>public static Vehicle create(String type)</code>. It looks the type up and calls <code>get()</code> on the supplier.','For an unknown type, throw <code>new IllegalArgumentException("Unknown vehicle: " + type)</code>.'],
+  hint:'<code>Map.of("bike", Bike::new, …)</code> creates the map. <code>REGISTRY.get(type)</code> returns <code>null</code> for a missing key: test that before calling <code>get()</code>.',
+  starter:`import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+
+public class RideApp {
+
+    // BEFORE: this switch was copied into three classes of the real app
+    //   switch (type) { case "bike" -> new Bike(); case "car" -> new Car(); ... }
+
+    // TODO 1: REGISTRY, a Map<String, Supplier<Vehicle>> with bike, car and scooter
+
+    // TODO 2: public static Vehicle create(String type)
+
+    public static void main(String[] args) {
+        for (String type : List.of("bike", "scooter", "car")) {
+            System.out.println(create(type).ride("Station"));
+        }
+        try {
+            create("plane");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}
+
+interface Vehicle { String ride(String to); }
+
+class Bike implements Vehicle {
+    public String ride(String to) { return "Bike to " + to + ": 25 min"; }
+}
+class Car implements Vehicle {
+    public String ride(String to) { return "Car to " + to + ": 10 min"; }
+}
+class Scooter implements Vehicle {
+    public String ride(String to) { return "Scooter to " + to + ": 15 min"; }
+}`,
+  out:`Bike to Station: 25 min
+Scooter to Station: 15 min
+Car to Station: 10 min
+Error: Unknown vehicle: plane`,
+  qs:['The business now wants a <code>"train"</code> option. List exactly what you would add or change.','Is this registry the GoF Factory Method pattern? Explain in one or two sentences.']},
+ {id:3,lvl:'Level 3 · Medium',lc:'#5b4ee6',m:3,you:'~25 lines',t:'Build an Abstract Factory',time:'15 min',file:'GameWorlds.java',
+  intro:'A small game has <b>worlds</b>. Each world has its own hero and its own enemy, and they must never be mixed: no yeti in the forest. The Forest family is written. You will write the <b>Ice</b> family, its factory, and the <code>Level</code> client.',
+  reqs:['Write <code>IceHero</code> (attack: <code>Ice mage throws a frost bolt</code>) and <code>IceEnemy</code> (appear: <code>A yeti rises from the snow</code>).','Write <code>IceFactory</code> that implements <code>WorldFactory</code>.','Complete the <code>Level</code> constructor: it receives a <code>WorldFactory</code> and creates <b>both</b> its hero and its enemy from it.','In <code>main</code>, print <code>--- forest ---</code> and play a forest level, then <code>--- ice ---</code> and play an ice level.','Check: <code>Level</code> never mentions <code>Forest…</code> or <code>Ice…</code> classes.'],
+  hint:'The constructor body is two lines: <code>hero = world.createHero();</code> and <code>enemy = world.createEnemy();</code>. In <code>main</code>: <code>new Level(new IceFactory()).play();</code>',
+  starter:`public class GameWorlds {
+    public static void main(String[] args) {
+        // TODO 4: play a forest level, then an ice level, each after its title line
+    }
+}
+
+// GIVEN: the product types
+interface Hero  { String attack(); }
+interface Enemy { String appear(); }
+
+// GIVEN: the abstract factory
+interface WorldFactory {
+    Hero createHero();
+    Enemy createEnemy();
+}
+
+// GIVEN: the forest family and its factory
+class ForestHero implements Hero {
+    public String attack() { return "Ranger shoots an arrow"; }
+}
+class ForestEnemy implements Enemy {
+    public String appear() { return "A wolf jumps out of the bushes"; }
+}
+class ForestFactory implements WorldFactory {
+    public Hero createHero()   { return new ForestHero(); }
+    public Enemy createEnemy() { return new ForestEnemy(); }
+}
+
+// TODO 1: IceHero and IceEnemy
+// TODO 2: IceFactory
+
+// The client: works with any world
+class Level {
+    private final Hero hero;
+    private final Enemy enemy;
+
+    Level(WorldFactory world) {
+        // TODO 3: create the hero and the enemy from the factory
+    }
+
+    void play() {
+        System.out.println(enemy.appear());
+        System.out.println(hero.attack());
+    }
+}`,
+  out:`--- forest ---
+A wolf jumps out of the bushes
+Ranger shoots an arrow
+--- ice ---
+A yeti rises from the snow
+Ice mage throws a frost bolt`,sim:'world',
+  qs:['Could a <code>Level</code> end up with a <code>ForestHero</code> and an <code>IceEnemy</code>? Explain why or why not.','Where in your program is the choice between Forest and Ice made? Why is that a good place?']},
+ {id:4,lvl:'Level 4 · Harder',lc:'#f0574a',m:4,you:'~20 lines + reasoning',t:'A new product type arrives',time:'12 min',file:'GameWorlds.java (continued)',
+  intro:'The game designers want <b>treasure</b> in every level. That is a new <b>product type</b>, a new column in the Abstract Factory matrix. First predict the impact, then make the change in your Exercise 3 file and watch the compiler guide you.',
+  reqs:['Use the predictor below: mark which classes you will <b>edit</b> and which are <b>new</b>, then press Check.','Add <code>interface Treasure { String open(); }</code> and add <code>Treasure createTreasure();</code> to <code>WorldFactory</code>. Compile and read the errors.','Write <code>ForestTreasure</code> (<code>Chest holds 30 gold</code>) and <code>IceTreasure</code> (<code>Frozen chest holds a blue crystal</code>).','Implement <code>createTreasure()</code> in both factories.','<code>Level</code> also creates a <code>Treasure</code>, and <code>play()</code> prints <code>treasure.open()</code> last.'],
+  hint:'Run <code>java GameWorlds.java</code> right after editing the interface. The errors list exactly the factories you still have to complete. That list is the cost of a new product type.',
+  starter:`// Start from your Exercise 3 file. These are the pieces to add.
+
+// NEW product type
+interface Treasure { String open(); }
+
+// TODO 1: add  Treasure createTreasure();  to WorldFactory, then run it and read the errors
+// TODO 2: ForestTreasure -> "Chest holds 30 gold"
+//         IceTreasure    -> "Frozen chest holds a blue crystal"
+// TODO 3: implement createTreasure() in ForestFactory and IceFactory
+// TODO 4: Level gets a third field, created from the factory,
+//         and play() prints treasure.open() after the attack`,
+  out:`--- forest ---
+A wolf jumps out of the bushes
+Ranger shoots an arrow
+Chest holds 30 gold
+--- ice ---
+A yeti rises from the snow
+Ice mage throws a frost bolt
+Frozen chest holds a blue crystal`,sim:'impact',
+  bonus:'Turn <code>IceFactory</code> into an <code>enum</code> singleton with one constant <code>INSTANCE</code> that implements <code>WorldFactory</code>, and use <code>IceFactory.INSTANCE</code> in <code>main</code>. The output must not change. Why is a factory a good candidate for a singleton?',
+  qs:['How many existing classes did you edit to add Treasure? How many would you edit to add a third world, Desert, instead?','The designers say: "Next we will add potions, maps and pets." What does that tell you about this design? Suggest one alternative.']}];
+
+const reqList=(id,r)=>`<ul class="reqs">${r.map((x,i)=>`<li><label><input type="checkbox" data-req="${id}-${i}"><span>${x}</span></label></li>`).join('')}</ul>`;
+$('#ex-list').innerHTML=EX.map(e=>`<article class="ex" id="ex${e.id}" style="--lc:${e.lc}"><div class="in">
+ <div class="ex-top"><span class="lvl">${e.lvl}</span><span class="meter" aria-label="difficulty ${e.m} of 4">${[1,2,3,4].map(i=>`<i class="${i<=e.m?'on':''}"></i>`).join('')}</span><span class="you">✍ ${e.you}</span><span class="time">⏱ ${e.time}</span></div>
+ <h3>Exercise ${e.id} · ${e.t}</h3><p>${e.intro}</p>
+ ${e.sim==='world'?worldAnalogy():''}
+ <div class="lbl">☐ Requirements</div>${reqList(e.id,e.reqs)}<div class="reqbar" aria-hidden="true"><i id="rq${e.id}"></i></div>
+ ${e.sim==='impact'?impactSim():''}
+ <div class="lbl">Starter code</div><div class="code" data-ex="${e.id}"></div>
+ ${e.sim==='floor'?floorSim():''}
+ <div class="two"><div><div class="lbl">Expected output</div><div class="code"><span class="ln out">${esc(e.out)}</span></div></div><div><details class="hint"><summary>💡 Hint (open only if stuck for 3 minutes)</summary>${e.hint}</details></div></div>
+ <div class="checker"><div class="lbl" style="margin-top:0">✔ Check my output</div><textarea class="mono" id="out${e.id}" data-save="out${e.id}" placeholder="Run your program and paste its output here…" aria-label="Output of exercise ${e.id}"></textarea><div class="row"><button class="btn grad sm" type="button" data-chk="${e.id}">Check output</button><span class="small muted">saved automatically</span></div><div id="res${e.id}" aria-live="polite"></div></div>
+ <div class="lbl">Questions</div>${e.qs.map((q,i)=>`<div class="qa"><p>${i+1}. ${q}</p><textarea data-save="q${e.id}-${i}" aria-label="Answer to question ${i+1} of exercise ${e.id}"></textarea></div>`).join('')}
+ ${e.bonus?`<details class="bonus"><summary>⭐ Bonus, if you finish early</summary><p>${e.bonus}</p><textarea data-save="bonus" aria-label="Bonus answer"></textarea></details>`:''}
+</div></article>`).join('');
+$$('[data-ex]').forEach(el=>{const e=EX[+el.dataset.ex-1];renderCode(el,e.starter,e.file)});
+EX.forEach(e=>track('E'+e.id));
+
+function floorSim(){return`<div class="sim"><div class="in"><div class="sim-h"><span class="live">SIMULATION</span><h4>Watch <code>export()</code> run</h4></div>
+ <p class="small muted" style="margin-top:0">The same routine runs for every exporter. Only the factory method station changes. Your <code>CsvExporter</code> plugs in here without touching the routine.</p>
+ <div class="row"><div class="seg" id="ff-pick"><button type="button" data-v="pdf" class="on">PdfExporter</button><button type="button" data-v="csv">CsvExporter (yours)</button></div><button class="btn grad sm" id="ff-go" type="button">▶ export("Sales", rows)</button></div>
+ <div class="floor2"><div class="stations" id="ff-st"><div class="station fm"><b>createFormatter()</b><small>factory method</small></div><div class="station"><b>format()</b><small>on the Formatter</small></div><div class="station"><b>print</b><small>same for all</small></div><div class="station"><b>count rows</b><small>same for all</small></div></div>
+ <div class="belt" id="ff-belt"><div class="track"></div><div class="parcel" id="ff-parcel"></div></div></div>
+ <div class="console" id="ff-con" aria-live="polite"><div class="c">// console output appears here</div></div></div></div>`}
+function worldAnalogy(){return`<div class="analogy"><div class="in"><div><span class="tag">Analogy · the theme park</span><h3 style="margin-top:10px">Each land comes as a set.</h3>
+ <p>In a theme park, the ice land has its own costumes, rides and snacks, and the jungle land has its own. Staff never hand out a parka in the jungle. Each <b>land</b> is a concrete factory, and each <b>kind of thing</b> (costume, ride, snack) is a product type.</p>
+ <div class="row"><div class="seg" id="wc-pick"><button type="button" data-v="forest" class="on">ForestFactory</button><button type="button" data-v="ice">IceFactory</button></div></div></div>
+ <div class="kit3d" style="height:220px"><div class="wcube" id="wcube"><b></b><b></b><b></b><b></b><b></b><b></b></div></div></div></div>`}
+function impactSim(){return`<div class="sim"><div class="in"><div class="sim-h"><span class="live">PREDICT FIRST</span><h4>Which classes will Treasure touch?</h4></div>
+ <p class="small muted" style="margin-top:0">Click each class to cycle: <b>untouched</b> → <b>edit</b> → <b>new</b>. Then press Check. Do this <b>before</b> you write any code.</p>
+ <div class="chips2" id="imp"></div>
+ <div class="legend2"><span>⬜ untouched</span><span style="color:var(--bad)">■ edit</span><span style="color:var(--ok)">■ new</span></div>
+ <div class="row"><button class="btn grad sm" id="imp-chk" type="button">Check my prediction</button><button class="btn sm" id="imp-rst" type="button">↺ Reset</button></div>
+ <div id="imp-fb" aria-live="polite"></div></div></div>`}
+
+/* output checking */
+const norm=t=>t.replace(/\r/g,'').split('\n').map(fold).filter(Boolean);
+$$('[data-chk]').forEach(b=>b.onclick=()=>{const e=EX[+b.dataset.chk-1],L=norm($('#out'+e.id).value),E=norm(e.out);let r;
+ if(!L.length)r={ok:false,m:'Paste the output of your program first.'};
+ else{const bad=E.map((x,i)=>L[i]===x?null:i+1).filter(Boolean),ok=!bad.length&&L.length===E.length;
+  r={ok,m:ok?'✓ Your output matches the expected output.':`✗ Not yet: ${bad.length?(bad.length>1?'lines ':'line ')+bad.join(', ')+' differ':''}${L.length>E.length?(bad.length?', and ':'')+'there are extra lines':''}. Compare spelling and the order of lines.`}}
+ $('#res'+e.id).innerHTML=`<div class="result ${r.ok?'ok':'err'}">${r.m}</div>`;if(r.ok)mark('E'+e.id,true)});
+
+/* requirement checkboxes */
+(()=>{const st=store.get('reqs',{});$$('[data-req]').forEach(c=>{c.checked=!!st[c.dataset.req];c.onchange=()=>{st[c.dataset.req]=c.checked;store.set('reqs',st);u()}});
+ function u(){EX.forEach(e=>{const bs=$$(`#ex${e.id} [data-req]`);$('#rq'+e.id).style.setProperty('--rq',bs.filter(c=>c.checked).length/bs.length)})}u()})();
+
+/* ---------- 3D helper ---------- */
+function cuboid(parent,{w,h,d,x=0,y=0,z=0,c,top,label}){const el=document.createElement('div');el.className='cub';el.style.transform=`translate3d(${x}px,${y}px,${z}px)`;
+ const face=(fw,fh,t,shade,txt)=>`<b style="left:${-fw/2}px;top:${-fh/2}px;width:${fw}px;height:${fh}px;transform:${t};background:${shade}">${txt||''}</b>`;
+ const sh=k=>`color-mix(in srgb,${c} ${k}%,#000)`;
+ el.innerHTML=face(w,h,`translateZ(${d/2}px)`,sh(100),label)+face(w,h,`rotateY(180deg) translateZ(${d/2}px)`,sh(70))+face(d,h,`rotateY(90deg) translateZ(${w/2}px)`,sh(78))+face(d,h,`rotateY(-90deg) translateZ(${w/2}px)`,sh(86))+face(w,d,`rotateX(90deg) translateZ(${h/2}px)`,top||`color-mix(in srgb,${c} 80%,#fff)`)+face(w,d,`rotateX(-90deg) translateZ(${h/2}px)`,sh(60));
+ parent.append(el);return el}
+
+/* hero factory */
+(()=>{const w=$('#world');
+ cuboid(w,{w:150,h:110,d:120,x:-70,y:-55,z:-10,c:'#5b4ee6',label:'Lab'});
+ cuboid(w,{w:70,h:50,d:120,x:30,y:-25,z:-10,c:'#3b33a8'});
+ cuboid(w,{w:26,h:90,d:26,x:-110,y:-155,z:-40,c:'#2a2f63'});
+ cuboid(w,{w:22,h:70,d:22,x:-60,y:-145,z:-40,c:'#2a2f63'});
+ cuboid(w,{w:240,h:10,d:46,x:150,y:-5,z:30,c:'#1d2240',top:'repeating-linear-gradient(90deg,#3a4180 0 12px,#232a5c 12px 24px)'});
+ const sign=document.createElement('div');sign.className='sign';sign.textContent=TEACHER?'answer key':'your turn()';sign.style.transform='translate3d(-70px,-145px,52px)';w.append(sign);
+ ['#13b8a8','#5b4ee6','#f0574a','#ffb547'].forEach((c,i)=>{const m=document.createElement('div');m.className='belt-move';m.style.left='40px';m.style.top='-24px';m.style.animationDelay=(-i*1.5)+'s';w.append(m);
+  const hold=document.createElement('div');hold.style.cssText='position:absolute;transform-style:preserve-3d;transform:translate3d(40px,0,30px)';m.append(hold);cuboid(hold,{w:30,h:30,d:30,c})});
+ [[-110,-205],[-60,-185]].forEach(([x,y],i)=>{for(let k=0;k<2;k++){const s=document.createElement('div');s.className='smoke';s.style.left=(x-13)+'px';s.style.top=(y-13)+'px';s.style.transform='translateZ(-40px)';s.style.animationDelay=(-(i*1.1+k*1.7))+'s';w.append(s)}});
+ const hero=$('#top');hero.addEventListener('pointermove',e=>{const r=hero.getBoundingClientRect(),px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;hero.style.setProperty('--mx',(px*100)+'%');hero.style.setProperty('--my',(py*100)+'%');if(REDUCE)return;w.style.setProperty('--tx',((px-.5)*40).toFixed(2));w.style.setProperty('--ty',((.5-py)*-16).toFixed(2))});
+ hero.addEventListener('pointerleave',()=>{w.style.setProperty('--tx',0);w.style.setProperty('--ty',0)})})();
+
+/* factory floor sim */
+(()=>{if(!$('#ff-go'))return;const P={pdf:{n:'PdfExporter',p:'PdfFormatter',c:'#5b4ee6',o:'%PDF Sales (2 rows)'},csv:{n:'CsvExporter',p:'CsvFormatter',c:'#13b8a8',o:'Sales;Jan=120;Feb=95'}};
+ let pick='pdf',busy=false;const st=$$('#ff-st .station'),parcel=$('#ff-parcel'),belt=$('#ff-belt'),con=$('#ff-con');
+ $$('#ff-pick button').forEach(b=>b.onclick=()=>{if(busy)return;pick=b.dataset.v;$$('#ff-pick button').forEach(x=>x.classList.toggle('on',x===b))});
+ const wait=ms=>new Promise(r=>setTimeout(r,REDUCE?0:ms)),log=h=>con.insertAdjacentHTML('beforeend',`<div>${h}</div>`);
+ $('#ff-go').onclick=async()=>{if(busy)return;busy=true;$('#ff-go').disabled=true;const p=P[pick];con.innerHTML='';st.forEach(s=>{s.classList.remove('on');s.style.setProperty('--pc',p.c)});
+  parcel.innerHTML='';parcel.classList.remove('show');parcel.style.transition='none';parcel.style.left='4%';void parcel.offsetWidth;parcel.style.transition='';
+  log(`<span class="c">// exporter is a ${p.n}</span>`);belt.classList.add('run');const xs=['4%','29%','54%','79%'];
+  for(let i=0;i<4;i++){st.forEach((s,j)=>s.classList.toggle('on',j===i));parcel.style.left=xs[i];
+   if(i===0){await wait(300);const c=document.createElement('div');c.className='cub';c.style.transform='rotateX(-24deg) rotateY(-32deg)';parcel.append(c);cuboid(c,{w:40,h:40,d:40,c:p.c,label:pick.toUpperCase()});parcel.classList.add('show');log(`→ createFormatter() returns <span class="m">new ${p.p}()</span>`)}
+   if(i===1)log('→ formatter.format("Sales", rows)');if(i===2)log(`<span class="m">${p.o}</span>`);if(i===3)log('<span class="m">exported 2 rows</span>');await wait(900)}
+  belt.classList.remove('run');st.forEach(s=>s.classList.remove('on'));log(`<span class="c">// export() never names ${p.p}</span>`);busy=false;$('#ff-go').disabled=false}})();
+
+/* world cube */
+(()=>{if(!$('#wcube'))return;const W={forest:{bg:'linear-gradient(135deg,#7fd99a,#1f7a4d)',fg:'#fff',f:['ForestHero','ForestEnemy','ForestHero','ForestEnemy','Forest','Forest']},ice:{bg:'linear-gradient(135deg,#e6f4ff,#6aa9e6)',fg:'#123',f:['IceHero','IceEnemy','IceHero','IceEnemy','Ice','Ice']}};
+ const set=k=>{$$('#wcube b').forEach((b,i)=>{b.style.background=W[k].bg;b.style.color=W[k].fg;b.textContent=W[k].f[i]})};
+ $$('#wc-pick button').forEach(b=>b.onclick=()=>{$$('#wc-pick button').forEach(x=>x.classList.toggle('on',x===b));set(b.dataset.v)});set('forest')})();
+
+/* impact predictor */
+const IMP=[['WorldFactory',1],['ForestFactory',1],['IceFactory',1],['Level',1],['GameWorlds (main)',0],['ForestHero',0],['ForestEnemy',0],['IceHero',0],['IceEnemy',0],['Treasure',2],['ForestTreasure',2],['IceTreasure',2]];
+(()=>{if(!$('#imp'))return;const LB=['untouched','edit','new'],CL=['','edit','new'];let st=store.get('imp',IMP.map(()=>0));
+ function draw(){$('#imp').innerHTML=shuffleOnce.map(i=>`<button type="button" class="cls ${CL[st[i]]}" data-i="${i}">${IMP[i][0]}<em>${LB[st[i]]}</em></button>`).join('');
+  $$('#imp .cls').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;st[i]=(st[i]+1)%3;store.set('imp',st);draw();$('#imp-fb').innerHTML=''})}
+ const shuffleOnce=shuffle(IMP.map((_,i)=>i));
+ $('#imp-chk').onclick=()=>{let ok=0;IMP.forEach((c,i)=>{if(st[i]===c[1])ok++});const all=ok===IMP.length;
+  $$('#imp .cls').forEach(b=>{const i=+b.dataset.i;if(st[i]!==IMP[i][1]){b.classList.remove('miss');void b.offsetWidth;b.classList.add('miss')}});
+  $('#imp-fb').innerHTML=`<div class="result ${all?'ok':'warn'}">${all?'✓ Exactly right. Four existing classes are edited and three are new. Now write the code.':`${ok} of ${IMP.length} classes are right. The shaking ones are wrong: think again about which classes <b>implement</b> or <b>use</b> WorldFactory.`}</div>`;if(all)mark('IMP',true)};
+ $('#imp-rst').onclick=()=>{st=IMP.map(()=>0);store.set('imp',st);draw();$('#imp-fb').innerHTML=''};draw()})();
+if($('#imp'))track('IMP');
+
+/* autosave */
+$$('[data-save]').forEach(el=>{const k='t:'+el.dataset.save;el.value=store.get(k,'');let tm;el.addEventListener('input',()=>{clearTimeout(tm);tm=setTimeout(()=>store.set(k,el.value),300)})});
+
+/* copy all answers */
+$('#copy-all').onclick=()=>{const g=k=>store.get('t:'+k,'').trim()||'(no answer)';let s='FACTORY LAB · MY ANSWERS\n\nW3 prediction:\n'+g('w3')+'\n\n';
+ EX.forEach(e=>{s+=`EXERCISE ${e.id}: ${e.t}\nOutput check: ${PROG['E'+e.id]?'passed':'not passed yet'}\nMy output:\n${g('out'+e.id)}\n`;e.qs.forEach((q,i)=>{s+=`Q${i+1}. ${q.replace(/<[^>]+>/g,'')}\n→ ${g('q'+e.id+'-'+i)}\n`});s+='\n'});
+ s+='BONUS\n'+g('bonus')+'\n\nREFLECTION\n'+g('refl')+'\n';const box=$('#copy-box');box.value=s;box.hidden=false;box.style.minHeight='200px';
+ try{navigator.clipboard.writeText(s).then(()=>$('#copy-msg').textContent='Copied ✓ Paste it into your submission document.',()=>{box.select();$('#copy-msg').textContent='Select the text below and copy it (Ctrl+C / ⌘C).'})}catch(e){box.select()}};
+
+/* ---------- 60-minute plan + timer ---------- */
+(()=>{const PLAN=[['Warm-up','#warmup',10],['Ex 1','#ex1',10],['Ex 2','#ex2',10],['Ex 3','#ex3',15],['Ex 4','#ex4',12],['Wrap','#wrap',3]];const TOTAL=60*60000;let tm=store.get('timer',{el:0,st:null});
+ $('#segs').innerHTML=PLAN.map((p,i)=>`<button type="button" class="seg-b" data-i="${i}" title="${p[0]} · ${p[2]} min"><b>${p[0]}</b><small>${p[2]} min</small></button>`).join('');
+ const segs=$$('.seg-b');segs.forEach(b=>b.onclick=()=>$(PLAN[+b.dataset.i][1]).scrollIntoView({behavior:REDUCE?'auto':'smooth'}));
+ const el=()=>tm.el+(tm.st?Date.now()-tm.st:0),fmt=ms=>{const s=Math.floor(Math.abs(ms)/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+ const save=()=>{store.set('timer',tm);tick()},toggle=()=>{if(tm.st){tm.el=el();tm.st=null}else tm.st=Date.now();save()};
+ function tick(){const e=el(),rem=TOTAL-e,run=!!tm.st,b=$('#timer');$('#tval').textContent=(rem<0?'+':'')+fmt(rem);b.classList.toggle('run',run);b.classList.toggle('over',rem<0);
+  b.setAttribute('aria-label',`Lab timer, ${fmt(rem)} ${rem<0?'over time':'left'}, ${run?'running, click to pause':'paused, click to start'}`);
+  $('#plan-go').textContent=run?'⏸ Pause timer':e>0?'▶ Resume timer':'▶ Start timer';let acc=0,now=-1;const min=e/60000;
+  PLAN.forEach((p,i)=>{segs[i].style.setProperty('--f',Math.max(0,Math.min(1,(min-acc)/p[2])));if(min>=acc&&min<acc+p[2])now=i;acc+=p[2]});segs.forEach((s,i)=>s.classList.toggle('now',run&&i===now));
+  $('#plan-say').textContent=e===0?'Timer not started. It keeps running if you reload the page.':rem<0?`Time is up by ${fmt(rem)}. Finish your current exercise and go to the wrap-up.`:`${fmt(e)} spent · you should be on: ${PLAN[Math.max(0,now)][0]} · ${fmt(rem)} left.`}
+ $('#timer').onclick=toggle;$('#plan-go').onclick=toggle;$('#plan-rst').onclick=()=>{tm={el:0,st:null};save()};tick();setInterval(tick,1000)})();
+
+/* ================= TEACHER ANSWER KEY ================= */
+(()=>{if(!TEACHER)return;
+const K=(t,h)=>`<details class="key" open><summary>✅ ${t}</summary><div class="kb">${h}</div></details>`;
+const TN=(h)=>`<div class="tnote"><b class="h">Teacher notes</b>${h}</div>`;
+const SOL={
+1:`import java.util.List;
+
+public class ReportExport {
+    public static void main(String[] args) {
+        List<String> rows = List.of("Jan=120", "Feb=95");
+        // TODO 3
+        for (Exporter exporter : List.of(new PdfExporter(), new CsvExporter())) {
+            exporter.export("Sales", rows);
+        }
+    }
+}
+
+interface Formatter {
+    String format(String title, List<String> rows);
+}
+
+class PdfFormatter implements Formatter {
+    public String format(String title, List<String> rows) {
+        return "%PDF " + title + " (" + rows.size() + " rows)";
+    }
+}
+
+abstract class Exporter {
+    protected abstract Formatter createFormatter();   // factory method
+
+    public final void export(String title, List<String> rows) {
+        Formatter formatter = createFormatter();
+        System.out.println(formatter.format(title, rows));
+        System.out.println("exported " + rows.size() + " rows");
+    }
+}
+
+class PdfExporter extends Exporter {
+    @Override protected Formatter createFormatter() { return new PdfFormatter(); }
+}
+
+// TODO 1
+class CsvFormatter implements Formatter {
+    public String format(String title, List<String> rows) {
+        return title + ";" + String.join(";", rows);
+    }
+}
+
+// TODO 2
+class CsvExporter extends Exporter {
+    @Override protected Formatter createFormatter() { return new CsvFormatter(); }
+}`,
+2:`import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+
+public class RideApp {
+
+    // TODO 1
+    private static final Map<String, Supplier<Vehicle>> REGISTRY = Map.of(
+        "bike",    Bike::new,
+        "car",     Car::new,
+        "scooter", Scooter::new
+    );
+
+    // TODO 2
+    public static Vehicle create(String type) {
+        Supplier<Vehicle> maker = REGISTRY.get(type);
+        if (maker == null) {
+            throw new IllegalArgumentException("Unknown vehicle: " + type);
+        }
+        return maker.get();
+    }
+
+    public static void main(String[] args) {
+        for (String type : List.of("bike", "scooter", "car")) {
+            System.out.println(create(type).ride("Station"));
+        }
+        try {
+            create("plane");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}
+
+interface Vehicle { String ride(String to); }
+
+class Bike implements Vehicle {
+    public String ride(String to) { return "Bike to " + to + ": 25 min"; }
+}
+class Car implements Vehicle {
+    public String ride(String to) { return "Car to " + to + ": 10 min"; }
+}
+class Scooter implements Vehicle {
+    public String ride(String to) { return "Scooter to " + to + ": 15 min"; }
+}`,
+3:`public class GameWorlds {
+    public static void main(String[] args) {
+        // TODO 4
+        System.out.println("--- forest ---");
+        new Level(new ForestFactory()).play();
+        System.out.println("--- ice ---");
+        new Level(new IceFactory()).play();
+    }
+}
+
+interface Hero  { String attack(); }
+interface Enemy { String appear(); }
+
+interface WorldFactory {
+    Hero createHero();
+    Enemy createEnemy();
+}
+
+class ForestHero implements Hero {
+    public String attack() { return "Ranger shoots an arrow"; }
+}
+class ForestEnemy implements Enemy {
+    public String appear() { return "A wolf jumps out of the bushes"; }
+}
+class ForestFactory implements WorldFactory {
+    public Hero createHero()   { return new ForestHero(); }
+    public Enemy createEnemy() { return new ForestEnemy(); }
+}
+
+// TODO 1
+class IceHero implements Hero {
+    public String attack() { return "Ice mage throws a frost bolt"; }
+}
+class IceEnemy implements Enemy {
+    public String appear() { return "A yeti rises from the snow"; }
+}
+
+// TODO 2
+class IceFactory implements WorldFactory {
+    public Hero createHero()   { return new IceHero(); }
+    public Enemy createEnemy() { return new IceEnemy(); }
+}
+
+class Level {
+    private final Hero hero;
+    private final Enemy enemy;
+
+    Level(WorldFactory world) {
+        // TODO 3
+        hero = world.createHero();
+        enemy = world.createEnemy();
+    }
+
+    void play() {
+        System.out.println(enemy.appear());
+        System.out.println(hero.attack());
+    }
+}`,
+4:`public class GameWorlds {                              // unchanged
+    public static void main(String[] args) {
+        System.out.println("--- forest ---");
+        new Level(new ForestFactory()).play();
+        System.out.println("--- ice ---");
+        new Level(new IceFactory()).play();
+    }
+}
+
+interface Hero     { String attack(); }
+interface Enemy    { String appear(); }
+interface Treasure { String open(); }                  // new product type
+
+interface WorldFactory {
+    Hero createHero();
+    Enemy createEnemy();
+    Treasure createTreasure();                         // edit: new create method
+}
+
+class ForestHero implements Hero {
+    public String attack() { return "Ranger shoots an arrow"; }
+}
+class ForestEnemy implements Enemy {
+    public String appear() { return "A wolf jumps out of the bushes"; }
+}
+class ForestTreasure implements Treasure {             // new
+    public String open() { return "Chest holds 30 gold"; }
+}
+class ForestFactory implements WorldFactory {          // edit
+    public Hero createHero()         { return new ForestHero(); }
+    public Enemy createEnemy()       { return new ForestEnemy(); }
+    public Treasure createTreasure() { return new ForestTreasure(); }
+}
+
+class IceHero implements Hero {
+    public String attack() { return "Ice mage throws a frost bolt"; }
+}
+class IceEnemy implements Enemy {
+    public String appear() { return "A yeti rises from the snow"; }
+}
+class IceTreasure implements Treasure {                // new
+    public String open() { return "Frozen chest holds a blue crystal"; }
+}
+class IceFactory implements WorldFactory {             // edit
+    public Hero createHero()         { return new IceHero(); }
+    public Enemy createEnemy()       { return new IceEnemy(); }
+    public Treasure createTreasure() { return new IceTreasure(); }
+}
+
+class Level {                                          // edit
+    private final Hero hero;
+    private final Enemy enemy;
+    private final Treasure treasure;
+
+    Level(WorldFactory world) {
+        hero = world.createHero();
+        enemy = world.createEnemy();
+        treasure = world.createTreasure();
+    }
+
+    void play() {
+        System.out.println(enemy.appear());
+        System.out.println(hero.attack());
+        System.out.println(treasure.open());
+    }
+}`,
+bonus:`enum IceFactory implements WorldFactory {
+    INSTANCE;
+
+    public Hero createHero()         { return new IceHero(); }
+    public Enemy createEnemy()       { return new IceEnemy(); }
+    public Treasure createTreasure() { return new IceTreasure(); }
+}
+
+// in main:
+new Level(IceFactory.INSTANCE).play();`};
+const ANS={
+1:['<code>export()</code>. It calls <code>createFormatter()</code> and then uses the result only through the <code>Formatter</code> interface, so it works with any formatter a subclass returns. This is the open/closed principle: the class was extended without being modified.',
+   'So that subclasses can change only the creation step and not the routine itself. If <code>export()</code> could be overridden, a subclass could skip the row count or print in another order, and every exporter could behave differently. The fixed routine is the Template Method; the factory method is its single variable step.'],
+2:['Add one class <code>Train implements Vehicle</code> and one line <code>"train", Train::new</code> in <code>REGISTRY</code>. No caller changes, and the old switch no longer exists in three places.',
+   'No. It is a registry, a refined simple factory: the class is chosen by a key at runtime, and no subclass overrides a creation method. GoF Factory Method relies on inheritance, with a subclass overriding <code>createX()</code>.'],
+3:['No. <code>Level</code> receives a single <code>WorldFactory</code>, and each concrete factory only creates its own family. <code>Level</code> never names a concrete class, so a mixed pair can\'t even be written there.',
+   'In <code>main</code>, where <code>new ForestFactory()</code> or <code>new IceFactory()</code> is passed to <code>Level</code>. It is the composition root: the choice is made once, at the edge of the program, and everything else works with any world.'],
+4:['Four existing classes were edited: <code>WorldFactory</code>, <code>ForestFactory</code>, <code>IceFactory</code> and <code>Level</code>. Three classes were added. Adding a Desert world instead would edit <b>zero</b> existing classes: you would add <code>DesertHero</code>, <code>DesertEnemy</code>, <code>DesertTreasure</code> and <code>DesertFactory</code>.',
+   'The design will keep growing along its expensive axis: every new product type edits every factory. Alternatives: split the products into smaller factories (one per kind of item), or use a more generic factory such as a per-world registry <code>Map&lt;Class&lt;?&gt;, Supplier&lt;?&gt;&gt;</code>, or describe items with data rather than one class per item. Any well-argued alternative is acceptable.']};
+const NOTES={
+1:'<ul><li>Expect most students to finish in 6–8 minutes.</li><li>Common mistake: editing <code>Exporter</code> with an <code>if</code> for CSV. Ask them to undo it and reread requirement 4.</li><li>Accept two separate calls in <code>main</code> instead of a loop.</li></ul>',
+2:'<ul><li>Common mistake: <code>() -&gt; new Bike()</code> instead of <code>Bike::new</code>. It works but misses requirement 2.</li><li>Some call <code>REGISTRY.get(type).get()</code> directly and get a <code>NullPointerException</code> for "plane". Point them to the null check.</li><li><code>getOrDefault</code> with a throwing supplier is an acceptable alternative.</li></ul>',
+3:'<ul><li>This is the central exercise. Allow up to 18 minutes for weaker students.</li><li>Common mistake: <code>Level</code> creating <code>new IceHero()</code> directly. It runs, but fails requirement 5. That is the whole point of the pattern.</li><li>Check that the two fields stay <code>final</code>.</li></ul>',
+4:'<ul><li>Make students do the predictor <b>before</b> coding. The compiler errors then confirm their prediction.</li><li>Expected compiler messages: <code>ForestFactory is not abstract and does not override abstract method createTreasure()</code>, and the same for <code>IceFactory</code>.</li><li>Use question 1 for a short class discussion: new family = cheap, new product type = expensive.</li></ul>'};
+
+EX.forEach(e=>{const art=$('#ex'+e.id);
+ art.querySelector('.reqbar').insertAdjacentHTML('afterend',TN(NOTES[e.id]));
+ art.querySelector('.checker').insertAdjacentHTML('afterend',K(`Solution · ${e.file.split(' ')[0]}`,codeHTML(SOL[e.id],e.file.split(' ')[0])+`<div class="lbl">Output</div><div class="code"><span class="ln out">${esc(e.out)}</span></div>`));
+ art.querySelectorAll('.qa').forEach((q,i)=>q.insertAdjacentHTML('beforeend',K('Model answer',`<p>${ANS[e.id][i]}</p>`)));
+ const b=art.querySelector('details.bonus');if(b){b.open=true;b.insertAdjacentHTML('beforeend',K('Bonus solution',codeHTML(SOL.bonus,'IceFactory as an enum')+'<p>A factory is stateless and the application needs only one per family, so a single shared instance is enough. The enum gives that with no locking code.</p>'))}});
+
+/* warm-ups */
+$('#w1').insertAdjacentHTML('beforeend',K('Answers',`<p>A · Product · B · Concrete Product · C · Creator (<code>newShape()</code> is the factory method) · D · Concrete Creator · E · Abstract Factory · F · Concrete Factory</p>`));
+$('#w2').insertAdjacentHTML('beforeend',K('Answers',`<ol><li><b>Abstract Factory</b>: three products that must match per style.</li><li><b>Factory Method</b>: a base-class algorithm with one creation step chosen by subclasses.</li><li><b>Just use new</b>: one implementation, no variation.</li><li><b>Abstract Factory</b>: a family that must come from the same driver (this is how JDBC works).</li></ol>`));
+$('#w3').insertAdjacentHTML('beforeend',K('Answer',`<div class="code"><span class="ln out">open\nmelon pan\nopen\nbaguette</span></div><p><code>x</code> is declared as <code>Bakery</code> but holds a <code>Kyoto</code>, so <code>open()</code> calls Kyoto's <code>bake()</code>. The lambdas are valid because <code>Bread</code> has a single method.</p>`));
+const imp=$('#imp');if(imp)imp.closest('.in').insertAdjacentHTML('beforeend',K('Prediction answer',`<p><b>Edit (4):</b> WorldFactory, ForestFactory, IceFactory, Level. <b>New (3):</b> Treasure, ForestTreasure, IceTreasure. <b>Untouched (5):</b> GameWorlds, ForestHero, ForestEnemy, IceHero, IceEnemy.</p>`));
+$('#refl').insertAdjacentHTML('afterend',K('Model answer',`<p>I choose Abstract Factory when several objects must come from the same family, such as themes, drivers or game worlds, and new <b>families</b> are what will be added. I avoid it when new <b>product types</b> keep arriving, because each one edits the interface and every factory, as in Exercise 4. For a single product, Factory Method or a simple registry is lighter.</p>`));
+
+/* toggle */
+const btn=$('#keyt');let on=true;const set=v=>{on=v;$$('details.key,.tnote').forEach(d=>{if(d.tagName==='DETAILS')d.open=v;else d.hidden=!v});btn.setAttribute('aria-pressed',v);btn.lastChild.textContent=v?'Answers':'Hidden'};
+btn.onclick=()=>set(!on);addEventListener('keydown',e=>{if(e.metaKey||e.ctrlKey||e.altKey||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key.toLowerCase()==='a')set(!on)});
+})();
+
+
+/* ---------- tilt cards ---------- */
+if(!REDUCE)$$('.tilt').forEach(t=>{t.addEventListener('pointermove',e=>{const r=t.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;t.style.setProperty('--ry',((x-.5)*10).toFixed(2)+'deg');t.style.setProperty('--rx',((.5-y)*8).toFixed(2)+'deg');t.style.setProperty('--lx',(x*100)+'%');t.style.setProperty('--ly',(y*100)+'%')});
+ t.addEventListener('pointerleave',()=>{t.style.setProperty('--rx','0deg');t.style.setProperty('--ry','0deg')})});
+
+/* ---------- navigation + scroll ---------- */
+const root=document.documentElement,hero=$('#top'),SECS=['#warmup','#ex1','#ex2','#ex3','#ex4','#wrap'].map(s=>$(s));
+const NAV=$$('#snav a'),RAIL=$$('#rail a'),HEADS=$$('.step-head');let cur=-2,ticking=false;
+function setCur(i){if(i===cur)return;cur=i;NAV.forEach((a,j)=>a.classList.toggle('act',j===i));RAIL.forEach((a,j)=>{a.classList.toggle('act',j===i);a.classList.toggle('seen',j<i)});
+ const a=NAV[i],nav=$('#snav');if(a&&nav.scrollWidth>nav.clientWidth)nav.scrollTo({left:a.offsetLeft-nav.clientWidth/2+a.offsetWidth/2,behavior:REDUCE?'auto':'smooth'})}
+function onScroll(){ticking=false;const y=scrollY,max=Math.max(1,root.scrollHeight-innerHeight);root.style.setProperty('--sp',Math.min(1,y/max).toFixed(4));
+ if(!REDUCE){hero.style.setProperty('--hy',Math.min(y,hero.offsetHeight).toFixed(0));HEADS.forEach(h=>{const r=h.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight)h.style.setProperty('--pp',(1-(r.top+r.height)/(innerHeight+r.height)).toFixed(3))})}
+ $('#totop').classList.toggle('show',y>700);let c=-1;SECS.forEach((s,i)=>{if(s.getBoundingClientRect().top<220)c=i});setCur(c)}
+addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(onScroll)}},{passive:true});onScroll();
+$('#totop').onclick=()=>scrollTo({top:0,behavior:REDUCE?'auto':'smooth'});
+addEventListener('keydown',e=>{if(e.metaKey||e.ctrlKey||e.altKey||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;const k=e.key.toLowerCase();if(k!=='n'&&k!=='p')return;const i=cur+(k==='n'?1:-1);if(i<0)scrollTo({top:0,behavior:REDUCE?'auto':'smooth'});else if(i<SECS.length)SECS[i].scrollIntoView({behavior:REDUCE?'auto':'smooth'})});
+(()=>{if(REDUCE||!('IntersectionObserver' in window))return;const els=$$('.step-head,.card,.sim,.analogy,.note,.wu,.ex,.tilt,.tnote');
+ const io=new IntersectionObserver(es=>es.forEach(en=>{if(!en.isIntersecting)return;const el=en.target;io.unobserve(el);const sib=[...el.parentElement.children].filter(x=>els.includes(x));el.style.setProperty('--d',Math.min(Math.max(0,sib.indexOf(el))*.08,.4)+'s');el.classList.add('rv');
+  el.addEventListener('animationend',function f(ev){if(ev.target!==el)return;el.removeEventListener('animationend',f);setTimeout(()=>el.classList.remove('rv'),300)})}),{threshold:0});
+ els.forEach(el=>{if(el.getBoundingClientRect().top>innerHeight)io.observe(el)})})();
+$('#theme').onclick=()=>{const c=root.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),n=c==='dark'?'light':'dark';root.dataset.theme=n;try{localStorage.setItem('fp-theme',n)}catch(e){}};
+upd();
+</script>
+
+</body></html>
