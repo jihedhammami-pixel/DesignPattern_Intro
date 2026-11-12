@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Factory Patterns Lab · Java 25</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --glass: rgba(255,255,255,.5);
+  --glass-2: rgba(255,255,255,.72);
+  --stroke: rgba(255,255,255,.85);
+  --line: rgba(18,50,74,.12);
+  --text: #12324a;
+  --muted: #5a7a90;
+  --fm1:#f97362; --fm2:#f5a142;
+  --af1:#22b8cc; --af2:#6c8cff;
+  --ok:#10b981; --bad:#f43f5e; --gold:#f59e0b;
+  --grad-fm: linear-gradient(135deg,var(--fm1),var(--fm2));
+  --grad-af: linear-gradient(135deg,var(--af1),var(--af2));
+  --grad-ok: linear-gradient(135deg,#34d399,#22b8cc);
+  --accent: var(--fm1); --grad: var(--grad-fm);
+  --shadow: 0 18px 50px rgba(30,90,120,.14);
+  --code-bg: rgba(14,32,48,.9); --code-tx:#e6f4f8;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font-family:Outfit,system-ui,sans-serif;color:var(--text);background:linear-gradient(180deg,#eaf6fb,#e4f6f1 55%,#eef1fb);background-attachment:fixed;overflow-x:hidden}
+#bg3d{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
+#sprog{position:fixed;top:0;left:0;height:4px;width:0;z-index:40;background:linear-gradient(90deg,#22b8cc,#6c8cff,#f97362);border-radius:0 4px 4px 0;box-shadow:0 0 12px rgba(34,184,204,.6)}
+.app{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:18px 18px 60px}
+
+/* Header */
+header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-cube{width:46px;height:46px;border-radius:14px;background:conic-gradient(from 200deg,#22b8cc,#6c8cff,#f97362,#f5a142,#34d399,#22b8cc);display:grid;place-items:center;font-size:22px;box-shadow:0 8px 24px rgba(34,184,204,.35);animation:spin 14s linear infinite}
+.logo-cube span{animation:spin 14s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.logo h1{margin:0;font-size:22px;font-weight:800;letter-spacing:-.02em}
+.logo h1 b{background:linear-gradient(90deg,#0e8fa3,#4f6ff0,#e8604f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo small{display:block;color:var(--muted);font-size:13px}
+.hud{margin-left:auto;display:flex;gap:10px;align-items:center}
+.pill{background:var(--glass);border:1px solid var(--stroke);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px;display:flex;gap:8px;align-items:center;box-shadow:0 6px 18px rgba(30,90,120,.08)}
+.pill .xp{background:linear-gradient(90deg,#f59e0b,#e8604f);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
+.ring{width:26px;height:26px}
+
+/* Window tabs */
+nav.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.tab{position:relative;cursor:pointer;border:1px solid var(--stroke);border-radius:18px;padding:12px 14px;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:var(--text);text-align:left;font:inherit;transition:transform .25s,background .25s,box-shadow .25s;overflow:hidden;box-shadow:0 6px 18px rgba(30,90,120,.08)}
+.tab:hover{transform:translateY(-2px);background:var(--glass-2)}
+.tab .dots{display:flex;gap:5px;margin-bottom:6px}
+.tab .dots i{width:8px;height:8px;border-radius:50%;background:rgba(18,50,74,.18)}
+.tab .t{color:var(--text);font-weight:700;font-size:15px;display:flex;gap:8px;align-items:center}
+.tab .s{font-size:12px;color:var(--muted)}
+.tab .bar{height:4px;border-radius:4px;background:rgba(18,50,74,.1);margin-top:8px;overflow:hidden}
+.tab .bar b{display:block;height:100%;width:0;border-radius:4px;transition:width .6s}
+.tab[data-fam=fm] .bar b{background:var(--grad-fm)}
+.tab[data-fam=af] .bar b{background:var(--grad-af)}
+.tab.active[data-fam=fm]{background:linear-gradient(135deg,rgba(249,115,98,.22),rgba(245,161,66,.16)),var(--glass-2);border-color:rgba(249,115,98,.55);box-shadow:0 10px 30px rgba(249,115,98,.2)}
+.tab.active[data-fam=af]{background:linear-gradient(135deg,rgba(34,184,204,.2),rgba(108,140,255,.18)),var(--glass-2);border-color:rgba(34,184,204,.55);box-shadow:0 10px 30px rgba(34,184,204,.2)}
+.tab.active .dots i:nth-child(1){background:#ff5f57}.tab.active .dots i:nth-child(2){background:#febc2e}.tab.active .dots i:nth-child(3){background:#28c840}
+
+/* mouse spotlight on glass */
+.tab::after,.window::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:radial-gradient(420px circle at var(--mx,50%) var(--my,-30%),rgba(255,255,255,.55),transparent 45%);opacity:var(--spot,0);transition:opacity .4s;z-index:0}
+.window>*{position:relative;z-index:1}
+
+/* Window */
+.window{position:relative;border:1px solid var(--stroke);border-radius:24px;background:rgba(255,255,255,.42);backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.9);overflow:hidden;animation:pop .45s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.985)}}
+.titlebar{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.35)}
+.titlebar .dots{display:flex;gap:7px}.titlebar .dots i{width:12px;height:12px;border-radius:50%}
+.titlebar .dots i:nth-child(1){background:#ff5f57}.titlebar .dots i:nth-child(2){background:#febc2e}.titlebar .dots i:nth-child(3){background:#28c840}
+.titlebar .wt{font-weight:700}
+.titlebar .ws{color:var(--muted);font-size:13px;margin-left:auto}
+.wbody{display:grid;grid-template-columns:250px 1fr;min-height:560px}
+.side{border-right:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:6px;background:rgba(255,255,255,.22)}
+.side h4{margin:4px 6px 8px;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.stepbtn{display:flex;align-items:center;gap:10px;border:1px solid transparent;background:none;color:var(--text);font:inherit;padding:9px 10px;border-radius:12px;cursor:pointer;text-align:left;transition:.2s;font-size:14px}
+.stepbtn:hover:not(:disabled){background:rgba(255,255,255,.55)}
+.stepbtn:disabled{opacity:.4;cursor:not-allowed}
+.stepbtn .n{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;border:1px solid var(--line);background:rgba(255,255,255,.6)}
+.stepbtn.cur{background:rgba(255,255,255,.7);border-color:var(--stroke);box-shadow:0 4px 14px rgba(30,90,120,.08)}
+.stepbtn.cur .n{background:var(--grad);border-color:transparent;color:#fff}
+.stepbtn.done .n{background:var(--grad-ok);border-color:transparent;color:#fff}
+.main{padding:26px 30px;min-width:0}
+.kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h2.st{font-size:30px;margin:4px 0 14px;letter-spacing:-.02em;font-weight:800}
+h2.st span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.main p{line-height:1.6;font-size:16.5px;margin:10px 0;color:var(--text)}
+code.i{font-family:'JetBrains Mono',monospace;font-size:.86em;background:rgba(34,184,204,.12);padding:2px 7px;border-radius:7px;color:#0b6f80}
+.big{border-radius:18px;padding:16px 18px;margin:14px 0;background:rgba(255,255,255,.6);border:1px solid var(--stroke);font-size:17px;line-height:1.55;position:relative;overflow:hidden;box-shadow:0 6px 20px rgba(30,90,120,.06)}
+.big::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--grad)}
+.analogy{display:flex;gap:14px;align-items:flex-start;border-radius:18px;padding:14px 16px;margin:14px 0;background:linear-gradient(135deg,rgba(254,240,200,.75),rgba(255,247,230,.6));border:1px solid rgba(245,158,11,.35)}
+.analogy .ic{font-size:30px;line-height:1}
+.analogy b{color:#b45309}
+.card{border-radius:18px;padding:16px;background:var(--glass);border:1px solid var(--stroke);box-shadow:0 6px 20px rgba(30,90,120,.06)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.btn{font:inherit;font-weight:700;border:none;cursor:pointer;color:#fff;padding:11px 18px;border-radius:14px;background:var(--grad);box-shadow:0 8px 20px rgba(30,90,120,.18);transition:.2s;display:inline-flex;align-items:center;gap:8px;text-shadow:0 1px 2px rgba(0,0,0,.15)}
+.btn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.05)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.ghost{background:rgba(255,255,255,.65);color:var(--text);border:1px solid var(--stroke);box-shadow:0 4px 12px rgba(30,90,120,.08);text-shadow:none}
+.btn.sm{padding:8px 13px;font-size:14px;border-radius:11px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.chip{font:inherit;cursor:pointer;border:1px solid var(--stroke);background:rgba(255,255,255,.6);color:var(--text);padding:8px 14px;border-radius:999px;font-weight:600;font-size:14px;transition:.2s}
+.chip:hover:not(:disabled){background:rgba(255,255,255,.9)}
+.chip.on{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 6px 16px rgba(30,90,120,.18);text-shadow:0 1px 2px rgba(0,0,0,.15)}
+.chip:disabled{opacity:.45;cursor:not-allowed}
+.navrow{display:flex;justify-content:space-between;align-items:center;margin-top:24px;gap:10px;flex-wrap:wrap}
+.sim{border-radius:20px;padding:18px 16px 16px;margin:18px 0 14px;background:rgba(255,255,255,.38);border:1px solid var(--stroke);position:relative}
+.sim .lbl{position:absolute;top:-11px;left:16px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:var(--grad);color:#fff}
+
+/* Code (stays dark for readability) */
+.code{border-radius:16px;overflow:hidden;border:1px solid rgba(18,50,74,.2);background:var(--code-bg);color:var(--code-tx);margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:13.5px;box-shadow:0 10px 26px rgba(14,32,48,.18)}
+.code-head{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.1);font-size:12px;color:#9fb8c8}
+.code-head .copy{margin-left:auto;font:inherit;font-size:12px;cursor:pointer;color:var(--code-tx);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:3px 9px}
+.code pre{margin:0;padding:10px 0;overflow:auto;max-height:520px}
+.ln{display:flex;padding:0 14px 0 0;line-height:1.65;transition:background .25s;white-space:pre;border-left:3px solid transparent}
+.ln .no{flex:none;width:38px;text-align:right;padding-right:14px;color:rgba(255,255,255,.28);user-select:none}
+.ln.hl{background:linear-gradient(90deg,rgba(250,204,21,.25),rgba(250,204,21,.02));border-left-color:#facc15}
+.ln.role{background:linear-gradient(90deg,rgba(255,255,255,.16),transparent);border-left-color:var(--accent)}
+.ln.dim{opacity:.35}
+.k{color:#ff8fb3;font-weight:600}.t{color:#67e8f9}.s{color:#bef264}.c{color:#8ba3b5;font-style:italic}.a{color:#fbbf24}.f{color:#fdba74}
+.code-pre{margin:0;padding:14px 16px;white-space:pre;overflow:auto;line-height:1.75}
+.blank{font:inherit;font-size:13px;color:#fde68a;background:rgba(250,204,21,.1);border:1px dashed rgba(250,204,21,.6);border-radius:7px;padding:1px 6px;outline:none;min-width:60px}
+.blank:focus{border-style:solid;box-shadow:0 0 0 3px rgba(250,204,21,.2)}
+.blank.ok{border:1px solid #34d399;color:#a7f3d0;background:rgba(52,211,153,.12)}
+.blank.no{border:1px solid #fb7185;background:rgba(251,113,133,.15)}
+.console{font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--code-bg);border-radius:12px;padding:10px 12px;min-height:44px;color:#a7f3d0}
+.console div{animation:pop .3s}
+.console .pr{color:#8ba3b5}
+.tip{display:inline-flex;gap:8px;align-items:center;font-size:13px;padding:6px 12px;border-radius:999px;background:rgba(34,184,204,.12);border:1px solid rgba(34,184,204,.35);color:#0b6f80;margin:6px 0}
+
+/* Quiz */
+.quiz{margin-top:22px;border-radius:20px;padding:18px;background:linear-gradient(135deg,rgba(108,140,255,.14),rgba(34,184,204,.12)),rgba(255,255,255,.5);border:1px solid rgba(108,140,255,.35);position:relative}
+.quiz .qh{display:flex;gap:10px;align-items:center;font-weight:700;color:#4f6ff0;font-size:13px;text-transform:uppercase;letter-spacing:.1em}
+.quiz .q{font-size:18px;font-weight:600;margin:8px 0 12px}
+.opts{display:grid;gap:8px}
+.opt{font:inherit;text-align:left;cursor:pointer;color:var(--text);background:rgba(255,255,255,.7);border:1px solid var(--stroke);padding:11px 14px;border-radius:14px;font-size:15.5px;transition:.2s;display:flex;gap:10px;align-items:center}
+.opt:hover:not(:disabled){background:#fff;transform:translateX(3px)}
+.opt .L{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:rgba(18,50,74,.08);font-weight:700;font-size:13px}
+.opt.right{background:rgba(16,185,129,.16);border-color:var(--ok)}
+.opt.right .L{background:var(--ok);color:#fff}
+.opt.wrong{background:rgba(244,63,94,.12);border-color:var(--bad);animation:shake .4s}
+.opt:disabled{cursor:default}
+.fb{margin-top:10px;font-size:15px;line-height:1.5;border-radius:12px;padding:10px 12px;display:none}
+.fb.show{display:block;animation:pop .3s}
+.fb.good{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.4)}
+.fb.badf{background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.35)}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+/* FM sims */
+.files{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:8px 0 12px}
+.file{border-radius:12px;padding:10px;background:rgba(255,255,255,.7);border:1px solid var(--stroke);font-size:12px;transition:.3s}
+.file b{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+.file code{font-family:'JetBrains Mono',monospace;font-size:11px;color:#b45309}
+.file.hot{border-color:var(--bad);background:rgba(244,63,94,.12);animation:shake .5s;box-shadow:0 0 20px rgba(244,63,94,.25)}
+.status{font-weight:700;font-size:16px;min-height:24px;margin-top:6px}
+.factory{display:grid;grid-template-columns:150px 1fr 120px;align-items:center;gap:10px;margin:14px 0}
+.machine{height:110px;border-radius:18px;background:var(--grad);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:13px;text-align:center;box-shadow:0 10px 26px rgba(30,90,120,.2);position:relative;text-shadow:0 1px 2px rgba(0,0,0,.15)}
+.machine .gear{font-size:34px;display:inline-block}
+.machine.run .gear{animation:spin 1s linear infinite}
+.machine.run{animation:pulse .5s ease-in-out 3}
+.machine small{font-weight:500;opacity:.95;font-size:11.5px}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.belt{position:relative;height:56px;border-radius:14px;background:repeating-linear-gradient(90deg,rgba(18,50,74,.1) 0 18px,rgba(18,50,74,.03) 18px 36px);border:1px solid var(--stroke);overflow:hidden}
+.belt.run{animation:beltmove .5s linear infinite}
+@keyframes beltmove{to{background-position:36px 0}}
+.belt .item{position:absolute;top:6px;left:6px;font-size:34px;transition:left 1.4s cubic-bezier(.5,0,.3,1);filter:drop-shadow(0 6px 8px rgba(0,0,0,.2))}
+.dest{height:110px;border-radius:18px;border:2px dashed rgba(18,50,74,.25);display:grid;place-items:center;text-align:center;font-size:13px;color:var(--muted);padding:6px}
+.dest.got{border-color:var(--ok);color:#047857;background:rgba(16,185,129,.1)}
+.minicode{font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--code-bg);color:var(--code-tx);border-radius:10px;padding:8px 12px;margin:8px 0}
+.minicode em{color:#bef264;font-style:normal}
+.uml{display:grid;grid-template-columns:1fr 1fr;gap:14px 40px;margin:12px 0;position:relative}
+.role{cursor:pointer;border-radius:16px;padding:12px 14px;border:1px solid var(--stroke);background:rgba(255,255,255,.65);transition:.25s;position:relative}
+.role:hover{transform:translateY(-2px)}
+.role.on{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 10px 26px rgba(30,90,120,.2)}
+.role .rn{font-size:11px;text-transform:uppercase;letter-spacing:.12em;opacity:.8}
+.role .rc{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:14px;margin-top:2px}
+.role.parent::after{content:"▼";position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:12px;opacity:.5;color:var(--text)}
+.roledesc{min-height:52px;border-radius:14px;padding:10px 14px;background:rgba(255,255,255,.65);border:1px solid var(--stroke);font-size:15px}
+.classes{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.cls{font-family:'JetBrains Mono',monospace;font-size:13px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.7);border:1px solid var(--stroke);position:relative;transition:.3s}
+.cls .badge{position:absolute;top:-9px;right:-6px;font-family:Outfit;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px}
+.cls.untouched .badge{background:var(--ok);color:#fff}
+.cls.new{background:var(--grad);border-color:transparent;color:#fff;animation:flyin .6s cubic-bezier(.2,.9,.3,1.3)}
+.cls.new .badge{background:#facc15;color:#422006}
+@keyframes flyin{from{opacity:0;transform:translateY(-30px) scale(.6) rotate(-8deg)}}
+
+/* AF sims */
+.room{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}
+.furn{border-radius:18px;padding:16px;text-align:center;border:1px solid var(--stroke);transition:.4s;position:relative;overflow:hidden}
+.furn .em{font-size:54px;display:block;filter:drop-shadow(0 8px 10px rgba(0,0,0,.18));transition:.4s}
+.furn .nm{font-family:'JetBrains Mono',monospace;font-weight:600;margin-top:4px}
+.sty-modern{background:linear-gradient(135deg,rgba(34,184,204,.35),rgba(255,255,255,.6))}
+.sty-victorian{background:linear-gradient(135deg,rgba(168,120,240,.35),rgba(251,191,36,.3))}
+.sty-space{background:linear-gradient(135deg,rgba(249,115,98,.35),rgba(108,140,255,.25))}
+.sty-victorian .em{transform:rotate(-6deg)}
+.sty-space .em{transform:scale(1.1)}
+.room.bad .furn{animation:shake .5s}
+.toggle{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;user-select:none}
+.toggle input{display:none}
+.toggle .sw{width:46px;height:26px;border-radius:999px;background:rgba(18,50,74,.18);position:relative;transition:.3s}
+.toggle .sw::after{content:"";position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.3s;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.toggle input:checked + .sw{background:var(--grad-ok)}
+.toggle input:checked + .sw::after{left:23px}
+#furn3d{height:330px;border-radius:16px;overflow:hidden;background:radial-gradient(circle at 50% 35%,rgba(255,255,255,.85),rgba(186,230,240,.5));cursor:grab;position:relative;border:1px solid var(--stroke)}
+#furn3d canvas{display:block;width:100%!important;height:100%!important}
+#furn3d .hint{position:absolute;bottom:8px;right:12px;font-size:12px;color:var(--muted);pointer-events:none}
+.matrix{width:100%;border-collapse:separate;border-spacing:6px;margin:8px 0}
+.matrix th,.matrix td{border-radius:12px;padding:10px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;transition:.25s}
+.matrix th{background:rgba(255,255,255,.75);cursor:pointer;font-family:Outfit;font-size:14px}
+.matrix th:hover{background:#fff}
+.matrix td{background:rgba(255,255,255,.4);cursor:pointer;border:1px solid transparent}
+.matrix .lit{background:var(--grad)!important;color:#fff;transform:scale(1.03);box-shadow:0 6px 18px rgba(30,90,120,.2)}
+.matrix th.corner{background:none;cursor:default}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.vs .card h3{margin:0 0 8px;font-size:19px}
+.vs ul{margin:0;padding-left:18px;line-height:1.7}
+.vs .fmc{background:linear-gradient(135deg,rgba(249,115,98,.16),rgba(245,161,66,.08)),rgba(255,255,255,.5)}
+.vs .afc{background:linear-gradient(135deg,rgba(34,184,204,.16),rgba(108,140,255,.1)),rgba(255,255,255,.5)}
+.recap .card h3{margin:0 0 8px;font-size:17px}
+.recap .card{font-size:15px;line-height:1.55}
+.recap .em{font-size:28px}
+
+/* Exercises */
+.levels{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.lvl{font:inherit;cursor:pointer;color:var(--text);border:1px solid var(--stroke);background:rgba(255,255,255,.55);border-radius:14px;padding:8px 12px;font-size:13px;font-weight:600;display:flex;flex-direction:column;align-items:flex-start;gap:2px;transition:.2s;min-width:92px}
+.lvl:hover:not(:disabled){background:rgba(255,255,255,.9)}
+.lvl .stars{color:var(--gold);font-size:11px;letter-spacing:1px}
+.lvl.cur{background:var(--grad);border-color:transparent;color:#fff}
+.lvl.cur .stars{color:#fff}
+.lvl.done{border-color:var(--ok)}
+.lvl.done::after{content:"✓ solved";font-size:10.5px;color:#047857}
+.lvl.cur.done::after{color:#fff}
+.lvl:disabled{opacity:.4;cursor:not-allowed}
+.exhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.diff{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.4);color:#b45309}
+.task{font-size:16.5px;line-height:1.6;margin:10px 0}
+.exbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+textarea.editor{width:100%;min-height:260px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:13.5px;line-height:1.6;color:var(--code-tx);background:var(--code-bg);border:1px solid rgba(18,50,74,.25);border-radius:14px;padding:14px;outline:none;tab-size:4}
+textarea.editor:focus{border-color:rgba(34,184,204,.7);box-shadow:0 0 0 3px rgba(34,184,204,.2)}
+.checks{list-style:none;padding:0;margin:12px 0;display:grid;gap:6px}
+.checks li{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.55);font-size:14.5px;display:flex;gap:8px}
+.checks li.p{background:rgba(16,185,129,.14)}
+.checks li.f{background:rgba(244,63,94,.1)}
+.pool,.answer{display:flex;flex-direction:column;gap:6px;min-height:60px;border-radius:14px;padding:10px;font-family:'JetBrains Mono',monospace;font-size:13px}
+.pool{background:rgba(255,255,255,.4);border:1px dashed rgba(18,50,74,.25)}
+.answer{background:var(--code-bg);border:1px solid rgba(18,50,74,.25);color:var(--code-tx)}
+.lineb{font:inherit;text-align:left;cursor:pointer;color:var(--text);white-space:pre;background:rgba(255,255,255,.8);border:1px solid var(--stroke);border-radius:9px;padding:6px 10px;transition:.15s}
+.lineb:hover{background:#fff;transform:translateX(3px)}
+.answer .lineb{background:rgba(108,140,255,.2);color:var(--code-tx);border-color:rgba(255,255,255,.15)}
+.answer .lineb.okl{border-color:#34d399}
+.answer .lineb.nol{border-color:#fb7185}
+.ordercols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ordercols h5{margin:0 0 6px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+.pick .ln{cursor:pointer}
+.pick .ln:hover{background:rgba(255,255,255,.08)}
+.pick .ln.sel-ok{background:rgba(52,211,153,.25);border-left-color:#34d399}
+.pick .ln.sel-no{background:rgba(251,113,133,.22);border-left-color:#fb7185;animation:shake .4s}
+.matchrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.55);margin-bottom:6px}
+.matchrow code{font-family:'JetBrains Mono',monospace;color:#0b6f80;font-weight:600}
+select{font:inherit;color:var(--text);background:#fff;border:1px solid rgba(18,50,74,.2);border-radius:10px;padding:7px 10px}
+.matchrow.ok{background:rgba(16,185,129,.14)}.matchrow.no{background:rgba(244,63,94,.1)}
+.multi label{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.55);margin-bottom:6px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:14px}
+.multi input{width:18px;height:18px;accent-color:#6c8cff}
+.multi label.ok{background:rgba(16,185,129,.14)}.multi label.no{background:rgba(244,63,94,.1)}
+.solution{display:none}.solution.show{display:block;animation:pop .3s}
+.done-banner{display:flex;gap:14px;align-items:center;border-radius:18px;padding:16px;background:var(--grad-ok);color:#fff;font-weight:700;margin-top:16px}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);z-index:60;background:rgba(14,32,48,.85);color:#fff;backdrop-filter:blur(12px);padding:10px 18px;border-radius:999px;font-weight:700;transition:.4s}
+.toast.show{transform:translateX(-50%) translateY(0)}
+footer{text-align:center;color:var(--muted);font-size:13px;margin-top:18px}
+
+.umlwrap{border-radius:18px;background:rgba(255,255,255,.6);border:1px solid var(--stroke);padding:12px;overflow-x:auto;box-shadow:0 6px 20px rgba(30,90,120,.06)}
+.umlwrap svg{width:100%;min-width:640px;height:auto;display:block}
+.ub{cursor:pointer;transform-box:fill-box;transform-origin:center;animation:boxin .55s cubic-bezier(.2,.9,.3,1.25) both;transition:opacity .3s}
+@keyframes boxin{from{opacity:0;transform:translateY(18px) scale(.88)}}
+.ub rect.body{fill:rgba(255,255,255,.95);stroke:rgba(18,50,74,.16);stroke-width:1.2;filter:drop-shadow(0 6px 10px rgba(30,90,120,.12));transition:.2s}
+.ub:hover rect.body{stroke:rgba(18,50,74,.45)}
+.ub.sel rect.body{stroke:#12324a;stroke-width:2.4}
+.rel{animation:relin .7s both;transition:opacity .3s}
+@keyframes relin{from{opacity:0}}
+.rel.flow path.ln{stroke-dasharray:7 5;animation:flow 1.1s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-24}}
+.ub.dim,.rel.dim{opacity:.15}
+.modebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;margin:10px 2px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:4px;display:inline-block}
+.rolechip{display:inline-block;color:#fff;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px}
+.tagchip{font-size:11.5px;font-weight:800;padding:2px 8px;border-radius:999px}
+.tagchip.new{background:#facc15;color:#422006}.tagchip.changed{background:#6c8cff;color:#fff}
+.rellist{margin-top:8px;font-size:14px;line-height:1.9}
+#fx2d{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
+/* ===== Seasons ===== */
+body{--g-winter:linear-gradient(135deg,#3b8fe8,#7c6cf0);--g-autumn:linear-gradient(135deg,#ea8a00,#e8590c 55%,#b91c1c);--g-spring:linear-gradient(135deg,#ec4899,#a855f7 50%,#10b981);--g-summer:linear-gradient(135deg,#f59e0b,#f43f5e 45%,#0891b2)}
+body[data-season=winter]{--grad:var(--g-winter);--accent:#4f8ff0;--tint:rgba(224,236,255,.55)}
+body[data-season=autumn]{--grad:var(--g-autumn);--accent:#e8590c;--tint:rgba(255,236,214,.55)}
+body[data-season=spring]{--grad:var(--g-spring);--accent:#ec4899;--tint:rgba(253,232,243,.5)}
+body[data-season=summer]{--grad:var(--g-summer);--accent:#0891b2;--tint:rgba(254,246,200,.5)}
+#bgobj{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
+.tab[data-season=winter] .bar b{background:var(--g-winter)}.tab[data-season=autumn] .bar b{background:var(--g-autumn)}
+.tab[data-season=spring] .bar b{background:var(--g-spring)}.tab[data-season=summer] .bar b{background:var(--g-summer)}
+.tab.active[data-season=winter]{background:linear-gradient(135deg,rgba(59,143,232,.22),rgba(124,108,240,.18)),var(--glass-2);border-color:rgba(59,143,232,.6);box-shadow:0 10px 30px rgba(59,143,232,.22)}
+.tab.active[data-season=autumn]{background:linear-gradient(135deg,rgba(234,138,0,.24),rgba(185,28,28,.14)),var(--glass-2);border-color:rgba(232,89,12,.55);box-shadow:0 10px 30px rgba(232,89,12,.22)}
+.tab.active[data-season=spring]{background:linear-gradient(135deg,rgba(236,72,153,.2),rgba(16,185,129,.16)),var(--glass-2);border-color:rgba(236,72,153,.5);box-shadow:0 10px 30px rgba(236,72,153,.2)}
+.tab.active[data-season=summer]{background:linear-gradient(135deg,rgba(245,158,11,.24),rgba(8,145,178,.16)),var(--glass-2);border-color:rgba(8,145,178,.55);box-shadow:0 10px 30px rgba(8,145,178,.22)}
+.tab .sea{position:absolute;top:9px;right:10px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;background:rgba(255,255,255,.75);color:var(--text)}
+.window{background:linear-gradient(160deg,var(--tint,rgba(255,255,255,.3)),rgba(255,255,255,.36));transition:background .8s}
+.titlebar{background:var(--grad) bottom/100% 3px no-repeat,rgba(255,255,255,.35)}
+.seachip{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--grad);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.15)}
+.chapnav{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 4px;padding:6px;border-radius:16px;background:rgba(255,255,255,.55);border:1px solid var(--stroke)}
+.chap{flex:1 1 auto;font:inherit;font-size:14px;font-weight:600;color:var(--muted);background:none;border:0;border-radius:11px;padding:9px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:center}
+.chap span{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;border:1px solid var(--line);background:#fff}
+.chap.on{background:#fff;color:var(--text);box-shadow:0 3px 10px rgba(20,40,60,.1)}
+.chap.on span{background:var(--grad);color:#fff;border-color:transparent}
+.chap.done span{background:var(--grad-ok);color:#fff;border-color:transparent}
+.chap:disabled{opacity:.4;cursor:not-allowed}
+.chapter{display:none;padding:6px 2px}
+.chapter.on{display:block;animation:pop .35s ease}
+.chapter h3{font-size:21px;margin:12px 0 6px;letter-spacing:-.01em}
+.chapfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+.anat{display:grid;grid-template-columns:auto auto 1fr;gap:10px;margin:14px 0;font-family:'JetBrains Mono',monospace}
+.anat>div{border-radius:14px;padding:12px 14px;background:var(--code-bg);color:var(--code-tx);display:flex;flex-direction:column;gap:6px}
+.anat code{font-size:18px}
+.anat small{font-family:Outfit,system-ui,sans-serif;font-size:13px;color:#9fb8c8}
+.anat .a3{background:linear-gradient(135deg,rgba(14,32,48,.95),rgba(120,40,20,.85))}
+.anat .a3 small{color:#fed7aa}
+.vbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.meters{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
+.meter{border-radius:14px;padding:10px 12px;background:rgba(255,255,255,.7);border:1px solid var(--stroke)}
+.meter .mv{font-size:28px;font-weight:800;line-height:1}
+.meter .mn{font-size:13px;color:var(--muted);margin:4px 0 8px}
+.meter .mb{height:6px;border-radius:6px;background:rgba(18,50,74,.1);overflow:hidden}
+.meter .mb i{display:block;height:100%;background:linear-gradient(90deg,#f59e0b,#ef4444);border-radius:6px;transition:width .6s}
+.ln.add{background:linear-gradient(90deg,rgba(52,211,153,.28),rgba(52,211,153,.03));border-left-color:#34d399}
+.legendline{font-size:13.5px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.legendline .sw{width:14px;height:14px;border-radius:4px;display:inline-block}
+.legendline .sw.add{background:rgba(52,211,153,.6)}
+.jobs{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.job{font:inherit;font-weight:700;font-size:14px;padding:8px 14px;border-radius:999px;cursor:pointer;border:2px solid;background:#fff}
+.job.dec{border-color:#8b5cf6;color:#6d28d9}.job.cre{border-color:#f97316;color:#c2410c}.job.use{border-color:#0ea5e9;color:#0369a1}
+.job.dec.on{background:#8b5cf6;color:#fff}.job.cre.on{background:#f97316;color:#fff}.job.use.on{background:#0ea5e9;color:#fff}
+.ln.j-dec{background:rgba(139,92,246,.32);border-left-color:#a78bfa}
+.ln.j-cre{background:rgba(249,115,22,.32);border-left-color:#fb923c}
+.ln.j-use{background:rgba(14,165,233,.3);border-left-color:#38bdf8}
+.needs{display:grid;gap:10px;margin:12px 0}
+.needs>div{border-radius:14px;padding:12px 14px;background:rgba(255,255,255,.7);border:1px solid var(--stroke)}
+.needs p{margin:4px 0 0!important;font-size:15px!important}
+@media (max-width:900px){.anat,.meters{grid-template-columns:1fr}.chap{flex:1 1 45%}}
+/* scroll reveal */
+.rv{opacity:0;transform:translateY(26px) scale(.99);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.rv.in{opacity:1;transform:none}
+
+@media (max-width:900px){
+  nav.tabs{grid-template-columns:1fr 1fr}
+  .wbody{grid-template-columns:1fr}
+  .side{flex-direction:row;overflow-x:auto;border-right:none;border-bottom:1px solid var(--line)}
+  .side h4{display:none}
+  .stepbtn{flex:none}
+  .stepbtn .lab{display:none}
+  .main{padding:20px 16px}
+  .grid2,.grid3,.vs,.room,.ordercols{grid-template-columns:1fr}
+  .files{grid-template-columns:repeat(2,1fr)}
+  .factory{grid-template-columns:1fr}
+  h2.st{font-size:24px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<canvas id="bg3d"></canvas>
+<canvas id="bgobj"></canvas>
+<canvas id="fx2d"></canvas>
+<div id="sprog"></div>
+<canvas id="confetti"></canvas>
+<div class="toast" id="toast"></div>
+
+<div class="app">
+  <header>
+    <div class="logo">
+      <div class="logo-cube"><span>🏭</span></div>
+      <div><h1><b>Factory Patterns Lab</b></h1><small>Factory Method &amp; Abstract Factory · Java 25 · for beginners</small></div>
+    </div>
+    <div class="hud">
+      <div class="pill">⚡ <span class="xp" id="xp">0 XP</span></div>
+      <div class="pill"><svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="rgba(18,50,74,.12)" stroke-width="5"/><circle id="ringc" cx="18" cy="18" r="15" fill="none" stroke="url(#rg)" stroke-width="5" stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="94.2" transform="rotate(-90 18 18)" style="transition:stroke-dashoffset .6s"/><defs><linearGradient id="rg"><stop offset="0" stop-color="#f97362"/><stop offset="1" stop-color="#22b8cc"/></linearGradient></defs></svg><span id="pct">0%</span></div>
+      <button class="btn ghost sm" id="resetAll" title="Reset progress">↺</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab" data-w="fm-learn" data-fam="fm" data-season="winter"><span class="sea">❄️ Winter</span><div class="dots"><i></i><i></i><i></i></div><div class="t">📘 Factory Method</div><div class="s">Learn step by step</div><div class="bar"><b></b></div></button>
+    <button class="tab" data-w="fm-code" data-fam="fm" data-season="autumn"><span class="sea">🍂 Autumn</span><div class="dots"><i></i><i></i><i></i></div><div class="t">⌨️ Factory Method</div><div class="s">Coding exercises</div><div class="bar"><b></b></div></button>
+    <button class="tab" data-w="af-learn" data-fam="af" data-season="spring"><span class="sea">🌸 Spring</span><div class="dots"><i></i><i></i><i></i></div><div class="t">📗 Abstract Factory</div><div class="s">Learn step by step</div><div class="bar"><b></b></div></button>
+    <button class="tab" data-w="af-code" data-fam="af" data-season="summer"><span class="sea">☀️ Summer</span><div class="dots"><i></i><i></i><i></i></div><div class="t">⌨️ Abstract Factory</div><div class="s">Coding exercises</div><div class="bar"><b></b></div></button>
+  </nav>
+
+  <div id="win"></div>
+  <footer>Tip: code here is valid Java 25 — save it as <code class="i">Main.java</code> and run <code class="i">java Main.java</code>.</footer>
+</div>
+
+<script>
+/* ============ Utilities ============ */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const KW = new Set('abstract class interface implements extends new return void public private protected static final var record sealed permits switch case default throw if else this super null true false boolean int double'.split(' '));
+function hl(src){
+  const re = /(\/\/.*$)|("(?:[^"\\]|\\.)*")|(@\w+)|\b([A-Za-z_]\w*)\b|(->)/gm;
+  let out='', last=0, m;
+  while((m = re.exec(src))){
+    out += esc(src.slice(last, m.index));
+    if(m[1]) out += `<span class="c">${esc(m[1])}</span>`;
+    else if(m[2]) out += `<span class="s">${esc(m[2])}</span>`;
+    else if(m[3]) out += `<span class="a">${m[3]}</span>`;
+    else if(m[4]){
+      const w = m[4];
+      if(KW.has(w)) out += `<span class="k">${w}</span>`;
+      else if(/^[A-Z]/.test(w)) out += `<span class="t">${w}</span>`;
+      else if(src[re.lastIndex] === '(') out += `<span class="f">${w}</span>`;
+      else out += w;
+    } else out += `<span class="k">-&gt;</span>`;
+    last = re.lastIndex;
+  }
+  return out + esc(src.slice(last));
+}
+function codeBlock(src, opts={}){
+  const lines = src.split('\n');
+  const body = lines.map((l,i)=>`<div class="ln" data-i="${i}"><span class="no">${i+1}</span><span class="tx">${hl(l)||' '}</span></div>`).join('');
+  return `<div class="code ${opts.cls||''}" ${opts.id?`id="${opts.id}"`:''}><div class="code-head">☕ ${opts.file||'Main.java'}<button class="copy" data-copy="${encodeURIComponent(src)}">Copy</button></div><pre>${body}</pre></div>`;
+}
+document.addEventListener('click', e=>{
+  const b = e.target.closest('.copy'); if(!b) return;
+  const txt = decodeURIComponent(b.dataset.copy);
+  (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(()=>{b.textContent='Copied ✓'; setTimeout(()=>b.textContent='Copy',1400);}).catch(()=>{b.textContent='Select & copy manually';});
+});
+const findLine = (src, sub) => src.split('\n').findIndex(l => l.includes(sub));
+function blockLines(src, startSub){
+  const L = src.split('\n'); const s = L.findIndex(l=>l.includes(startSub)); if(s<0) return [];
+  const out=[s]; if(L[s].trim().endsWith('}') && !L[s].trim().endsWith('{')) return out;
+  for(let i=s+1;i<L.length;i++){ out.push(i); if(L[i].startsWith('}')) break; }
+  return out;
+}
+
+/* ============ Progress / XP ============ */
+const STORE='factory-lab-v2';
+let P = {q:{}, e:{}, xp:0, air:false, w:'fm-learn'};
+try{ const s = JSON.parse(localStorage.getItem(STORE)); if(s) P = Object.assign(P, s); }catch(e){}
+function save(){ try{ localStorage.setItem(STORE, JSON.stringify(P)); }catch(e){} updateHUD(); }
+function addXP(n, msg){ P.xp += n; save(); toast(`+${n} XP · ${msg}`); }
+function toast(t){ const el=$('#toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),1800); }
+
+/* ============ Confetti ============ */
+const cf = $('#confetti'), cx = cf.getContext('2d'); let parts=[], cfRun=false;
+function confetti(x=innerWidth/2, y=innerHeight/2){
+  if(reduced) return;
+  cf.width=innerWidth; cf.height=innerHeight;
+  const cols=({winter:['#ffffff','#bfdbfe','#60a5fa','#a5b4fc','#7dd3fc','#c4b5fd'],autumn:['#f59f00','#e8590c','#c92a2a','#a0522d','#fab005','#d9480f'],spring:['#f9a8d4','#f472b6','#86efac','#fde047','#c4b5fd','#34d399'],summer:['#fbbf24','#06b6d4','#fb7185','#34d399','#f97316','#38bdf8']})[document.body.dataset.season]||['#f472b6','#fb923c','#facc15','#22d3ee','#a78bfa','#34d399'];
+  for(let i=0;i<90;i++) parts.push({x,y,vx:(Math.random()-.5)*12,vy:Math.random()*-11-3,g:.35,s:Math.random()*7+4,c:cols[i%6],r:Math.random()*6,vr:(Math.random()-.5)*.4,life:90});
+  if(!cfRun){ cfRun=true; requestAnimationFrame(cfTick); }
+}
+function cfTick(){
+  cx.clearRect(0,0,cf.width,cf.height);
+  parts.forEach(p=>{ p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; p.life--; cx.save(); cx.translate(p.x,p.y); cx.rotate(p.r); cx.globalAlpha=Math.max(0,p.life/90); cx.fillStyle=p.c; cx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2); cx.restore(); });
+  parts = parts.filter(p=>p.life>0);
+  if(parts.length) requestAnimationFrame(cfTick); else { cfRun=false; cx.clearRect(0,0,cf.width,cf.height); }
+}
+
+/* ============ Quiz ============ */
+function quizHTML(q, key){
+  const solved = P.q[key];
+  return `<div class="quiz" data-key="${key}">
+    <div class="qh">🧠 Quick check</div>
+    <div class="q">${q.q}</div>
+    <div class="opts">${q.o.map((o,i)=>`<button class="opt ${solved&&i===q.a?'right':''}" data-i="${i}" ${solved?'disabled':''}><span class="L">${'ABCD'[i]}</span><span>${o}</span></button>`).join('')}</div>
+    <div class="fb ${solved?'show good':''}">${solved?'✅ '+q.why:''}</div>
+  </div>`;
+}
+function bindQuiz(root, q, key, onPass){
+  const box = $('.quiz', root); if(!box) return;
+  $$('.opt', box).forEach(b=>b.addEventListener('click', e=>{
+    const i = +b.dataset.i, fb = $('.fb', box);
+    if(i === q.a){
+      b.classList.add('right'); $$('.opt',box).forEach(x=>x.disabled=true);
+      fb.className='fb show good'; fb.innerHTML='✅ <b>Correct!</b> '+q.why;
+      if(!P.q[key]){ P.q[key]=true; addXP(10,'quiz passed'); }
+      confetti(e.clientX, e.clientY); onPass && onPass();
+    } else {
+      b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong'); b.disabled=true;
+      fb.className='fb show badf'; fb.innerHTML='❌ Not quite. '+(q.hint||'Re-read the idea above and try again.');
+    }
+  }));
+}
+
+/* ============ Lesson engine ============ */
+function Lesson(cfg){
+  let idx = 0;
+  const qk = i => cfg.key+'-'+cfg.steps[i].id;
+  const passed = i => !cfg.steps[i].quiz || P.q[qk(i)];
+  function firstOpen(){ let i=0; while(i<cfg.steps.length-1 && passed(i)) i++; return i; }
+  idx = firstOpen();
+  function render(el){
+    const s = cfg.steps[idx];
+    const side = cfg.steps.map((st,i)=>{
+      const locked = !cfg.steps.slice(0,i).every((_,j)=>passed(j));
+      const done = st.quiz ? P.q[qk(i)] : (i<idx || (i===idx && i===cfg.steps.length-1 && passed(i-1)));
+      return `<button class="stepbtn ${i===idx?'cur':''} ${done?'done':''}" data-i="${i}" ${locked?'disabled':''}><span class="n">${done?'✓':i+1}</span><span class="lab">${st.t}</span></button>`;
+    }).join('');
+    el.innerHTML = `<div class="window">
+      <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><div class="wt">${cfg.title}</div><span class="seachip">${SEASON_INFO[cfg.season]}</span><div class="ws">Step ${idx+1} / ${cfg.steps.length}</div></div>
+      <div class="wbody"><aside class="side"><h4>Lessons</h4>${side}</aside>
+      <section class="main"><div class="kicker">Step ${idx+1}</div><h2 class="st">${s.h}</h2>
+        <div class="content">${s.html()}</div>
+        ${s.quiz?quizHTML(s.quiz, qk(idx)):''}
+        <div class="navrow"><button class="btn ghost" id="prev" ${idx===0?'disabled':''}>← Back</button>
+        ${idx<cfg.steps.length-1?`<button class="btn" id="next" ${passed(idx)?'':'disabled'}>Next →</button>`:`<button class="btn" id="practice">Start the exercises ⌨️</button>`}</div>
+      </section></div></div>`;
+    const main = $('.main', el);
+    s.init && s.init(main);
+    if(s.quiz) bindQuiz(main, s.quiz, qk(idx), ()=>{ const n=$('#next',el); if(n) n.disabled=false; $$('.stepbtn',el).forEach(b=>{ if(+b.dataset.i===idx+1) b.disabled=false; }); updateHUD(); });
+    $$('.stepbtn', el).forEach(b=>b.onclick=()=>{ idx=+b.dataset.i; render(el); scrollTop(); });
+    const pv=$('#prev',el); if(pv) pv.onclick=()=>{ idx--; render(el); scrollTop(); };
+    const nx=$('#next',el); if(nx) nx.onclick=()=>{ idx++; render(el); scrollTop(); };
+    const pr=$('#practice',el); if(pr) pr.onclick=()=>go(cfg.practice);
+    reveal();
+  }
+  return { render };
+}
+function scrollTop(){ const w=$('#win'); const y=w.getBoundingClientRect().top+scrollY-10; if(scrollY>y) scrollTo({top:y,behavior:reduced?'auto':'smooth'}); }
+
+/* ============ Java sources ============ */
+const FM_CODE = `// Main.java — Java 25: run with  java Main.java
+interface Transport {
+    void deliver();
+}
+
+class Truck implements Transport {
+    public void deliver() { IO.println("🚚 Truck: delivering by road"); }
+}
+
+class Ship implements Transport {
+    public void deliver() { IO.println("🚢 Ship: delivering by sea"); }
+}
+
+abstract class Logistics {
+    abstract Transport createTransport();   // ← the factory method
+
+    void planDelivery() {
+        Transport t = createTransport();
+        t.deliver();
+    }
+}
+
+class RoadLogistics extends Logistics {
+    @Override Transport createTransport() { return new Truck(); }
+}
+
+class SeaLogistics extends Logistics {
+    @Override Transport createTransport() { return new Ship(); }
+}
+
+void main() {
+    Logistics logistics = new SeaLogistics();
+    logistics.planDelivery();
+}`;
+
+const AF_CODE = `// Main.java — Java 25: run with  java Main.java
+interface Chair { String sit(); }
+interface Sofa  { String lieOn(); }
+
+interface FurnitureFactory {
+    Chair createChair();
+    Sofa  createSofa();
+}
+
+class ModernChair implements Chair {
+    public String sit() { return "Sitting on a sleek modern chair"; }
+}
+class ModernSofa implements Sofa {
+    public String lieOn() { return "Relaxing on a modern sofa"; }
+}
+class VictorianChair implements Chair {
+    public String sit() { return "Sitting on an elegant Victorian chair"; }
+}
+class VictorianSofa implements Sofa {
+    public String lieOn() { return "Relaxing on a Victorian sofa"; }
+}
+
+class ModernFactory implements FurnitureFactory {
+    public Chair createChair() { return new ModernChair(); }
+    public Sofa  createSofa()  { return new ModernSofa(); }
+}
+class VictorianFactory implements FurnitureFactory {
+    public Chair createChair() { return new VictorianChair(); }
+    public Sofa  createSofa()  { return new VictorianSofa(); }
+}
+
+void furnishRoom(FurnitureFactory factory) {
+    Chair chair = factory.createChair();
+    Sofa sofa = factory.createSofa();
+    IO.println(chair.sit());
+    IO.println(sofa.lieOn());
+}
+
+void main() {
+    var style = "modern";
+    FurnitureFactory factory = switch (style) {
+        case "modern"    -> new ModernFactory();
+        case "victorian" -> new VictorianFactory();
+        default -> throw new IllegalArgumentException("Unknown style: " + style);
+    };
+    furnishRoom(factory);
+}`;
+
+/* ============ Shared sim: code tracer ============ */
+function tracerHTML(id){ return `<div class="sim"><span class="lbl">Run it step by step</span>
+  ${codeBlock(id==='fm'?FM_CODE:AF_CODE,{id:'tr-'+id})}
+  <div class="roledesc" id="trn-${id}">Press <b>▶ Next line</b> to follow what Java does.</div>
+  <div style="display:flex;gap:8px;margin:10px 0"><button class="btn sm" id="trgo-${id}">▶ Next line</button><button class="btn ghost sm" id="trre-${id}">↺ Restart</button></div>
+  <div class="console" id="trc-${id}"><span class="pr">$ java Main.java</span></div></div>`; }
+function tracerInit(root, id, steps){
+  const src = id==='fm'?FM_CODE:AF_CODE; let k=0;
+  const lines = $$('#tr-'+id+' .ln', root), note=$('#trn-'+id,root), con=$('#trc-'+id,root), go=$('#trgo-'+id,root);
+  function reset(){ k=0; lines.forEach(l=>l.classList.remove('hl')); note.innerHTML='Press <b>▶ Next line</b> to follow what Java does.'; con.innerHTML='<span class="pr">$ java Main.java</span>'; go.disabled=false; go.textContent='▶ Next line'; }
+  go.onclick=()=>{
+    const s = steps[k]; lines.forEach(l=>l.classList.remove('hl'));
+    const i = findLine(src, s.f); if(lines[i]){ lines[i].classList.add('hl'); lines[i].scrollIntoView({block:'nearest',behavior:reduced?'auto':'smooth'}); }
+    note.innerHTML = `<b>${k+1}/${steps.length}</b> · ${s.n}`;
+    if(s.out){ const d=document.createElement('div'); d.textContent=s.out; con.appendChild(d); }
+    k++; if(k>=steps.length){ go.disabled=true; go.textContent='✓ Finished'; }
+  };
+  $('#trre-'+id,root).onclick=reset;
+}
+
+/* ============ Class diagram engine (before → after) ============ */
+const ROLES = {
+  plain:{n:'Plain class (no pattern)',c:'#94a3b8'}, client:{n:'Client',c:'#64748b'},
+  product:{n:'Product (interface)',c:'#1fb5c9'}, cproduct:{n:'Concrete Product',c:'#3fbfa6'},
+  creator:{n:'Creator',c:'#f97362'}, ccreator:{n:'Concrete Creator',c:'#f5a142'},
+  afactory:{n:'Abstract Factory',c:'#6c8cff'}, cfactory:{n:'Concrete Factory',c:'#9b7bf0'},
+  aproduct:{n:'Abstract Product',c:'#1fb5c9'}
+};
+const RELS = {
+  implements:{c:'#6c8cff',dash:'5 4',m:'tri',n:'implements'}, extends:{c:'#12324a',dash:'',m:'tri',n:'extends'},
+  creates:{c:'#f97362',dash:'7 5',m:'arr',flow:1,n:'creates'}, uses:{c:'#1fb5c9',dash:'',m:'arr',n:'uses'},
+  bad:{c:'#f43f5e',dash:'7 5',m:'arr',flow:1,n:'creates directly ❌'}
+};
+const bh = b => (b.st?42:30) + 10 + b.m.length*17 + 4;
+function umlSVG(model){
+  const B = Object.fromEntries(model.boxes.map(b=>[b.id,b]));
+  const mk = new Map();
+  const markerId=(type,col)=>{ const id=('mk-'+RELS[type].m+col).replace(/[^a-z0-9-]/gi,''); mk.set(id,[RELS[type].m,col]); return id; };
+  const cl=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+  function pts(a,b){
+    const ah=bh(a),bb=bh(b),acx=a.x+a.w/2,bcx=b.x+b.w/2;
+    if(a.y>=b.y+bb+10) return [cl(bcx,a.x+16,a.x+a.w-16),a.y,cl(acx,b.x+16,b.x+b.w-16),b.y+bb];
+    if(b.y>=a.y+ah+10) return [cl(bcx,a.x+16,a.x+a.w-16),a.y+ah,cl(acx,b.x+16,b.x+b.w-16),b.y];
+    return bcx>acx?[a.x+a.w,a.y+ah/2,b.x,b.y+bb/2]:[a.x,a.y+ah/2,b.x+b.w,b.y+bb/2];
+  }
+  const rels = model.rels.map((r,i)=>{
+    const a=B[r.f], b=B[r.t], T=RELS[r.type], col=r.c||T.c; let d, lx, ly;
+    if(r.curve){ const x1=a.x+a.w/2,y1=a.y+bh(a),x2=b.x+b.w/2,y2=b.y+bh(b);
+      d=`M${x1},${y1} C${x1},${y1+r.curve} ${x2},${y2+r.curve} ${x2},${y2+4}`; lx=(x1+x2)/2; ly=Math.max(y1,y2)+r.curve*.72;
+    } else { const [x1,y1,x2,y2]=pts(a,b); d=`M${x1},${y1} L${x2},${y2}`; lx=(x1+x2)/2; ly=(y1+y2)/2; }
+    const lab=r.label||T.n, lw=lab.length*6.4+14;
+    return `<g class="rel ${T.flow?'flow':''}" data-f="${r.f}" data-t="${r.t}" style="animation-delay:${400+i*70}ms">
+      <path class="ln" d="${d}" fill="none" stroke="${col}" stroke-width="2" ${T.dash&&!T.flow?`stroke-dasharray="${T.dash}"`:''} marker-end="url(#${markerId(r.type,col)})"/>
+      <g transform="translate(${lx},${ly})"><rect x="${-lw/2}" y="-10" width="${lw}" height="20" rx="10" fill="rgba(255,255,255,.92)" stroke="${col}" stroke-opacity=".5"/><text text-anchor="middle" y="4" font-size="11" font-weight="600" fill="${col}">${lab}</text></g></g>`;
+  }).join('');
+  const boxes = model.boxes.map((b,i)=>{
+    const h=bh(b), R=ROLES[b.role], hh=b.st?42:30;
+    const tag = b.tag ? `<g transform="translate(${b.x+b.w-58},${b.y-10})"><rect width="64" height="20" rx="10" fill="${b.tag==='new'?'#facc15':'#6c8cff'}"/><text x="32" y="14" text-anchor="middle" font-size="10.5" font-weight="800" fill="${b.tag==='new'?'#422006':'#fff'}">${b.tag==='new'?'✨ NEW':'✎ CHANGED'}</text></g>` : '';
+    return `<g class="ub" data-id="${b.id}" style="animation-delay:${i*80}ms">
+      <rect class="body" x="${b.x}" y="${b.y}" width="${b.w}" height="${h}" rx="12"/>
+      <path d="M${b.x},${b.y+12} a12,12 0 0 1 12,-12 h${b.w-24} a12,12 0 0 1 12,12 v${hh-12} h${-b.w} z" fill="${R.c}"/>
+      ${b.st?`<text x="${b.x+b.w/2}" y="${b.y+16}" text-anchor="middle" font-size="11" font-style="italic" fill="#fff" opacity=".92">«${b.st}»</text>`:''}
+      <text x="${b.x+b.w/2}" y="${b.y+(b.st?34:20)}" text-anchor="middle" font-size="14.5" font-weight="800" fill="#fff">${b.name}</text>
+      ${b.m.map((m,j)=>`<text x="${b.x+12}" y="${b.y+hh+20+j*17}" font-family="JetBrains Mono,monospace" font-size="12" fill="${m.trim().startsWith('↳')||m.includes('new ')?'#b45309':'#12324a'}" xml:space="preserve">${esc(m)}</text>`).join('')}
+      ${tag}</g>`;
+  }).join('');
+  const notes=(model.notes||[]).map(n=>`<text x="${n.x}" y="${n.y}" font-size="14" font-weight="700" fill="${n.c||'#f43f5e'}">${n.t}</text>`).join('');
+  const defs=[...mk].map(([id,[m,c]])=> m==='tri'
+    ? `<marker id="${id}" viewBox="0 0 14 14" refX="13" refY="7" markerWidth="14" markerHeight="14" markerUnits="userSpaceOnUse" orient="auto"><path d="M1,1 L13,7 L1,13 z" fill="#fff" stroke="${c}" stroke-width="1.6"/></marker>`
+    : `<marker id="${id}" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto"><path d="M1,1 L11,6 L1,11" fill="none" stroke="${c}" stroke-width="1.8"/></marker>`).join('');
+  return `<svg viewBox="0 0 ${model.w} ${model.h}" font-family="Outfit,sans-serif"><defs>${defs}</defs>${rels}${boxes}${notes}</svg>`;
+}
+function umlLegend(model){
+  const roles=[...new Set(model.boxes.map(b=>b.role))], types=[...new Set(model.rels.map(r=>r.type))];
+  return roles.map(r=>`<span><i style="background:${ROLES[r].c}"></i>${ROLES[r].n}</span>`).join('') +
+    types.map(t=>`<span><svg width="34" height="10"><line x1="0" y1="5" x2="26" y2="5" stroke="${RELS[t].c}" stroke-width="2" ${RELS[t].dash?`stroke-dasharray="${RELS[t].dash}"`:''}/><path d="${RELS[t].m==='tri'?'M24,0 L33,5 L24,10 z':'M25,1 L33,5 L25,9'}" fill="${RELS[t].m==='tri'?'#fff':'none'}" stroke="${RELS[t].c}" stroke-width="1.5"/></svg>${RELS[t].n}</span>`).join('');
+}
+function umlStepHTML(intro){ return `<p>${intro}</p>
+  <div class="modebar"><button class="chip on" data-m="before">⬅ Before (no pattern)</button><button class="chip" data-m="after">After (with the pattern) ➡</button><button class="btn ghost sm" id="umlplay">▶ Play the change</button></div>
+  <div class="umlwrap" id="uml"></div><div class="legend" id="umllg"></div><div class="roledesc" id="umlinfo"></div>`; }
+function umlInit(root, M){
+  let mode='before', sel=null, timer=null;
+  const info=$('#umlinfo',root);
+  function draw(){
+    const model=M[mode]; sel=null;
+    $('#uml',root).innerHTML=umlSVG(model); $('#umllg',root).innerHTML=umlLegend(model); info.innerHTML=model.summary;
+    $$('.modebar .chip',root).forEach(c=>c.classList.toggle('on',c.dataset.m===mode));
+    $$('#uml .ub',root).forEach(g=>g.addEventListener('click',()=>{
+      const id=g.dataset.id, b=model.boxes.find(x=>x.id===id);
+      if(sel===id){ sel=null; $$('#uml .ub, #uml .rel',root).forEach(x=>x.classList.remove('dim','sel')); info.innerHTML=model.summary; return; }
+      sel=id;
+      const linked=new Set([id]); const rs=model.rels.filter(r=>r.f===id||r.t===id); rs.forEach(r=>{linked.add(r.f);linked.add(r.t);});
+      $$('#uml .ub',root).forEach(x=>{ x.classList.toggle('dim',!linked.has(x.dataset.id)); x.classList.toggle('sel',x.dataset.id===id); });
+      $$('#uml .rel',root).forEach(x=>x.classList.toggle('dim',!(x.dataset.f===id||x.dataset.t===id)));
+      const name=k=>model.boxes.find(x=>x.id===k).name;
+      info.innerHTML=`<span class="rolechip" style="background:${ROLES[b.role].c}">${ROLES[b.role].n}</span> <b>${b.name}</b>${b.tag?` <span class="tagchip ${b.tag}">${b.tag==='new'?'✨ new':'✎ changed'}</span>`:''}<div style="margin-top:6px">${b.desc}</div>`+
+        (rs.length?`<div class="rellist">${rs.map(r=>`<code class="i">${name(r.f)}</code> <b style="color:${r.c||RELS[r.type].c}">${r.label||RELS[r.type].n}</b> <code class="i">${name(r.t)}</code>`).join('<br>')}</div>`:'');
+    }));
+  }
+  $$('.modebar .chip',root).forEach(c=>c.onclick=()=>{ clearTimeout(timer); mode=c.dataset.m; draw(); });
+  $('#umlplay',root).onclick=()=>{ clearTimeout(timer); mode='before'; draw(); timer=setTimeout(()=>{ mode='after'; draw(); },2600); };
+  draw();
+}
+
+const FM_UML = {
+  before:{w:900,h:440,summary:'❌ <b>Before:</b> one class decides <b>and</b> creates every vehicle with <code class="i">if/else</code> + <code class="i">new</code>. Click a box to see its job.',
+    boxes:[
+      {id:'L',name:'Logistics',st:'class',m:['planDelivery(type)','  if ROAD → new Truck()','  if SEA  → new Ship()'],x:80,y:40,w:300,role:'plain',desc:'Does everything: chooses the vehicle AND builds it. Every new transport means editing (and re-testing) this class.'},
+      {id:'T',name:'Truck',m:['deliver()'],x:480,y:290,w:190,role:'plain',desc:'A concrete class. Logistics is glued to it with <code class="i">new Truck()</code>.'},
+      {id:'S',name:'Ship',m:['deliver()'],x:690,y:290,w:190,role:'plain',desc:'Another concrete class. Truck and Ship share no common type.'}],
+    rels:[{f:'L',t:'T',type:'bad',label:'new Truck()'},{f:'L',t:'S',type:'bad',label:'new Ship()'}],
+    notes:[{x:40,y:300,t:'❌ Logistics knows every vehicle class'},{x:40,y:326,t:'❌ No common type for Truck and Ship'},{x:40,y:352,t:'❌ Adding Plane = editing Logistics'}]},
+  after:{w:900,h:500,summary:'✅ <b>After:</b> 3 <b>new</b> elements (Transport, RoadLogistics, SeaLogistics). Logistics only <i>uses</i> the Transport interface; its subclasses decide what to create.',
+    boxes:[
+      {id:'L',name:'Logistics',st:'abstract',m:['abstract createTransport()','planDelivery()'],x:70,y:30,w:280,role:'creator',tag:'changed',desc:'Now abstract. It declares the factory method <code class="i">createTransport()</code> and uses it in <code class="i">planDelivery()</code>. No more <code class="i">new</code>, no more if/else.'},
+      {id:'P',name:'Transport',st:'interface',m:['deliver()'],x:560,y:30,w:240,role:'product',tag:'new',desc:'The common type for everything that can deliver. Logistics depends on this, not on Truck or Ship.'},
+      {id:'R',name:'RoadLogistics',m:['createTransport()','  ↳ new Truck()'],x:20,y:290,w:200,role:'ccreator',tag:'new',desc:'Overrides the factory method and returns a Truck.'},
+      {id:'E',name:'SeaLogistics',m:['createTransport()','  ↳ new Ship()'],x:240,y:290,w:200,role:'ccreator',tag:'new',desc:'Overrides the factory method and returns a Ship.'},
+      {id:'T',name:'Truck',m:['deliver()'],x:490,y:290,w:190,role:'cproduct',tag:'changed',desc:'Same class as before, but now it <b>implements Transport</b>.'},
+      {id:'S',name:'Ship',m:['deliver()'],x:700,y:290,w:190,role:'cproduct',tag:'changed',desc:'Same class as before, but now it <b>implements Transport</b>.'}],
+    rels:[{f:'L',t:'P',type:'uses'},{f:'T',t:'P',type:'implements'},{f:'S',t:'P',type:'implements'},{f:'R',t:'L',type:'extends'},{f:'E',t:'L',type:'extends'},
+      {f:'R',t:'T',type:'creates',curve:95},{f:'E',t:'S',type:'creates',curve:55}]}
+};
+const AF_UML = {
+  before:{w:1000,h:470,summary:'❌ <b>Before:</b> the shop creates every piece itself. Nothing stops a <i>Modern chair + Victorian sofa</i>. Click a box to see its job.',
+    boxes:[
+      {id:'C',name:'Shop',st:'class',m:['furnishRoom(style)','  new ModernChair() …','  new VictorianSofa() …'],x:370,y:30,w:270,role:'plain',desc:'Uses if/else on the style and calls <code class="i">new</code> on concrete classes. It can easily mix styles by mistake.'},
+      {id:'MC',name:'ModernChair',m:['sit()'],x:30,y:290,w:210,role:'plain',desc:'Concrete class with no common Chair type.'},
+      {id:'MS',name:'ModernSofa',m:['lieOn()'],x:270,y:290,w:210,role:'plain',desc:'Concrete class with no common Sofa type.'},
+      {id:'VC',name:'VictorianChair',m:['sit()'],x:510,y:290,w:210,role:'plain',desc:'Concrete class with no common Chair type.'},
+      {id:'VS',name:'VictorianSofa',m:['lieOn()'],x:750,y:290,w:210,role:'plain',desc:'Concrete class with no common Sofa type.'}],
+    rels:[{f:'C',t:'MC',type:'bad',label:'new'},{f:'C',t:'MS',type:'bad',label:'new'},{f:'C',t:'VC',type:'bad',label:'new'},{f:'C',t:'VS',type:'bad',label:'new'}],
+    notes:[{x:30,y:410,t:'❌ The shop knows all 4 concrete classes'},{x:30,y:436,t:'❌ Nothing guarantees a matching set'},{x:520,y:410,t:'❌ A new style = editing the shop'}]},
+  after:{w:1000,h:600,summary:'✅ <b>After:</b> 5 <b>new</b> elements: FurnitureFactory, ModernFactory, VictorianFactory, Chair, Sofa. The client talks only to interfaces, and each factory creates <b>one family</b> (follow the colors).',
+    boxes:[
+      {id:'C',name:'Client',st:'client code',m:['furnishRoom(FurnitureFactory f)'],x:360,y:15,w:290,role:'client',tag:'changed',desc:'Receives a factory and asks it for products. It never writes <code class="i">new ModernChair()</code>, so it works with any family.'},
+      {id:'F',name:'FurnitureFactory',st:'interface',m:['createChair()','createSofa()'],x:40,y:170,w:250,role:'afactory',tag:'new',desc:'The abstract factory: one create method per product type.'},
+      {id:'CH',name:'Chair',st:'interface',m:['sit()'],x:412,y:170,w:200,role:'aproduct',tag:'new',desc:'Abstract product: the common type for every chair.'},
+      {id:'SO',name:'Sofa',st:'interface',m:['lieOn()'],x:737,y:170,w:200,role:'aproduct',tag:'new',desc:'Abstract product: the common type for every sofa.'},
+      {id:'MF',name:'ModernFactory',m:['createChair()','createSofa()'],x:10,y:350,w:150,role:'cfactory',tag:'new',desc:'Concrete factory for the <b>Modern</b> family: returns ModernChair and ModernSofa only.'},
+      {id:'VF',name:'VictorianFactory',m:['createChair()','createSofa()'],x:175,y:350,w:160,role:'cfactory',tag:'new',desc:'Concrete factory for the <b>Victorian</b> family: returns VictorianChair and VictorianSofa only.'},
+      {id:'MC',name:'ModernChair',m:['sit()'],x:360,y:350,w:145,role:'cproduct',tag:'changed',desc:'Now implements Chair.'},
+      {id:'VC',name:'VictorianChair',m:['sit()'],x:520,y:350,w:150,role:'cproduct',tag:'changed',desc:'Now implements Chair.'},
+      {id:'MS',name:'ModernSofa',m:['lieOn()'],x:685,y:350,w:145,role:'cproduct',tag:'changed',desc:'Now implements Sofa.'},
+      {id:'VS',name:'VictorianSofa',m:['lieOn()'],x:845,y:350,w:150,role:'cproduct',tag:'changed',desc:'Now implements Sofa.'}],
+    rels:[{f:'C',t:'F',type:'uses'},{f:'C',t:'CH',type:'uses'},{f:'C',t:'SO',type:'uses'},
+      {f:'MF',t:'F',type:'implements'},{f:'VF',t:'F',type:'implements'},
+      {f:'MC',t:'CH',type:'implements'},{f:'VC',t:'CH',type:'implements'},{f:'MS',t:'SO',type:'implements'},{f:'VS',t:'SO',type:'implements'},
+      {f:'MF',t:'MC',type:'creates',curve:55,c:'#0e9fb3'},{f:'VF',t:'VC',type:'creates',curve:85,c:'#9b7bf0'},
+      {f:'MF',t:'MS',type:'creates',curve:115,c:'#0e9fb3'},{f:'VF',t:'VS',type:'creates',curve:145,c:'#9b7bf0'}]}
+};
+
+/* ============ Step 1 (Factory Method): the problem with new, in chapters ============ */
+const FM_V = [
+ {label:'v1 · Trucks only', note:'Your first version. Short, clear, and it works. Nothing is wrong yet.', code:`class Logistics {
+    void planDelivery() {
+        Truck truck = new Truck();
+        truck.deliver();
+    }
+}`},
+ {label:'v2 · + Ships', note:'The company adds sea delivery. You reopen <code class="i">Logistics</code>, add a parameter and an if/else. <code class="i">Logistics</code> now has to know <b>Ship</b> too.', code:`class Logistics {
+    void planDelivery(String type) {
+        if (type.equals("road")) {
+            Truck truck = new Truck();
+            truck.deliver();
+        } else if (type.equals("sea")) {
+            Ship ship = new Ship();
+            ship.deliver();
+        }
+    }
+}`},
+ {label:'v3 · + Planes, pricing', note:'Planes arrive, and a new <code class="i">price()</code> method needs the <b>same choice</b>, so the if/else is copied. You edited code that already worked, twice.', code:`class Logistics {
+    void planDelivery(String type) {
+        if (type.equals("road")) {
+            Truck truck = new Truck();
+            truck.deliver();
+        } else if (type.equals("sea")) {
+            Ship ship = new Ship();
+            ship.deliver();
+        } else if (type.equals("air")) {
+            Plane plane = new Plane();
+            plane.deliver();
+        }
+    }
+
+    double price(String type, double km) {
+        if (type.equals("road")) return km * 1.2;
+        if (type.equals("sea"))  return km * 0.8;
+        if (type.equals("air"))  return km * 3.5;
+        throw new IllegalArgumentException(type);
+    }
+}`},
+ {label:'v4 · + Drones, tracking', note:'Drones and live tracking. Every request reopened the <b>same class</b>, and every edit risked breaking deliveries that used to work. Imagine this in OrderPage, Billing and Reports too.', code:`class Logistics {
+    void planDelivery(String type) {
+        if (type.equals("road")) {
+            Truck truck = new Truck();
+            truck.deliver();
+        } else if (type.equals("sea")) {
+            Ship ship = new Ship();
+            ship.deliver();
+        } else if (type.equals("air")) {
+            Plane plane = new Plane();
+            plane.deliver();
+        } else if (type.equals("drone")) {
+            Drone drone = new Drone();
+            drone.deliver();
+        }
+    }
+
+    double price(String type, double km) {
+        if (type.equals("road"))  return km * 1.2;
+        if (type.equals("sea"))   return km * 0.8;
+        if (type.equals("air"))   return km * 3.5;
+        if (type.equals("drone")) return km * 2.0;
+        throw new IllegalArgumentException(type);
+    }
+
+    String track(String type) {
+        if (type.equals("road"))  return new Truck().gpsPosition();
+        if (type.equals("sea"))   return new Ship().gpsPosition();
+        if (type.equals("air"))   return new Plane().gpsPosition();
+        if (type.equals("drone")) return new Drone().gpsPosition();
+        throw new IllegalArgumentException(type);
+    }
+}`}
+];
+const CH = ['What new does','Version 1','Change requests','The root cause','What we need'];
+function fmProblemHTML(){
+  return `<p>Before learning the pattern, let’s see exactly <b>what goes wrong</b> without it. Go through the five short parts below.</p>
+  <div class="chapnav" role="tablist">${CH.map((c,i)=>`<button class="chap" data-c="${i}" role="tab"><span>${i+1}</span>${c}</button>`).join('')}</div>
+  <div class="chapters">
+   <section class="chapter" data-c="0">
+     <h3>What does <code class="i">new</code> actually do?</h3>
+     <p><code class="i">new</code> creates an object of <b>one exact class</b>. You choose that class while writing the code, and it can’t change while the program runs.</p>
+     <div class="anat">
+       <div class="a1"><code>Truck</code><small>the type of the variable</small></div>
+       <div class="a2"><code>truck</code><small>its name</small></div>
+       <div class="a3"><code>= new Truck();</code><small><b>the exact class to build</b>, written in stone</small></div>
+     </div>
+     <div class="analogy"><div class="ic">💡</div><div><b>Analogy.</b> A lamp wired straight into the wall versus a lamp with a plug. With the wires twisted into the wall, changing the lamp means opening the wall. With a socket, the wall only expects “something with a plug”, and any lamp fits. <br><code class="i">new Truck()</code> inside your code is the wired-in lamp.</div></div>
+   </section>
+   <section class="chapter" data-c="1">
+     <h3>Version 1: only trucks</h3>
+     <p>The app is small. One kind of transport, one place that creates it. This is <b>perfectly fine</b>.</p>
+     ${codeBlock(FM_V[0].code,{file:'Logistics.java · v1'})}
+     <p>So where is the problem? It isn’t in this code. It appears the moment the requirements <b>change</b>, which in real projects happens all the time.</p>
+   </section>
+   <section class="chapter" data-c="2">
+     <h3>Watch the code grow, request after request</h3>
+     <div class="vbar">${FM_V.map((v,i)=>`<button class="chip" data-v="${i}">${v.label}</button>`).join('')}<button class="btn ghost sm" id="vplay">▶ Play the history</button></div>
+     <div class="meters" id="meters"></div>
+     <div id="vcode"></div>
+     <div class="roledesc" id="vnote"></div>
+     <p class="legendline"><span class="sw add"></span> lines you had to add to <b>old, working code</b></p>
+   </section>
+   <section class="chapter" data-c="3">
+     <h3>The root cause: one class doing two jobs</h3>
+     <p><code class="i">Logistics</code> should only <b>use</b> transports (deliver, price, track). But it also <b>decides which class</b> to use and <b>creates</b> it. Turn on each colour to see the jobs mixed together.</p>
+     <div class="jobs"><button class="job dec" data-j="dec">Decides which class</button><button class="job cre" data-j="cre">Creates the object</button><button class="job use" data-j="use">Uses the object</button></div>
+     <div id="jobcode"></div>
+     <div class="roledesc" id="jobnote">Turn on the three colours one by one.</div>
+   </section>
+   <section class="chapter" data-c="4">
+     <h3>So, what do we need?</h3>
+     <p><code class="i">new</code> is not the enemy. Every object is created with <code class="i">new</code> somewhere. The problem is <b>where</b> it is written and <b>who</b> decides the class.</p>
+     <div class="needs">
+       <div><b>1. Code that uses a transport talks to an interface</b><p>It only knows <code class="i">Transport</code>, never <code class="i">Truck</code> or <code class="i">Ship</code>.</p></div>
+       <div><b>2. Creating is moved out of the using code</b><p>The choice of class lives in one place made for that job.</p></div>
+       <div><b>3. A new transport means a new class</b><p>Old, tested code stays untouched.</p></div>
+     </div>
+     <p>That is exactly what the <b>Factory Method</b> pattern gives us. Let’s see how it works in the next step.</p>
+   </section>
+  </div>
+  <div class="chapfoot"><button class="btn ghost sm" id="chprev">Previous part</button><span id="chpos"></span><button class="btn sm" id="chnext">Next part</button></div>`;
+}
+function fmProblemInit(r){
+  const quiz=$('.quiz',r), nav=$('.navrow',r);
+  let c=0, seen=P.q['fm-problem']?CH.length-1:0, v=0, timer=null; const jobs=new Set();
+  const nz=x=>x.replace(/\s+/g,''); const lineInfo=(code,prev)=>{ const ps=new Set(prev?prev.split('\n').map(nz):[]); return code.split('\n').map(l=>({add:prev!=null&&!!nz(l)&&!ps.has(nz(l))})); };
+  function showV(i){
+    v=i; const V=FM_V[i], prev=i?FM_V[i-1].code:null, info=lineInfo(V.code,prev);
+    $('#vcode',r).innerHTML=codeBlock(V.code,{file:'Logistics.java · '+V.label.split(' ·')[0]});
+    $$('#vcode .ln',r).forEach((l,k)=>{ if(info[k].add) l.classList.add('add'); });
+    const knows=new Set((V.code.match(/new (\w+)\(/g)||[]).map(x=>x).filter(x=>!x.includes('Illegal'))).size;
+    const br=(V.code.match(/type\.equals/g)||[]).length, added=info.filter(x=>x.add).length;
+    const M=[['Concrete classes Logistics knows',knows,4],['if / else branches',br,13],['Lines added to existing code',added,22]];
+    $('#meters',r).innerHTML=M.map(([n,val,max])=>`<div class="meter"><div class="mv">${val}</div><div class="mn">${n}</div><div class="mb"><i style="width:${Math.min(100,val/max*100)}%"></i></div></div>`).join('');
+    $('#vnote',r).innerHTML=V.note;
+    $$('.vbar .chip',r).forEach(b=>b.classList.toggle('on',+b.dataset.v===i));
+  }
+  function paintJobs(){
+    $$('#jobcode .ln',r).forEach(l=>{ const t=l.textContent;
+      const k = /new (?!Illegal)\w+\(/.test(t) ? 'cre' : /type\.equals|throw new/.test(t) ? 'dec' : /\.deliver\(|return km|gpsPosition/.test(t) ? 'use' : '';
+      ['dec','cre','use'].forEach(x=>l.classList.toggle('j-'+x, k===x && jobs.has(x))); });
+    const notes={dec:'<b>Purple</b>: deciding which class. This logic is <b>repeated</b> in three methods.',cre:'<b>Orange</b>: creating objects with <code class="i">new</code>. Logistics is welded to 4 concrete classes.',use:'<b>Blue</b>: actually using the transport. This is the <b>only</b> job Logistics should have.'};
+    $('#jobnote',r).innerHTML = jobs.size===3 ? '🎯 <b>Only the blue lines are Logistics’ real job.</b> Purple and orange are mixed in, which is why <i>every</i> new transport forces you to edit this class. Factory Method moves the purple and orange parts out.' : [...jobs].map(j=>notes[j]).join('<br>') || 'Turn on the three colours one by one.';
+  }
+  function go(i){
+    c=i; seen=Math.max(seen,i);
+    $$('.chapter',r).forEach(s=>s.classList.toggle('on',+s.dataset.c===c));
+    $$('.chap',r).forEach(b=>{ const k=+b.dataset.c; b.classList.toggle('on',k===c); b.classList.toggle('done',k<=seen&&k!==c); b.disabled=k>seen+1; });
+    $('#chpos',r).textContent=`Part ${c+1} of ${CH.length}`;
+    $('#chprev',r).disabled=c===0; const n=$('#chnext',r); n.style.visibility=c===CH.length-1?'hidden':'visible';
+    const done=seen>=CH.length-1; if(quiz) quiz.style.display=done?'':'none'; if(nav) nav.style.display=done?'':'none';
+    if(done && quiz && !quiz.dataset.shown){ quiz.dataset.shown=1; quiz.classList.add('rv','in'); }
+  }
+  $$('.chap',r).forEach(b=>b.onclick=()=>go(+b.dataset.c));
+  $('#chprev',r).onclick=()=>go(c-1); $('#chnext',r).onclick=()=>{ go(c+1); $('.chapnav',r).scrollIntoView({block:'nearest',behavior:reduced?'auto':'smooth'}); };
+  $$('.vbar .chip',r).forEach(b=>b.onclick=()=>{ clearTimeout(timer); showV(+b.dataset.v); });
+  $('#vplay',r).onclick=()=>{ clearTimeout(timer); let i=0; const step=()=>{ showV(i); if(++i<FM_V.length) timer=setTimeout(step,2600); }; step(); };
+  $('#jobcode',r).innerHTML=codeBlock(FM_V[3].code,{file:'Logistics.java · v4'});
+  $$('.job',r).forEach(b=>b.onclick=()=>{ const j=b.dataset.j; jobs.has(j)?jobs.delete(j):jobs.add(j); b.classList.toggle('on',jobs.has(j)); paintJobs(); });
+  showV(0); go(0);
+}
+
+/* ============ FACTORY METHOD lessons ============ */
+let fmMode = 'sea';
+const FM_STEPS = [
+ { id:'problem', t:'The problem', h:'The <span>problem</span> with <code class="i">new</code>',
+   html:fmProblemHTML, init:fmProblemInit,
+   quiz:{q:'What is the <b>real</b> problem with writing <code class="i">new Truck()</code> inside <code class="i">Logistics</code>?',o:['<code class="i">new</code> makes the program slow','<code class="i">Logistics</code> both <b>uses</b> transports and <b>decides which class to create</b>, so every new type forces you to edit it','Java does not allow <code class="i">new</code> inside methods','<code class="i">Truck</code> has too many methods'],a:1,why:'Using and creating are mixed in one class. Factory Method separates them.',hint:'Think back to part 4: which colour is Logistics’ real job?'}},
+ { id:'idea', t:'The idea', h:'The <span>idea</span>: a method that makes objects',
+   html:()=>`<div class="big">Don’t call <code class="i">new</code> directly. Call a method that creates the object for you: the <b>factory method</b>. <b>Subclasses</b> override it to choose which class to create.</div>
+   <div class="analogy"><div class="ic">🍔</div><div><b>Analogy: a franchise.</b> Headquarters writes the process: “get a vehicle, then deliver”. Each branch decides <i>which</i> vehicle. The process never changes.</div></div>
+   <div class="sim"><span class="lbl">Factory simulation</span>
+     <div>Pick a subclass, then call <code class="i">planDelivery()</code>:</div>
+     <div class="chips" id="fmchips"></div>
+     <div class="factory"><div class="machine" id="mach"><span class="gear">⚙️</span>createTransport()<small id="machsub"></small></div>
+       <div class="belt" id="belt"></div><div class="dest" id="dest">📦<br>deliver()</div></div>
+     <div class="minicode">Transport t = createTransport(); <em id="mcnote"></em></div>
+     <button class="btn sm" id="run">▶ planDelivery()</button>
+     <div class="console" id="fmcon" style="margin-top:10px"><span class="pr">output…</span></div></div>`,
+   init:r=>{
+     const opts=[['road','RoadLogistics','🚚','Truck','🚚 Truck: delivering by road'],['sea','SeaLogistics','🚢','Ship','🚢 Ship: delivering by sea'],['air','AirLogistics','✈️','Plane','✈️ Plane: delivering by air']];
+     const draw=()=>{ $('#fmchips',r).innerHTML=opts.map(o=>`<button class="chip ${fmMode===o[0]?'on':''}" data-m="${o[0]}" ${o[0]==='air'&&!P.air?'disabled title="Unlocked in step 5"':''}>${o[2]} ${o[1]}${o[0]==='air'&&!P.air?' 🔒':''}</button>`).join('');
+       const o=opts.find(x=>x[0]===fmMode); $('#machsub',r).textContent='inside '+o[1]; $('#mcnote',r).textContent='// → new '+o[3]+'()';
+       $$('#fmchips .chip',r).forEach(c=>c.onclick=()=>{fmMode=c.dataset.m; draw();}); };
+     draw();
+     $('#run',r).onclick=()=>{
+       const o=opts.find(x=>x[0]===fmMode), belt=$('#belt',r), m=$('#mach',r), d=$('#dest',r), btn=$('#run',r);
+       btn.disabled=true; d.classList.remove('got'); belt.innerHTML=`<span class="item">${o[2]}</span>`; m.classList.add('run'); belt.classList.add('run');
+       const it=$('.item',belt);
+       setTimeout(()=>{ it.style.left='calc(100% - 50px)'; },350);
+       setTimeout(()=>{ m.classList.remove('run'); belt.classList.remove('run'); d.classList.add('got'); d.innerHTML=o[2]+'<br>deliver() ✓';
+         const c=$('#fmcon',r); if(c.querySelector('.pr')) c.innerHTML=''; const l=document.createElement('div'); l.textContent=o[4]; c.appendChild(l); btn.disabled=false; },1850);
+     };
+   },
+   quiz:{q:'In the Factory Method pattern, who decides which object is created?',o:['The client, by writing <code class="i">new</code>','A subclass, by overriding the factory method','The product object itself','The JVM, at random'],a:1,why:'The parent class calls <code class="i">createTransport()</code>; each subclass decides what it returns.'}},
+ { id:'overview', t:'Before → After', h:'The <span>big picture</span>: before → after',
+   html:()=>umlStepHTML('Compare the classes <b>without</b> the pattern and <b>with</b> it. Click any box to see its role and its relations.'),
+   init:r=>umlInit(r,FM_UML),
+   quiz:{q:'Which elements are <b>new</b> after applying Factory Method?',o:['Truck and Ship','<code class="i">Transport</code>, <code class="i">RoadLogistics</code>, <code class="i">SeaLogistics</code>','Only <code class="i">main()</code>','Nothing is new, only renamed'],a:1,why:'One Product interface plus one Concrete Creator per product. Truck and Ship already existed; they just implement Transport now.',hint:'Look for the yellow ✨ NEW badges in the “After” diagram.'}},
+ { id:'roles', t:'The 4 roles', h:'The <span>4 roles</span>',
+   html:()=>`<p>Click each box to see where it lives in the code.</p>
+   <div class="uml">
+     <div class="role parent" data-r="product"><div class="rn">Product</div><div class="rc">Transport</div></div>
+     <div class="role parent" data-r="creator"><div class="rn">Creator</div><div class="rc">Logistics</div></div>
+     <div class="role" data-r="cproduct"><div class="rn">Concrete Products</div><div class="rc">Truck · Ship</div></div>
+     <div class="role" data-r="ccreator"><div class="rn">Concrete Creators</div><div class="rc">RoadLogistics · SeaLogistics</div></div>
+   </div>
+   <div class="roledesc" id="rdesc">👆 Pick a role.</div>
+   ${codeBlock(FM_CODE,{id:'fmroles'})}`,
+   init:r=>{
+     const R={product:[['interface Transport'],'<b>Product</b>: the common interface. Everything the factory makes looks like this.'],
+       cproduct:[['class Truck','class Ship'],'<b>Concrete Products</b>: the real classes that implement the Product.'],
+       creator:[['abstract class Logistics'],'<b>Creator</b>: declares the factory method <code class="i">createTransport()</code> and uses it in <code class="i">planDelivery()</code>.'],
+       ccreator:[['class RoadLogistics','class SeaLogistics'],'<b>Concrete Creators</b>: override the factory method and return a specific product.']};
+     $$('.role',r).forEach(b=>b.onclick=()=>{
+       $$('.role',r).forEach(x=>x.classList.toggle('on',x===b));
+       const [subs,txt]=R[b.dataset.r]; $('#rdesc',r).innerHTML=txt;
+       const set=new Set(subs.flatMap(s=>blockLines(FM_CODE,s)));
+       $$('#fmroles .ln',r).forEach(l=>{ const i=+l.dataset.i; l.classList.toggle('role',set.has(i)); l.classList.toggle('dim',!set.has(i)); });
+       const first=$('#fmroles .ln.role',r); if(first) first.scrollIntoView({block:'nearest',behavior:reduced?'auto':'smooth'});
+     });
+   },
+   quiz:{q:'Which role does <code class="i">Logistics</code> play?',o:['Product','Concrete Product','Creator','Concrete Creator'],a:2,why:'<code class="i">Logistics</code> declares the factory method, so it is the Creator.',hint:'Which class declares <code class="i">createTransport()</code>?'}},
+ { id:'run', t:'Run the code', h:'Follow the <span>Java 25</span> code',
+   html:()=>`<div class="tip">☕ Java 25: <code class="i">void main()</code> and <code class="i">IO.println</code> — no <code class="i">public static</code> boilerplate.</div>${tracerHTML('fm')}`,
+   init:r=>tracerInit(r,'fm',[
+     {f:'void main()',n:'The program starts in <code class="i">main()</code>.'},
+     {f:'new SeaLogistics()',n:'We pick a creator. The variable type is the abstract <code class="i">Logistics</code>.'},
+     {f:'logistics.planDelivery()',n:'We call the normal business method.'},
+     {f:'void planDelivery()',n:'This code lives in the parent class. It knows nothing about ships!'},
+     {f:'Transport t = createTransport()',n:'It calls the factory method…'},
+     {f:'return new Ship()',n:'…and the subclass <b>SeaLogistics</b> decides: <code class="i">new Ship()</code>.'},
+     {f:'t.deliver()',n:'The product is used only through the <code class="i">Transport</code> interface.'},
+     {f:'Ship: delivering',n:'Ship’s <code class="i">deliver()</code> runs. Done!',out:'🚢 Ship: delivering by sea'}]),
+   quiz:{q:'With <code class="i">new SeaLogistics()</code>, what does <code class="i">createTransport()</code> return?',o:['A Truck','A Ship','null','A Logistics object'],a:1,why:'<code class="i">SeaLogistics</code> overrides the factory method to return <code class="i">new Ship()</code>.'}},
+ { id:'add', t:'Adding new things', h:'Add a product, <span>change nothing</span>',
+   html:()=>`<p>The business now wants air delivery. Watch what happens to the existing code.</p>
+   <div class="sim"><span class="lbl">Simulation</span>
+     <div class="classes" id="cls">${['Transport','Truck','Ship','Logistics','RoadLogistics','SeaLogistics'].map(c=>`<div class="cls">${c}<span class="badge"></span></div>`).join('')}</div>
+     <button class="btn sm" id="addair">✈️ Add air delivery</button>
+     <div id="airc"></div></div>
+   <div class="big">Existing classes stay <b>untouched</b>. You only <b>add</b> new ones. This is the <b>Open/Closed principle</b>: open for extension, closed for modification.</div>`,
+   init:r=>{
+     const add=()=>{ const box=$('#cls',r); $$('.cls',box).forEach(c=>{c.classList.add('untouched'); $('.badge',c).textContent='✓ untouched';});
+       if(!$('.cls.new',box)) ['Plane','AirLogistics'].forEach((n,i)=>setTimeout(()=>box.insertAdjacentHTML('beforeend',`<div class="cls new">${n}<span class="badge">NEW</span></div>`),i*250));
+       $('#airc',r).innerHTML=codeBlock(`class Plane implements Transport {
+    public void deliver() { IO.println("✈️ Plane: delivering by air"); }
+}
+
+class AirLogistics extends Logistics {
+    @Override Transport createTransport() { return new Plane(); }
+}
+
+// in main(), only the chosen creator changes:
+Logistics logistics = new AirLogistics();`,{file:'New code only'});
+       $('#addair',r).disabled=true;
+       if(!P.air){ P.air=true; save(); toast('✈️ AirLogistics unlocked in the step 2 simulation'); } };
+     $('#addair',r).onclick=add; if(P.air) add();
+   },
+   quiz:{q:'To add planes, what do you do?',o:['Add an <code class="i">if</code> inside <code class="i">planDelivery()</code>','Add a <code class="i">Plane</code> class and an <code class="i">AirLogistics</code> class','Edit the <code class="i">Truck</code> class','Rewrite <code class="i">Logistics</code>'],a:1,why:'New product + new creator. Old code stays as it is.'}},
+ { id:'recap', t:'Recap', h:'Factory Method in <span>30 seconds</span>',
+   html:()=>`<div class="grid3 recap">
+     <div class="card"><div class="em">🎯</div><h3>What</h3>A parent class calls a method to create an object. Subclasses override it to choose the class.</div>
+     <div class="card"><div class="em">🕐</div><h3>When</h3>You know <i>what</i> to do with an object, but the exact class should be decided later, by subclasses.</div>
+     <div class="card"><div class="em">🏆</div><h3>Win</h3>Add new products without editing existing code. Code depends on interfaces, not concrete classes.</div></div>
+     <div class="big">Remember the shape: <code class="i">Creator.someMethod()</code> → calls <code class="i">createProduct()</code> → subclass returns <code class="i">new ConcreteProduct()</code>.</div>`}
+];
+
+/* ============ ABSTRACT FACTORY lessons ============ */
+let afStyle='modern';
+const STY = {modern:{n:'Modern',c:'🪑',s:'🛋️'},victorian:{n:'Victorian',c:'🪑',s:'🛋️'},space:{n:'Space',c:'🪑',s:'🛋️'}};
+const AF_STEPS = [
+ { id:'problem', t:'The problem', h:'Things that must <span>match</span>',
+   html:()=>`<p>You sell furniture in different styles. A customer buys a <b>chair</b> and a <b>sofa</b>. They must be the <b>same style</b>.</p>
+   <div class="sim"><span class="lbl">Living-room simulation</span>
+     <label class="toggle"><input type="checkbox" id="usef"><span class="sw"></span>🏭 Use one factory</label>
+     <div id="pickers"></div>
+     <div class="room" id="room"></div>
+     <div class="status" id="roommsg"></div></div>
+   <div class="big">If any part of the code can pick any class, nothing stops a mix like <i>Modern chair + Victorian sofa</i>.</div>`,
+   init:r=>{
+     let chair='modern', sofa='victorian';
+     const row=(lab,val,key)=>`<div style="margin-top:8px"><b>${lab}</b><div class="chips">${Object.keys(STY).map(k=>`<button class="chip ${val===k?'on':''}" data-k="${key}" data-v="${k}">${STY[k].n}</button>`).join('')}</div></div>`;
+     const draw=()=>{
+       const f=$('#usef',r).checked; if(f) sofa=chair;
+       $('#pickers',r).innerHTML = f ? row('Choose a factory:',chair,'both') : row('Chair style:',chair,'chair')+row('Sofa style:',sofa,'sofa');
+       $('#room',r).innerHTML=`<div class="furn sty-${chair}"><span class="em">🪑</span><div class="nm">${STY[chair].n}Chair</div></div><div class="furn sty-${sofa}"><span class="em">🛋️</span><div class="nm">${STY[sofa].n}Sofa</div></div>`;
+       const ok=chair===sofa, room=$('#room',r); room.classList.toggle('bad',!ok);
+       $('#roommsg',r).innerHTML = ok ? '✨ Perfect match! A happy customer.' : `😬 Mismatch: ${STY[chair].n} chair + ${STY[sofa].n} sofa`;
+       $$('#pickers .chip',r).forEach(c=>c.onclick=()=>{ const k=c.dataset.k,v=c.dataset.v; if(k==='chair')chair=v; else if(k==='sofa')sofa=v; else {chair=v;sofa=v;} draw(); });
+     };
+     $('#usef',r).onchange=draw; draw();
+   },
+   quiz:{q:'What problem does Abstract Factory solve?',o:['Making programs run faster','Creating objects that belong together, so they always match','Deleting unused objects','Avoiding interfaces'],a:1,why:'It creates <b>families</b> of related objects that are guaranteed to fit together.'}},
+ { id:'idea', t:'The idea', h:'One factory, a <span>whole family</span>',
+   html:()=>`<div class="big">An <b>abstract factory</b> is an interface with one <code class="i">create…()</code> method per product. Each <b>concrete factory</b> builds every product of <b>one family</b>.</div>
+   <div class="analogy"><div class="ic">🛍️</div><div><b>Analogy: a furniture collection.</b> Pick the “Modern” collection and every piece you get is modern. You never choose piece by piece.</div></div>
+   <div class="sim"><span class="lbl">3D factory</span>
+     <div class="chips" id="afchips"></div>
+     <div id="furn3d"><span class="hint">drag to rotate ↔</span></div>
+     <div class="minicode" id="afmini"></div></div>`,
+   init:r=>{
+     const draw=()=>{ $('#afchips',r).innerHTML=Object.keys(STY).map(k=>`<button class="chip ${afStyle===k?'on':''}" data-v="${k}">🏭 ${STY[k].n}Factory</button>`).join('');
+       const n=STY[afStyle].n;
+       $('#afmini',r).innerHTML=`FurnitureFactory f = new ${n}Factory();<br>f.createChair(); <em>// → ${n}Chair</em><br>f.createSofa();  <em>// → ${n}Sofa</em>`;
+       $$('#afchips .chip',r).forEach(c=>c.onclick=()=>{ afStyle=c.dataset.v; draw(); Furn3D.show(afStyle); }); };
+     draw(); Furn3D.mount($('#furn3d',r)); Furn3D.show(afStyle);
+   },
+   quiz:{q:'What does <code class="i">ModernFactory</code> create?',o:['Only a ModernChair','A ModernChair and a VictorianSofa','All products of the Modern family','Other factories'],a:2,why:'One concrete factory = one complete family.'}},
+ { id:'overview', t:'Before → After', h:'The <span>big picture</span>: before → after',
+   html:()=>umlStepHTML('Compare the classes <b>without</b> the pattern and <b>with</b> it. Click any box to see its role and its relations.'),
+   init:r=>umlInit(r,AF_UML),
+   quiz:{q:'In the “After” diagram, which new elements guarantee that a chair and a sofa always <b>match</b>?',o:['The <code class="i">Chair</code> and <code class="i">Sofa</code> interfaces','<code class="i">ModernFactory</code> and <code class="i">VictorianFactory</code>','The Client','<code class="i">ModernChair</code>'],a:1,why:'Each concrete factory only creates products of its own family (follow the colored “creates” arrows).',hint:'Follow the colored “creates” arrows in the After view.'}},
+ { id:'matrix', t:'The matrix', h:'Families × products: the <span>matrix</span>',
+   html:()=>`<p>Click a <b>row</b>, a <b>column</b> or a <b>cell</b>.</p>
+   <table class="matrix" id="mx"><tr><th class="corner"></th>${['Chair','Sofa','Table'].map((p,j)=>`<th data-c="${j}">interface ${p}</th>`).join('')}</tr>
+   ${['Modern','Victorian','Space'].map((f,i)=>`<tr><th data-r="${i}">${f}Factory</th>${['Chair','Sofa','Table'].map((p,j)=>`<td data-r="${i}" data-c="${j}">${f}${p}</td>`).join('')}</tr>`).join('')}</table>
+   <div class="roledesc" id="mxd">👆 Explore the matrix.</div>
+   <div class="grid2" style="margin-top:12px"><div class="card">➕ <b>New family</b> (e.g. Rustic) = add a <b>row</b>: one new factory + its products. Easy.</div><div class="card">⚠️ <b>New product</b> (e.g. Lamp) = add a <b>column</b>: <i>every</i> factory must change.</div></div>`,
+   init:r=>{
+     const F=['Modern','Victorian','Space'],Pn=['Chair','Sofa','Table'];
+     const lit=fn=>$$('#mx td, #mx th',r).forEach(c=>c.classList.toggle('lit',fn(c)));
+     $$('#mx th[data-r]',r).forEach(h=>h.onclick=()=>{ const i=h.dataset.r; lit(c=>c.dataset.r===i); $('#mxd',r).innerHTML=`A <b>row</b> = one family = one concrete factory. <code class="i">${F[i]}Factory</code> creates all ${F[i]} pieces.`; });
+     $$('#mx th[data-c]',r).forEach(h=>h.onclick=()=>{ const j=h.dataset.c; lit(c=>c.dataset.c===j); $('#mxd',r).innerHTML=`A <b>column</b> = one abstract product. <code class="i">${Pn[j]}</code> is an interface with one version per family.`; });
+     $$('#mx td',r).forEach(c=>c.onclick=()=>{ lit(x=>x===c); const i=c.dataset.r,j=c.dataset.c; $('#mxd',r).innerHTML=`<code class="i">${F[i]}${Pn[j]}</code> is a <b>concrete product</b>, made by <code class="i">${F[i]}Factory.create${Pn[j]}()</code>.`; });
+   },
+   quiz:{q:'In the matrix, what does one <b>row</b> (like Victorian) represent?',o:['One abstract product interface','One concrete factory and its family','The client code','A single object'],a:1,why:'Rows are families; each family has its own concrete factory.',hint:'Rows have names ending in “Factory”.'}},
+ { id:'run', t:'Run the code', h:'Follow the <span>Java 25</span> code',
+   html:()=>`<div class="tip">☕ Java 25: <code class="i">void main()</code>, <code class="i">var</code> and a <code class="i">switch</code> expression choose the factory.</div>${tracerHTML('af')}`,
+   init:r=>tracerInit(r,'af',[
+     {f:'void main()',n:'The program starts.'},
+     {f:'var style = "modern"',n:'The style could come from settings or user input.'},
+     {f:'FurnitureFactory factory = switch',n:'We choose <b>one</b> factory for the whole room.'},
+     {f:'case "modern"',n:'Style is “modern” → <code class="i">new ModernFactory()</code>.'},
+     {f:'furnishRoom(factory);',n:'We pass the factory to the client code.'},
+     {f:'void furnishRoom',n:'The client only knows <b>interfaces</b>: FurnitureFactory, Chair, Sofa.'},
+     {f:'Chair chair = factory.createChair()',n:'Ask the factory for a chair…'},
+     {f:'return new ModernChair()',n:'…ModernFactory returns a <code class="i">ModernChair</code>.'},
+     {f:'Sofa sofa = factory.createSofa()',n:'Ask the <b>same</b> factory for a sofa…'},
+     {f:'return new ModernSofa()',n:'…so it is guaranteed to be a <code class="i">ModernSofa</code>. ✨'},
+     {f:'IO.println(chair.sit())',n:'Use the products.',out:'Sitting on a sleek modern chair'},
+     {f:'IO.println(sofa.lieOn())',n:'Matching set, done!',out:'Relaxing on a modern sofa'}]),
+   quiz:{q:'Which types does <code class="i">furnishRoom()</code> know about?',o:['ModernChair and ModernSofa','Only the interfaces: FurnitureFactory, Chair, Sofa','VictorianFactory only','All the classes in the file'],a:1,why:'The client never names a concrete class, so it works with any family.'}},
+ { id:'vs', t:'FM vs AF', h:'Factory Method <span>vs</span> Abstract Factory',
+   html:()=>`<div class="vs">
+     <div class="card fmc"><h3>🏭 Factory Method</h3><ul><li>Creates <b>one</b> product</li><li>Uses <b>inheritance</b>: a subclass overrides a method</li><li><code class="i">Logistics → createTransport()</code></li></ul></div>
+     <div class="card afc"><h3>🏬 Abstract Factory</h3><ul><li>Creates a <b>family</b> of products</li><li>Uses <b>an object</b>: you pass a factory around</li><li><code class="i">FurnitureFactory → createChair(), createSofa()</code></li></ul></div></div>
+     <div class="analogy"><div class="ic">💡</div><div><b>Fun fact:</b> each <code class="i">createX()</code> inside an abstract factory is itself a kind of factory method.</div></div>`,
+   quiz:{q:'You need to create <b>one</b> kind of object and let subclasses choose its class. Which pattern?',o:['Factory Method','Abstract Factory','Neither','Both are required'],a:0,why:'One product + subclasses decide = Factory Method.'}},
+ { id:'recap', t:'Recap', h:'Abstract Factory in <span>30 seconds</span>',
+   html:()=>`<div class="grid3 recap">
+     <div class="card"><div class="em">🎯</div><h3>What</h3>An interface with several <code class="i">create…()</code> methods. Each concrete factory builds one family.</div>
+     <div class="card"><div class="em">🕐</div><h3>When</h3>Your objects come in families that must match: themes, styles, platforms, databases.</div>
+     <div class="card"><div class="em">🏆</div><h3>Win</h3>Switch the whole family by changing one line. The client only sees interfaces.</div></div>
+     <div class="big">⚠️ Trade-off: adding a new <b>family</b> is easy; adding a new <b>product type</b> means changing every factory.</div>`}
+];
+
+/* ============ 3D furniture (Three.js) ============ */
+const Furn3D = (()=>{
+  let R, scene, cam, cur, old, t0=0, oldT0=0, raf=null, host, rotY=.5, drag=false, lx=0;
+  function init(){
+    if(!window.THREE) return false;
+    try{ R=new THREE.WebGLRenderer({antialias:true,alpha:true}); }catch(e){ return false; }
+    R.setPixelRatio(Math.min(devicePixelRatio,2));
+    scene=new THREE.Scene(); cam=new THREE.PerspectiveCamera(38,2,.1,100); cam.position.set(0,3.4,8.2);scene.background=null; cam.lookAt(0,.8,0);
+    scene.add(new THREE.AmbientLight(0xffffff,.55));
+    const d=new THREE.DirectionalLight(0xffffff,.9); d.position.set(3,6,4); scene.add(d);
+    const p1=new THREE.PointLight(0xf472b6,1.2,20); p1.position.set(-4,3,3); scene.add(p1);
+    const p2=new THREE.PointLight(0x22d3ee,1.2,20); p2.position.set(4,2,3); scene.add(p2);
+    const floor=new THREE.Mesh(new THREE.CircleGeometry(3.6,64),new THREE.MeshStandardMaterial({color:0x7dd3e0,transparent:true,opacity:.35,roughness:.3}));
+    floor.rotation.x=-Math.PI/2; scene.add(floor);
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(3.6,.03,8,96),new THREE.MeshBasicMaterial({color:0x67e8f9,transparent:true,opacity:.7}));
+    ring.rotation.x=Math.PI/2; scene.add(ring);
+    const c=R.domElement;
+    c.addEventListener('pointerdown',e=>{drag=true;lx=e.clientX;c.setPointerCapture(e.pointerId);});
+    c.addEventListener('pointermove',e=>{ if(drag){ rotY+=(e.clientX-lx)*.01; lx=e.clientX; }});
+    c.addEventListener('pointerup',()=>drag=false);
+    return true;
+  }
+  const M=(c,o={})=>new THREE.MeshStandardMaterial({color:c,metalness:o.m??.25,roughness:o.r??.35,emissive:o.e??0,emissiveIntensity:o.ei??.8,transparent:true,opacity:o.op??.95});
+  const box=(w,h,d,m)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);
+  const cyl=(a,b,h,m)=>new THREE.Mesh(new THREE.CylinderGeometry(a,b,h,28),m);
+  const sph=(r,m)=>new THREE.Mesh(new THREE.SphereGeometry(r,24,16),m);
+  const at=(o,x,y,z)=>{o.position.set(x,y,z);return o;};
+  function chair(s){
+    const g=new THREE.Group();
+    if(s==='modern'){ const a=M(0x22d3ee),metal=M(0xe2e8f0,{m:.9,r:.15});
+      g.add(at(box(1,.12,1,a),0,.9,0), at(box(1,1,.1,a),0,1.45,-.45));
+      [[-.42,-.42],[.42,-.42],[-.42,.42],[.42,.42]].forEach(([x,z])=>g.add(at(cyl(.035,.035,.9,metal),x,.45,z)));
+    } else if(s==='victorian'){ const a=M(0xa855f7,{r:.6}),gold=M(0xfbbf24,{m:.85,r:.25});
+      g.add(at(box(1.05,.2,1.05,a),0,.9,0), at(box(1,1.15,.12,a),0,1.55,-.46));
+      const t=new THREE.Mesh(new THREE.TorusGeometry(.26,.055,12,40),gold); g.add(at(t,0,1.62,-.38));
+      [[-.42,-.42],[.42,-.42],[-.42,.42],[.42,.42]].forEach(([x,z])=>{ g.add(at(cyl(.07,.035,.8,gold),x,.4,z)); g.add(at(sph(.09,gold),x,.82,z)); });
+      g.add(at(sph(.1,gold),-.5,2.15,-.46), at(sph(.1,gold),.5,2.15,-.46));
+    } else { const a=M(0xf472b6,{m:.4,r:.2}),dark=M(0x312e81,{m:.6}),glow=M(0x22d3ee,{e:0x22d3ee});
+      g.add(at(cyl(.6,.6,.15,a),0,.9,0));
+      const back=cyl(.6,.6,.1,a); back.rotation.x=Math.PI/2; g.add(at(back,0,1.55,-.52));
+      g.add(at(cyl(.08,.3,.85,dark),0,.42,0), at(sph(.13,glow),0,1.55,-.45), at(new THREE.Mesh(new THREE.TorusGeometry(.6,.03,8,48),glow),0,.97,0));
+      g.children[g.children.length-1].rotation.x=Math.PI/2;
+    }
+    return g;
+  }
+  function sofa(s){
+    const g=new THREE.Group();
+    if(s==='modern'){ const a=M(0x22d3ee),b=M(0x0e7490),metal=M(0xe2e8f0,{m:.9,r:.15});
+      g.add(at(box(2.4,.45,1,a),0,.45,0), at(box(2.4,.7,.2,b),0,1.0,-.4), at(box(.2,.55,1,b),-1.2,.75,0), at(box(.2,.55,1,b),1.2,.75,0));
+      [[-1.1,-.4],[1.1,-.4],[-1.1,.4],[1.1,.4]].forEach(([x,z])=>g.add(at(cyl(.035,.035,.22,metal),x,.11,z)));
+    } else if(s==='victorian'){ const a=M(0xa855f7,{r:.6}),gold=M(0xfbbf24,{m:.85,r:.25});
+      g.add(at(box(2.4,.5,1.05,a),0,.5,0), at(box(2.4,.95,.2,a),0,1.2,-.42), at(box(.25,.6,1.05,a),-1.25,.8,0), at(box(.25,.6,1.05,a),1.25,.8,0));
+      g.add(at(sph(.14,gold),-1.25,1.17,.35), at(sph(.14,gold),1.25,1.17,.35));
+      const t=new THREE.Mesh(new THREE.TorusGeometry(.3,.06,12,40),gold); g.add(at(t,0,1.35,-.3));
+      [[-1.1,-.4],[1.1,-.4],[-1.1,.4],[1.1,.4]].forEach(([x,z])=>g.add(at(cyl(.08,.04,.25,gold),x,.12,z)));
+    } else { const a=M(0xf472b6,{m:.4,r:.2}),glow=M(0x22d3ee,{e:0x22d3ee,ei:.6});
+      g.add(at(box(2.2,.45,1,a),0,.55,0), at(box(2.2,.65,.2,a),0,1.05,-.42), at(sph(.38,glow),-1.3,.65,0), at(sph(.38,glow),1.3,.65,0));
+      const base=cyl(.9,.9,.12,M(0x312e81,{m:.6})); base.scale.set(1.3,1,.6); g.add(at(base,0,.2,0));
+    }
+    return g;
+  }
+  function build(s){ const g=new THREE.Group(); const c=chair(s), so=sofa(s); c.position.x=-2.05; c.rotation.y=.35; so.position.x=.9; g.add(c,so); return g; }
+  function resize(){ if(!host) return; const w=host.clientWidth||600, h=host.clientHeight||330; R.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix(); }
+  const bounce=x=>{ const n=7.5625,d=2.75; if(x<1/d) return n*x*x; if(x<2/d) return n*(x-=1.5/d)*x+.75; if(x<2.5/d) return n*(x-=2.25/d)*x+.9375; return n*(x-=2.625/d)*x+.984375; };
+  function loop(t){
+    if(!host || !document.body.contains(host)){ raf=null; return; }
+    if(!drag && !reduced) rotY+=.003;
+    if(cur){ const k=Math.min(1,(t-t0)/900); cur.position.y=reduced?0:3.5*(1-bounce(k)); cur.rotation.y=rotY; }
+    if(old){ const k=Math.min(1,(t-oldT0)/300); old.scale.setScalar(Math.max(.001,1-k)); old.rotation.y=rotY; if(k>=1){ scene.remove(old); old=null; } }
+    R.render(scene,cam); raf=requestAnimationFrame(loop);
+  }
+  return {
+    mount(el){ host=el; if(!R && !init()){ el.innerHTML='<div style="padding:20px">3D is not available in this browser — the code below still shows what each factory creates.</div>'; host=null; return; }
+      el.appendChild(R.domElement); resize(); if(!raf) raf=requestAnimationFrame(loop); },
+    show(s){ if(!R||!host) return; if(old) scene.remove(old); old=cur; oldT0=performance.now(); cur=build(s); scene.add(cur); t0=performance.now(); },
+    resize
+  };
+})();
+addEventListener('resize',()=>{ try{Furn3D.resize();}catch(e){} });
+
+/* ============ Exercises engine ============ */
+const norm = s => s.replace(/\s+/g,'');
+function stripComments(s){ return s.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/.*$/gm,''); }
+function balanced(s){ let d=0; for(const ch of s){ if(ch==='{')d++; else if(ch==='}'){d--; if(d<0) return false;} } return d===0; }
+function shuffle(a){ const b=a.slice(); do{ for(let i=b.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [b[i],b[j]]=[b[j],b[i]]; } }while(b.length>2 && b.every((x,i)=>x===a[i])); return b; }
+
+function Exercises(cfg){
+  let idx=0; while(idx<cfg.list.length-1 && P.e[cfg.key+'-'+idx]) idx++;
+  const solved=i=>P.e[cfg.key+'-'+i];
+  function render(el){
+    const ex=cfg.list[idx], key=cfg.key+'-'+idx;
+    const lv=cfg.list.map((x,i)=>`<button class="lvl ${i===idx?'cur':''} ${solved(i)?'done':''}" data-i="${i}" ${i>0 && !solved(i-1) && !P.e[cfg.key+'-skip-'+(i-1)]?'disabled':''}>Level ${i+1}<span class="stars">${'★'.repeat(x.stars)}${'☆'.repeat(5-x.stars)}</span></button>`).join('');
+    el.innerHTML=`<div class="window"><div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><div class="wt">${cfg.title}</div><span class="seachip">${SEASON_INFO[cfg.season]}</span><div class="ws">${cfg.list.filter((_,i)=>solved(i)).length} / ${cfg.list.length} solved</div></div>
+      <section class="main"><div class="levels">${lv}</div>
+      <div class="exhead"><h2 class="st" style="margin:0">${ex.title}</h2><span class="diff">${['','Warm-up','Easy','Medium','Hard','Boss level'][ex.stars]}</span></div>
+      <div class="task">${ex.task}</div>
+      <div id="exbody"></div>
+      <div class="fb" id="exfb"></div>
+      <div class="exbtns">${ex.type==='pick'?'':'<button class="btn" id="check">✔ Check</button>'}<button class="btn ghost" id="hint">💡 Hint</button><button class="btn ghost" id="sol">👀 Solution</button>
+        ${idx<cfg.list.length-1?`<button class="btn ghost" id="nextl" style="margin-left:auto" ${solved(idx)?'':'disabled'}>Next level →</button>`:''}</div>
+      <div class="solution" id="solbox">${ex.solution?codeBlock(ex.solution,{file:'Solution'}):''}${ex.why?`<div class="big">${ex.why}</div>`:''}</div>
+      ${cfg.list.every((_,i)=>solved(i))?`<div class="done-banner"><span style="font-size:32px">🏆</span><div>All levels solved! ${cfg.next?`<button class="btn sm" id="gonext" style="margin-left:10px">${cfg.nextLabel} →</button>`:'You are a factory master.'}</div></div>`:''}
+      </section></div>`;
+    const body=$('#exbody',el), fb=$('#exfb',el);
+    const say=(ok,msg)=>{ fb.className='fb show '+(ok?'good':'badf'); fb.innerHTML=msg; };
+    const win=(e)=>{ say(true,'🎉 <b>Solved!</b> '+(ex.why||'')); if(!P.e[key]){ P.e[key]=true; addXP(10*ex.stars,'level '+(idx+1)+' solved'); } const r=$('#check',el)?.getBoundingClientRect(); confetti(r?r.left+r.width/2:innerWidth/2, r?r.top:innerHeight/2); const n=$('#nextl',el); if(n) n.disabled=false; $$('.lvl',el).forEach(b=>{ if(+b.dataset.i===idx+1) b.disabled=false; if(+b.dataset.i===idx) b.classList.add('done'); }); };
+    TYPES[ex.type](body, ex, say, win, el);
+    $('#hint',el).onclick=()=>say(false,'💡 '+ex.hint);
+    $('#sol',el).onclick=()=>{ $('#solbox',el).classList.toggle('show'); P.e[cfg.key+'-skip-'+idx]=true; save(); const n=$('#nextl',el); if(n) n.disabled=false; $$('.lvl',el).forEach(b=>{ if(+b.dataset.i===idx+1) b.disabled=false; }); };
+    $$('.lvl',el).forEach(b=>b.onclick=()=>{ idx=+b.dataset.i; render(el); });
+    const n=$('#nextl',el); if(n) n.onclick=()=>{ idx++; render(el); scrollTop(); };
+    const g=$('#gonext',el); if(g) g.onclick=()=>go(cfg.next);
+    reveal();
+  }
+  return {render};
+}
+const TYPES = {
+  blanks(body, ex, say, win, el){
+    const parts=ex.code.split(/\{\{(\d+)\}\}/);
+    let html=''; parts.forEach((p,i)=>{ if(i%2===0) html+=hl(p); else { const n=+p; const w=Math.max(...ex.answers[n].map(a=>a.length))+2; html+=`<input class="blank" data-n="${n}" size="${w}" spellcheck="false" autocomplete="off" aria-label="blank ${n+1}">`; } });
+    body.innerHTML=`<div class="code"><div class="code-head">☕ Fill the yellow blanks</div><pre class="code-pre">${html}</pre></div>`;
+    $$('.blank',body).forEach(inp=>inp.addEventListener('keydown',e=>{ if(e.key==='Enter') $('#check',el).click(); }));
+    $('#check',el).onclick=()=>{ let all=true;
+      $$('.blank',body).forEach(inp=>{ const ok=ex.answers[+inp.dataset.n].some(a=>norm(a)===norm(inp.value)); inp.classList.toggle('ok',ok); inp.classList.toggle('no',!ok); all=all&&ok; });
+      all?win():say(false,'❌ Some blanks are not right yet (red). Fix them and check again.'); };
+  },
+  order(body, ex, say, win, el){
+    let pool=shuffle(ex.lines.map((l,i)=>({l,i}))), ans=[];
+    const draw=()=>{ body.innerHTML=`<div class="ordercols"><div><h5>Lines (click to add)</h5><div class="pool">${pool.map((x,k)=>`<button class="lineb" data-k="${k}">${esc(x.l)}</button>`).join('')||'<span style="opacity:.5">all used ✓</span>'}</div></div>
+        <div><h5>Your code (click to remove)</h5><div class="answer">${ans.map((x,k)=>`<button class="lineb" data-a="${k}">${esc(x.l)}</button>`).join('')||'<span style="opacity:.5">empty</span>'}</div></div></div>`;
+      $$('.pool .lineb',body).forEach(b=>b.onclick=()=>{ ans.push(pool.splice(+b.dataset.k,1)[0]); draw(); });
+      $$('.answer .lineb',body).forEach(b=>b.onclick=()=>{ pool.push(ans.splice(+b.dataset.a,1)[0]); draw(); }); };
+    draw();
+    $('#check',el).onclick=()=>{
+      if(pool.length) return say(false,'⚠️ Use all the lines first.');
+      const texts=ans.map(x=>x.l.trim());
+      const ok = ex.check ? ex.check(texts) : texts.every((t,i)=>t===ex.lines[i].trim());
+      $$('.answer .lineb',body).forEach((b,i)=>{ b.classList.toggle('okl',ok || texts[i]===ex.lines[i].trim()); b.classList.toggle('nol',!ok && texts[i]!==ex.lines[i].trim()); });
+      ok?win():say(false,'❌ Not in the right order yet. Red lines are in the wrong place.');
+    };
+  },
+  pick(body, ex, say, win){
+    body.innerHTML=`<div class="pick">${codeBlock(ex.code,{file:'Click the guilty line'})}</div>`;
+    $$('.pick .ln',body).forEach(l=>l.onclick=()=>{ const i=+l.dataset.i;
+      if(i===ex.answer){ $$('.pick .ln',body).forEach(x=>x.classList.remove('sel-no')); l.classList.add('sel-ok'); win(); }
+      else { l.classList.remove('sel-no'); void l.offsetWidth; l.classList.add('sel-no'); say(false,'❌ That line is fine. Keep looking!'); } });
+  },
+  write(body, ex, say, win, el){
+    body.innerHTML=`${ex.given?codeBlock(ex.given,{file:'Already written (read only)'}):''}
+      <textarea class="editor" spellcheck="false" id="ed">${esc(ex.starter)}</textarea>
+      <ul class="checks" id="chk">${ex.checks.map(c=>`<li>⬜ ${c[0]}</li>`).join('')}<li>⬜ Braces { } are balanced</li></ul>`;
+    const ed=$('#ed',body);
+    ed.addEventListener('keydown',e=>{ if(e.key==='Tab'){ e.preventDefault(); const s=ed.selectionStart; ed.setRangeText('    ',s,ed.selectionEnd,'end'); } });
+    $('#check',el).onclick=()=>{ const code=stripComments(ed.value); let all=true;
+      const res=ex.checks.map(c=>{ const ok=c[1].test(code); all=all&&ok; return [c[0],ok]; }); const b=balanced(code); all=all&&b; res.push(['Braces { } are balanced',b]);
+      $('#chk',body).innerHTML=res.map(([l,ok])=>`<li class="${ok?'p':'f'}">${ok?'✅':'❌'} ${l}</li>`).join('');
+      all?win():say(false,'❌ Some checks failed (see the red ones). Read the task again.'); };
+  },
+  match(body, ex, say, win, el){
+    body.innerHTML=ex.items.map((it,i)=>`<div class="matchrow" data-i="${i}"><code>${it[0]}</code><select><option value="">— who creates it? —</option>${ex.choices.map(c=>`<option>${c}</option>`).join('')}</select></div>`).join('');
+    $('#check',el).onclick=()=>{ let all=true; $$('.matchrow',body).forEach(r=>{ const ok=$('select',r).value===ex.items[+r.dataset.i][1]; r.classList.toggle('ok',ok); r.classList.toggle('no',!ok); all=all&&ok; }); all?win():say(false,'❌ Some matches are wrong (red).'); };
+  },
+  multi(body, ex, say, win, el){
+    body.innerHTML=`<div class="multi">${ex.options.map((o,i)=>`<label data-i="${i}"><input type="checkbox">${o[0]}</label>`).join('')}</div>`;
+    $('#check',el).onclick=()=>{ let all=true; $$('.multi label',body).forEach(l=>{ const want=ex.options[+l.dataset.i][1], got=$('input',l).checked, ok=want===got; l.classList.toggle('ok',got&&ok); l.classList.toggle('no',!ok); all=all&&ok; }); all?win():say(false,'❌ Not quite. Red = wrong choice or missing one.'); };
+  }
+};
+
+/* ============ FM exercises ============ */
+const FM_EX = [
+ {stars:1,type:'blanks',title:'Your first product',task:'We build notifications. Make <code class="i">EmailNotification</code> a <b>Product</b> by connecting it to the interface.',
+  code:`interface Notification {
+    void send(String message);
+}
+
+class EmailNotification {{0}} Notification {
+    public {{1}} send(String message) {
+        IO.println("Email: " + message);
+    }
+}`,answers:[['implements'],['void']],hint:'A class uses an interface with the keyword “implements”. The return type must match the interface.',
+  solution:`class EmailNotification implements Notification {
+    public void send(String message) {
+        IO.println("Email: " + message);
+    }
+}`,why:'<code class="i">EmailNotification</code> is now a <b>Concrete Product</b>.'},
+ {stars:2,type:'blanks',title:'The creator and its factory method',task:'Complete the <b>Creator</b> and the <b>Concrete Creator</b>.',
+  code:`abstract class NotificationService {
+    abstract {{0}} createNotification();   // factory method
+
+    void notifyUser(String msg) {
+        Notification n = {{1}};
+        n.send(msg);
+    }
+}
+
+class EmailService extends NotificationService {
+    @Override
+    Notification createNotification() {
+        return {{2}};
+    }
+}`,answers:[['Notification'],['createNotification()','this.createNotification()'],['new EmailNotification()']],
+  hint:'The factory method returns the Product type. notifyUser() must CALL the factory method. The subclass returns a NEW concrete product.',
+  solution:`abstract class NotificationService {
+    abstract Notification createNotification();
+
+    void notifyUser(String msg) {
+        Notification n = createNotification();
+        n.send(msg);
+    }
+}
+
+class EmailService extends NotificationService {
+    @Override
+    Notification createNotification() {
+        return new EmailNotification();
+    }
+}`,why:'The parent uses the factory method; the subclass decides what it returns.'},
+ {stars:3,type:'order',title:'Build the SMS creator',task:'Put the lines in order to create <code class="i">SmsService</code>, which creates <code class="i">SmsNotification</code>.',
+  lines:['class SmsService extends NotificationService {','    @Override','    Notification createNotification() {','        return new SmsNotification();','    }','}'],
+  hint:'Class header first, then the annotation, then the method header, its body, and close the braces.',
+  solution:`class SmsService extends NotificationService {
+    @Override
+    Notification createNotification() {
+        return new SmsNotification();
+    }
+}`,why:'A new Concrete Creator: only one method to override.'},
+ {stars:3,type:'pick',title:'Spot the bad line',task:'One line in <code class="i">main()</code> breaks the Factory Method idea. <b>Click it.</b>',
+  code:`void main() {
+    NotificationService service = new EmailService();
+    service.notifyUser("Welcome!");
+    Notification backup = new SmsNotification();
+    backup.send("Welcome!");
+}`,answer:3,hint:'Look for a line where the client creates a concrete product by itself.',
+  solution:`void main() {
+    NotificationService service = new EmailService();
+    service.notifyUser("Welcome!");
+    NotificationService backup = new SmsService();
+    backup.notifyUser("Welcome!");
+}`,why:'<code class="i">new SmsNotification()</code> in client code glues it to a concrete class. Let a creator (<code class="i">SmsService</code>) make it.'},
+ {stars:4,type:'write',title:'Add push notifications',task:'Write <b>two classes</b>: <code class="i">PushNotification</code> (prints <code class="i">"Push: " + message</code>) and <code class="i">PushService</code> that creates it.',
+  given:`interface Notification { void send(String message); }
+
+abstract class NotificationService {
+    abstract Notification createNotification();
+    void notifyUser(String msg) { createNotification().send(msg); }
+}`,
+  starter:`// Write PushNotification here
+
+
+// Write PushService here
+`,
+  checks:[['<code class="i">PushNotification</code> implements <code class="i">Notification</code>',/class\s+PushNotification\s+implements\s+Notification\b/],
+   ['It has <code class="i">public void send(String …)</code>',/public\s+void\s+send\s*\(\s*String\s+\w+\s*\)/],
+   ['<code class="i">PushService</code> extends <code class="i">NotificationService</code>',/class\s+PushService\s+extends\s+NotificationService\b/],
+   ['<code class="i">PushService</code> overrides <code class="i">createNotification()</code>',/Notification\s+createNotification\s*\(\s*\)\s*\{/],
+   ['It returns <code class="i">new PushNotification()</code>',/return\s+new\s+PushNotification\s*\(\s*\)/]],
+  hint:'Copy the shape of EmailNotification / EmailService and rename. Remember “implements” for the product and “extends” for the creator.',
+  solution:`class PushNotification implements Notification {
+    public void send(String message) {
+        IO.println("Push: " + message);
+    }
+}
+
+class PushService extends NotificationService {
+    @Override
+    Notification createNotification() {
+        return new PushNotification();
+    }
+}`,why:'You extended the system without touching any existing class. 🎯'},
+ {stars:5,type:'write',title:'Boss: a factory with a switch',task:'A popular variation: one method that picks the product from a parameter. Write <code class="i">Notification create(String channel)</code> using a Java <b>switch expression</b>:<br><code class="i">"email"</code> → <code class="i">EmailNotification</code>, <code class="i">"sms"</code> → <code class="i">SmsNotification</code>, anything else → throw <code class="i">IllegalArgumentException</code>.',
+  starter:`Notification create(String channel) {
+    // your code here
+}
+`,
+  checks:[['Method signature <code class="i">Notification create(String …)</code>',/Notification\s+create\s*\(\s*String\s+\w+\s*\)/],
+   ['Uses <code class="i">switch</code> on the parameter',/switch\s*\(\s*\w+\s*\)/],
+   ['Returns the switch result',/return\s+switch|=\s*switch/],
+   ['<code class="i">case "email" -> new EmailNotification()</code>',/case\s+"email"\s*->\s*new\s+EmailNotification\s*\(\s*\)/],
+   ['<code class="i">case "sms" -> new SmsNotification()</code>',/case\s+"sms"\s*->\s*new\s+SmsNotification\s*\(\s*\)/],
+   ['<code class="i">default -> throw new IllegalArgumentException(…)</code>',/default\s*->\s*throw\s+new\s+IllegalArgumentException\s*\(/]],
+  hint:'Shape: return switch (channel) { case "email" -> …; case "sms" -> …; default -> throw …; };',
+  solution:`Notification create(String channel) {
+    return switch (channel) {
+        case "email" -> new EmailNotification();
+        case "sms"   -> new SmsNotification();
+        default -> throw new IllegalArgumentException("Unknown channel: " + channel);
+    };
+}`,why:'Switch expressions with <code class="i">-></code> make parameterized factories short and safe.'}
+];
+
+/* ============ AF exercises ============ */
+const AF_EX = [
+ {stars:1,type:'match',title:'Who makes what?',task:'Our GUI has two families: <b>Win</b> and <b>Mac</b>. Match each product to the factory that creates it.',
+  items:[['WinButton','WinFactory'],['MacCheckbox','MacFactory'],['MacButton','MacFactory'],['WinCheckbox','WinFactory']],choices:['WinFactory','MacFactory'],
+  hint:'Each factory creates only products from its own family (same prefix).',why:'One factory = one family.'},
+ {stars:2,type:'blanks',title:'The abstract factory',task:'Complete the <b>abstract factory</b> interface. It needs one create method per product.',
+  code:`interface Button   { void render(); }
+interface Checkbox { void render(); }
+
+interface GUIFactory {
+    Button {{0}}();
+    {{1}} createCheckbox();
+}`,answers:[['createButton'],['Checkbox']],hint:'Method names follow the pattern create + ProductName. The return type is the product interface.',
+  solution:`interface GUIFactory {
+    Button createButton();
+    Checkbox createCheckbox();
+}`,why:'Two products → two create methods.'},
+ {stars:2,type:'blanks',title:'A concrete factory',task:'Complete <code class="i">MacFactory</code> so it builds the <b>Mac family</b>.',
+  code:`class MacFactory {{0}} GUIFactory {
+    public Button createButton() {
+        return new {{1}}();
+    }
+    public Checkbox createCheckbox() {
+        return new {{2}}();
+    }
+}`,answers:[['implements'],['MacButton'],['MacCheckbox']],hint:'GUIFactory is an interface. Both products must be Mac products.',
+  solution:`class MacFactory implements GUIFactory {
+    public Button createButton() { return new MacButton(); }
+    public Checkbox createCheckbox() { return new MacCheckbox(); }
+}`,why:'Every product it returns belongs to the same family.'},
+ {stars:3,type:'pick',title:'Spot the family mix-up',task:'This factory has a bug that breaks the whole point of the pattern. <b>Click the bad line.</b>',
+  code:`class WinFactory implements GUIFactory {
+    public Button createButton() {
+        return new WinButton();
+    }
+    public Checkbox createCheckbox() {
+        return new MacCheckbox();
+    }
+}`,answer:5,hint:'Check that every product belongs to the Win family.',
+  solution:`class WinFactory implements GUIFactory {
+    public Button createButton() { return new WinButton(); }
+    public Checkbox createCheckbox() { return new WinCheckbox(); }
+}`,why:'A Win factory returning a <code class="i">MacCheckbox</code> mixes families: exactly what Abstract Factory should prevent.'},
+ {stars:3,type:'order',title:'Write the client',task:'Order the lines of <code class="i">main()</code>: choose a factory, create the products, render them. (Each product must be created before it is rendered.)',
+  lines:['void main() {','    GUIFactory factory = new MacFactory();','    Button button = factory.createButton();','    Checkbox box = factory.createCheckbox();','    button.render();','    box.render();','}'],
+  check:t=>{ const p=s=>t.findIndex(x=>x.startsWith(s)); return t[0]==='void main() {' && t[t.length-1]==='}' && p('GUIFactory')===1 && p('Button button')<p('button.render') && p('Checkbox box')<p('box.render'); },
+  hint:'main header → choose factory → create → render → closing brace.',
+  solution:`void main() {
+    GUIFactory factory = new MacFactory();
+    Button button = factory.createButton();
+    Checkbox box = factory.createCheckbox();
+    button.render();
+    box.render();
+}`,why:'Only line 2 names a concrete class. Change it to <code class="i">new WinFactory()</code> and the whole UI switches.'},
+ {stars:4,type:'write',title:'Add a Linux family',task:'Add a new family: write <code class="i">LinuxButton</code>, <code class="i">LinuxCheckbox</code> and <code class="i">LinuxFactory</code>. Each <code class="i">render()</code> can just print a message.',
+  given:`interface Button   { void render(); }
+interface Checkbox { void render(); }
+
+interface GUIFactory {
+    Button createButton();
+    Checkbox createCheckbox();
+}`,
+  starter:`// LinuxButton
+
+
+// LinuxCheckbox
+
+
+// LinuxFactory
+`,
+  checks:[['<code class="i">LinuxButton</code> implements <code class="i">Button</code>',/class\s+LinuxButton\s+implements\s+Button\b/],
+   ['<code class="i">LinuxCheckbox</code> implements <code class="i">Checkbox</code>',/class\s+LinuxCheckbox\s+implements\s+Checkbox\b/],
+   ['Products have <code class="i">public void render()</code>',/public\s+void\s+render\s*\(\s*\)[\s\S]*public\s+void\s+render\s*\(\s*\)/],
+   ['<code class="i">LinuxFactory</code> implements <code class="i">GUIFactory</code>',/class\s+LinuxFactory\s+implements\s+GUIFactory\b/],
+   ['<code class="i">createButton()</code> returns <code class="i">new LinuxButton()</code>',/Button\s+createButton\s*\(\s*\)\s*\{\s*return\s+new\s+LinuxButton\s*\(\s*\)/],
+   ['<code class="i">createCheckbox()</code> returns <code class="i">new LinuxCheckbox()</code>',/Checkbox\s+createCheckbox\s*\(\s*\)\s*\{\s*return\s+new\s+LinuxCheckbox\s*\(\s*\)/]],
+  hint:'Two products (implements Button / Checkbox) + one factory (implements GUIFactory) whose methods are public and return the Linux products.',
+  solution:`class LinuxButton implements Button {
+    public void render() { IO.println("[ Linux button ]"); }
+}
+
+class LinuxCheckbox implements Checkbox {
+    public void render() { IO.println("[x] Linux checkbox"); }
+}
+
+class LinuxFactory implements GUIFactory {
+    public Button createButton() { return new LinuxButton(); }
+    public Checkbox createCheckbox() { return new LinuxCheckbox(); }
+}`,why:'New family = new row in the matrix. No existing class changed. 🎯'},
+ {stars:5,type:'multi',title:'Boss: a new product type',task:'Your boss wants a new product: <b>Slider</b>, in every family (Win, Mac, Linux). After adding the <code class="i">Slider</code> interface and the three slider classes, which <b>existing</b> types must you also change? Select all.',
+  options:[['GUIFactory',true],['WinFactory',true],['MacFactory',true],['LinuxFactory',true],['WinButton',false],['MacCheckbox',false]],
+  hint:'GUIFactory needs a new createSlider() method. Who implements GUIFactory?',
+  solution:`interface GUIFactory {
+    Button createButton();
+    Checkbox createCheckbox();
+    Slider createSlider();          // new
+}
+// …and every factory must now implement createSlider():
+class WinFactory implements GUIFactory {
+    // …
+    public Slider createSlider() { return new WinSlider(); }
+}`,why:'A new <b>column</b> touches the interface and <b>every</b> concrete factory. Products stay untouched. This is the main trade-off of Abstract Factory.'}
+];
+
+/* ============ App shell ============ */
+const W = {
+  'fm-learn': Lesson({season:'winter',key:'fm',title:'📘 Factory Method · Learn',steps:FM_STEPS,practice:'fm-code'}),
+  'fm-code': Exercises({season:'autumn',key:'fme',title:'⌨️ Factory Method · Exercises',list:FM_EX,next:'af-learn',nextLabel:'Learn Abstract Factory'}),
+  'af-learn': Lesson({season:'spring',key:'af',title:'📗 Abstract Factory · Learn',steps:AF_STEPS,practice:'af-code'}),
+  'af-code': Exercises({season:'summer',key:'afe',title:'⌨️ Abstract Factory · Exercises',list:AF_EX})
+};
+function go(w){
+  if(!W[w]) w='fm-learn'; P.w=w; save();
+  const sea=SEASON_OF[w]; document.body.dataset.season=sea; FX.season=sea; SFX.set(sea); BG3D.set(sea);
+  $$('.tab').forEach(t=>t.classList.toggle('active',t.dataset.w===w));
+  W[w].render($('#win')); reveal();
+  if(location.hash!=='#'+w) history.replaceState(null,'','#'+w);
+  scrollTop();
+}
+function updateHUD(){
+  const counts={
+    'fm-learn':[FM_STEPS.filter(s=>s.quiz&&P.q['fm-'+s.id]).length, FM_STEPS.filter(s=>s.quiz).length],
+    'fm-code':[FM_EX.filter((_,i)=>P.e['fme-'+i]).length, FM_EX.length],
+    'af-learn':[AF_STEPS.filter(s=>s.quiz&&P.q['af-'+s.id]).length, AF_STEPS.filter(s=>s.quiz).length],
+    'af-code':[AF_EX.filter((_,i)=>P.e['afe-'+i]).length, AF_EX.length]};
+  let d=0,t=0; $$('.tab').forEach(tab=>{ const [a,b]=counts[tab.dataset.w]; d+=a; t+=b; $('.bar b',tab).style.width=(100*a/b)+'%'; });
+  const pct=Math.round(100*d/t); $('#pct').textContent=pct+'%'; $('#ringc').style.strokeDashoffset=94.2*(1-pct/100);
+  $('#xp').textContent=P.xp+' XP';
+}
+$$('.tab').forEach(t=>t.onclick=()=>go(t.dataset.w));
+addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(W[h] && h!==P.w) go(h); });
+let resetArmed=false;
+$('#resetAll').onclick=e=>{ if(!resetArmed){ resetArmed=true; e.target.textContent='Sure? click again'; setTimeout(()=>{resetArmed=false; e.target.textContent='↺';},2500); return; }
+  P={q:{},e:{},xp:0,air:false,w:'fm-learn'}; save(); location.hash=''; location.reload(); };
+
+/* ============ Fluid wave background (WebGL shader) ============ */
+const SEASON_OF = {'fm-learn':'winter','fm-code':'autumn','af-learn':'spring','af-code':'summer'};
+const SEASON_INFO = {winter:'❄️ Winter',autumn:'🍂 Autumn',spring:'🌸 Spring',summer:'☀️ Summer'};
+const SEASON_PAL = {
+  winter:{C:[[.93,.96,1],[.80,.88,.98],[.88,.90,.99],[.92,.88,.99],[.97,.98,1]],W:[[.80,.89,.97],[.58,.72,.90]],AU:1,SU:0},
+  autumn:{C:[[1,.95,.88],[.99,.85,.72],[.98,.90,.74],[.97,.82,.78],[1,.93,.84]],W:[[.90,.70,.50],[.70,.45,.33]],AU:0,SU:.3},
+  spring:{C:[[.94,.99,.95],[.86,.96,.88],[.99,.90,.94],[.93,.91,.99],[.97,1,.92]],W:[[.62,.88,.78],[.38,.72,.64]],AU:0,SU:.15},
+  summer:{C:[[.86,.95,1],[.74,.91,.97],[1,.95,.80],[1,.90,.84],[1,.97,.86]],W:[[.32,.80,.86],[.08,.52,.70]],AU:0,SU:1}
+};
+const FX = {season:'winter',cur:JSON.parse(JSON.stringify(SEASON_PAL.winter)),px:-999,py:-999,sv:0,t:0,D:[.5,.5,99],L:0,K:0,mx:.5,my:.6,tx:.5,ty:.6,energy:0,s:0,ts:0,v:0,lastY:scrollY};
+addEventListener('pointermove',e=>{
+  const nx=e.clientX/innerWidth, ny=1-e.clientY/innerHeight;
+  FX.energy=Math.min(1.5,FX.energy+Math.hypot(nx-FX.tx,ny-FX.ty)*6);
+  FX.tx=nx; FX.ty=ny; FX.px=e.clientX; FX.py=e.clientY;
+},{passive:true});
+function onScroll(){
+  const max=Math.max(1,document.documentElement.scrollHeight-innerHeight);
+  FX.ts=scrollY/max; FX.sv=Math.max(-6,Math.min(6,FX.sv+(scrollY-FX.lastY)/40)); FX.v=Math.min(1.2,FX.v+Math.abs(scrollY-FX.lastY)/250); FX.lastY=scrollY;
+  $('#sprog').style.width=(FX.ts*100)+'%';
+}
+addEventListener('scroll',onScroll,{passive:true});
+(function fluid(){
+  const c=$('#bg3d'); const gl=c.getContext('webgl',{antialias:false,alpha:false});
+  if(!gl) return;
+  const vs='attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
+  const fs=`precision mediump float;
+uniform vec2 R;uniform float T;uniform vec2 M;uniform float S;uniform float V;uniform float E;uniform vec3 D;uniform float L;uniform float K;uniform vec3 C0;uniform vec3 C1;uniform vec3 C2;uniform vec3 C3;uniform vec3 C4;uniform vec3 W0;uniform vec3 W1;uniform float AU;uniform float SU;
+float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+  return mix(mix(h(i),h(i+vec2(1.,0.)),f.x),mix(h(i+vec2(0.,1.)),h(i+vec2(1.,1.)),f.x),f.y);}
+float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*n(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return v;}
+void main(){
+  vec2 uv=gl_FragCoord.xy/R; float ar=R.x/R.y;
+  vec2 p=vec2(uv.x*ar,uv.y); vec2 m=vec2(M.x*ar,M.y);
+  vec2 dm=p-m; float d=length(dm);
+  float rip=sin(d*26.-T*3.2)*exp(-d*4.5)*(.006+.035*E);
+  vec2 pp=p+dm/(d+.001)*rip;
+  vec2 dp=p-vec2(D.x*ar,D.y); float dd=length(dp);
+  pp+=dp/(dd+.001)*sin(dd*55.-D.z*14.)*exp(-dd*8.)*exp(-D.z*1.1)*.014;
+  vec2 q=vec2(fbm(pp*1.3+vec2(0.,T*.035)+S*.7),fbm(pp*1.3+vec2(5.2,1.3)-T*.03));
+  vec2 w=pp+.6*q-dm*.22*exp(-d*d*5.)*(.5+E);
+  float f=fbm(w*1.7+vec2(T*.02,-S*1.2));
+  vec3 col=mix(C0,C1,smoothstep(.32,.78,f));
+  col=mix(col,C2,smoothstep(.45,.85,q.x)*.5);
+  col=mix(col,C3,smoothstep(.5,.9,q.y)*.45);
+  col=mix(col,C4,smoothstep(.7,1.,uv.y)*.35);
+  float ab=fbm(vec2(p.x*1.6+T*.04,uv.y*3.-T*.06));
+  float au=AU*smoothstep(.48,.95,uv.y)*smoothstep(.35,.75,ab)*(.55+.45*sin(p.x*4.+T*.35+ab*5.));
+  col=mix(col,mix(vec3(.42,.9,.74),vec3(.62,.54,1.),uv.x),au*.55);
+  vec2 sd=p-vec2(ar*.86,.86); float sl=length(sd);
+  float rays=.5+.5*sin(atan(sd.y,sd.x)*12.+T*.4);
+  col=mix(col,vec3(1.,.9,.55),clamp(SU*(exp(-sl*sl*30.)*.9+exp(-sl*3.5)*.28*rays),0.,1.));
+  float mx=(p.x-m.x)*2.6; float bulge=.06*exp(-mx*mx)*(.35+E)*smoothstep(.75,.0,M.y);
+  for(int i=0;i<4;i++){
+    float fi=float(i);
+    float base=.30-fi*.07+S*.16;
+    float amp=(.02+.011*fi)*(1.+V*2.2);
+    float y=base+amp*sin(p.x*(2.1+fi*.7)+T*(.45+fi*.12)+fi*1.7+S*7.)
+               +amp*.6*sin(p.x*(5.1-fi*.4)-T*(.7+fi*.1))
+               +bulge*(1.-fi*.18)+.025*(f-.5);
+    float edge=smoothstep(y+.005,y-.005,uv.y);
+    vec3 wc=mix(W0,W1,fi/3.);
+    col=mix(col,wc,edge*(.15+fi*.05));
+    col+=vec3(.25+SU*.15)*exp(-abs(uv.y-y)*160.)*(.55+.45*sin(p.x*3.+T*.8+fi));
+  }
+  col+=vec3(.8,.94,1.)*.12*exp(-d*d*9.);
+  col=mix(col,col*vec3(.58,.66,.84),K*.65);
+  col+=vec3(.9,.94,1.)*L*.42;
+  gl_FragColor=vec4(min(col,vec3(1.)),1.);
+}`;
+  const sh=(t,src)=>{ const s=gl.createShader(t); gl.shaderSource(s,src); gl.compileShader(s); if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){ console.error(gl.getShaderInfoLog(s)); return null;} return s; };
+  const v=sh(gl.VERTEX_SHADER,vs), f=sh(gl.FRAGMENT_SHADER,fs); if(!v||!f) return;
+  const pr=gl.createProgram(); gl.attachShader(pr,v); gl.attachShader(pr,f); gl.linkProgram(pr);
+  if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){ console.error(gl.getProgramInfoLog(pr)); return; }
+  gl.useProgram(pr);
+  const b=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,b); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+  const a=gl.getAttribLocation(pr,'a'); gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);
+  const U={}; ['R','T','M','S','V','E','D','L','K','C0','C1','C2','C3','C4','W0','W1','AU','SU'].forEach(k=>U[k]=gl.getUniformLocation(pr,k));
+  const scale=.5;
+  const size=()=>{ c.width=Math.max(1,Math.round(innerWidth*scale)); c.height=Math.max(1,Math.round(innerHeight*scale)); gl.viewport(0,0,c.width,c.height); };
+  size(); addEventListener('resize',size);
+  let t=0,last=performance.now();
+  function tick(now){
+    const dt=Math.min(.05,(now-last)/1000); last=now; if(!reduced) t+=dt; FX.t=t; FX.D[2]+=dt;
+    FX.mx+=(FX.tx-FX.mx)*.06; FX.my+=(FX.ty-FX.my)*.06;
+    FX.s+=(FX.ts-FX.s)*.05; FX.energy*=.96; FX.v*=.94;
+    gl.uniform2f(U.R,c.width,c.height); gl.uniform1f(U.T,t); gl.uniform2f(U.M,FX.mx,FX.my);
+    gl.uniform1f(U.S,FX.s); gl.uniform1f(U.V,FX.v); gl.uniform1f(U.E,FX.energy); gl.uniform3f(U.D,FX.D[0],FX.D[1],FX.D[2]); gl.uniform1f(U.L,FX.L); gl.uniform1f(U.K,FX.K);
+    const tg=SEASON_PAL[FX.season], cu=FX.cur, kk=.035;
+    for(let i=0;i<5;i++) for(let j=0;j<3;j++) cu.C[i][j]+=(tg.C[i][j]-cu.C[i][j])*kk;
+    for(let i=0;i<2;i++) for(let j=0;j<3;j++) cu.W[i][j]+=(tg.W[i][j]-cu.W[i][j])*kk;
+    cu.AU+=(tg.AU-cu.AU)*kk; cu.SU+=(tg.SU-cu.SU)*kk;
+    for(let i=0;i<5;i++) gl.uniform3fv(U['C'+i],cu.C[i]); gl.uniform3fv(U.W0,cu.W[0]); gl.uniform3fv(U.W1,cu.W[1]); gl.uniform1f(U.AU,cu.AU); gl.uniform1f(U.SU,cu.SU);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+
+/* ============ Seasonal particles, agents, storms (2D) ============ */
+const SFX = (function(){
+  const c=$('#fx2d'), g=c.getContext('2d'); let W=0,H=0;
+  const size=()=>{ const dpr=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight; c.width=W*dpr; c.height=H*dpr; g.setTransform(dpr,0,0,dpr,0,0); };
+  size(); addEventListener('resize',size);
+  if(reduced) return {set(){}};
+  const P=[], agents=[], rings=[], bits=[];
+  const rnd=(a,b)=>a+Math.random()*(b-a), pick=a=>a[Math.floor(Math.random()*a.length)];
+  let season='winter', spawn=0, last=performance.now(), gust=0, gustT=0, nextGust=performance.now()+4000, storm=null, nextStorm=Infinity, bolt=null;
+  function waveY(x,fi){
+    const ar=W/H, px=x/W*ar, t=FX.t, S=FX.s, amp=(.02+.011*fi)*(1+FX.v*2.2);
+    return H*(1-(.30-fi*.07+S*.16+amp*Math.sin(px*(2.1+fi*.7)+t*(.45+fi*.12)+fi*1.7+S*7)+amp*.6*Math.sin(px*(5.1-fi*.4)-t*(.7+fi*.1))));
+  }
+  function splash(x,y,big){
+    rings.push({x,y,a:0,big});
+    for(let i=0;i<(big?16:5);i++){ const ang=-Math.PI*(.12+Math.random()*.76), sp=(big?4.5:1.8)+Math.random()*(big?4:1.8);
+      bits.push({x,y,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp,r:1+Math.random()*(big?2.4:1.3),life:1}); }
+    FX.D=[x/W,1-y/H,0]; FX.energy=Math.min(1.5,FX.energy+(big?.8:.12));
+  }
+  const RATE={winter:[3,7],autumn:[20,38],spring:[8,16],summer:[5,10]};
+  function spawnOne(){
+    const L=Math.floor(Math.random()*4);
+    if(season==='winter'){ const big=Math.random()<.16; P.push({k:'snow',x:rnd(-40,W+40),y:-14,vx:0,vy:big?rnd(.7,1.1):rnd(.35,.9),r:big?rnd(5,9):rnd(1.4,3.4),ph:rnd(0,6),rot:rnd(0,6),vr:rnd(-.02,.02),big,L,life:1}); }
+    else if(season==='autumn'){ P.push({k:'leaf',x:rnd(-40,W+40),y:-26,vx:0,vy:rnd(.7,1.3),r:rnd(8,15),ph:rnd(0,6),rot:rnd(0,6),vr:rnd(-.05,.05),col:pick(['#e8590c','#d9480f','#f59f00','#c92a2a','#a0522d','#f08c00','#e67700']),L,life:1}); }
+    else if(season==='spring'){ P.push({k:'petal',x:rnd(-W*.25,W),y:-16,vx:rnd(.3,.9),vy:rnd(.45,.95),r:rnd(4,7.5),ph:rnd(0,6),rot:rnd(0,6),vr:rnd(-.05,.05),col:pick(['#f9a8d4','#fbcfe8','#f472b6','#fecdd3','#f0abfc']),L,life:1}); }
+    else P.push({k:'spark',x:rnd(0,W),L,t:0,dur:rnd(30,70),r:rnd(3,7)});
+  }
+  const flip=v=>Math.abs(v)<.15?.15*(v<0?-1:1):v;
+  const DRAW={
+    snow(p){
+      if(p.big){ g.save(); g.translate(p.x,p.y); g.rotate(p.rot); g.lineCap='round';
+        for(const [w,col] of [[3.4,'rgba(80,120,200,.3)'],[1.5,'rgba(255,255,255,.98)']]){ g.strokeStyle=col; g.lineWidth=w; g.beginPath();
+          for(let i=0;i<6;i++){ const a=i*Math.PI/3, ca=Math.cos(a), sa=Math.sin(a), r=p.r, bx=ca*r*.55, by=sa*r*.55, b=r*.34;
+            g.moveTo(0,0); g.lineTo(ca*r,sa*r); g.moveTo(bx,by); g.lineTo(bx+Math.cos(a+.7)*b,by+Math.sin(a+.7)*b); g.moveTo(bx,by); g.lineTo(bx+Math.cos(a-.7)*b,by+Math.sin(a-.7)*b); }
+          g.stroke(); }
+        g.restore();
+      } else { g.fillStyle='rgba(255,255,255,.96)'; g.strokeStyle='rgba(80,120,200,.35)'; g.lineWidth=1; g.beginPath(); g.arc(p.x,p.y,p.r,0,7); g.fill(); g.stroke(); }
+    },
+    leaf(p){ const r=p.r; g.save(); g.translate(p.x,p.y); g.rotate(p.rot); g.scale(flip(Math.cos(p.ph*1.4)),1);
+      g.fillStyle=p.col; g.beginPath(); g.moveTo(0,-r); g.bezierCurveTo(r*.85,-r*.55,r*.7,r*.45,0,r); g.bezierCurveTo(-r*.7,r*.45,-r*.85,-r*.55,0,-r); g.fill();
+      g.strokeStyle='rgba(80,30,10,.45)'; g.lineWidth=1; g.beginPath(); g.moveTo(0,-r*.8); g.lineTo(0,r*1.35);
+      [[-.2,-.5],[.25,-.05]].forEach(([y0,y1])=>{ g.moveTo(0,r*y0); g.lineTo(r*.42,r*y1); g.moveTo(0,r*y0); g.lineTo(-r*.42,r*y1); }); g.stroke(); g.restore(); },
+    petal(p){ const r=p.r; g.save(); g.translate(p.x,p.y); g.rotate(p.rot+Math.sin(p.ph)*.6); g.scale(flip(Math.cos(p.ph*1.2)),1);
+      const gr=g.createLinearGradient(0,-r,0,r); gr.addColorStop(0,'#fff'); gr.addColorStop(1,p.col); g.fillStyle=gr;
+      g.beginPath(); g.moveTo(0,r); g.bezierCurveTo(-r*1.1,r*.2,-r*.7,-r,-r*.14,-r*.82); g.lineTo(0,-r*.55); g.lineTo(r*.14,-r*.82); g.bezierCurveTo(r*.7,-r,r*1.1,r*.2,0,r); g.fill();
+      g.strokeStyle='rgba(219,39,119,.28)'; g.lineWidth=.8; g.stroke(); g.restore(); },
+    drop(p){ const r=p.r; g.save(); g.translate(p.x,p.y);
+      const gr=g.createLinearGradient(0,-r*2.6,0,r); gr.addColorStop(0,'rgba(255,255,255,.95)'); gr.addColorStop(1,'rgba(20,160,190,.75)'); g.fillStyle=gr;
+      g.beginPath(); g.moveTo(0,-r*2.6); g.bezierCurveTo(r*.9,-r*1.2,r,-r*.25,r,0); g.arc(0,0,r,0,Math.PI); g.bezierCurveTo(-r,-r*.25,-r*.9,-r*1.2,0,-r*2.6); g.fill();
+      g.strokeStyle='rgba(14,116,144,.55)'; g.lineWidth=1; g.stroke(); g.fillStyle='#fff'; g.beginPath(); g.arc(-r*.35,-r*.25,r*.28,0,7); g.fill(); g.restore(); }
+  };
+  function spark(x,y,s){ if(s<=.2) return; g.save(); g.translate(x,y); g.fillStyle='rgba(255,255,255,.98)'; g.shadowColor='rgba(255,210,90,.95)'; g.shadowBlur=12;
+    g.beginPath(); g.moveTo(0,-s*2); g.quadraticCurveTo(0,0,s*2,0); g.quadraticCurveTo(0,0,0,s*2); g.quadraticCurveTo(0,0,-s*2,0); g.quadraticCurveTo(0,0,0,-s*2); g.fill(); g.restore(); }
+  function ensureAgents(){
+    const want = season==='spring'?['fly',3]:season==='summer'?['gull',3]:[null,0];
+    agents.forEach(a=>{ if(a.k!==want[0]) a.leave=true; });
+    for(let i=agents.filter(a=>a.k===want[0]&&!a.leave).length;i<want[1];i++)
+      agents.push(want[0]==='fly' ? {k:'fly',x:rnd(0,W),y:H+30,vx:0,vy:-2,ph:rnd(0,6),col:pick([['#f472b6','#fde047'],['#60a5fa','#c4b5fd'],['#fb923c','#fde68a'],['#a78bfa','#f9a8d4']]),tx:rnd(W*.08,W*.92),ty:rnd(H*.12,H*.6)}
+                                  : {k:'gull',x:-80-i*260,y:rnd(H*.06,H*.28),vx:rnd(1,1.7),ph:rnd(0,60),s:rnd(.8,1.3)});
+  }
+  function makeBolt(){
+    const x0=W*(.12+Math.random()*.76), xe=x0+(Math.random()-.5)*W*.22, ye=waveY(xe,0), pts=[[x0,-10]], n=13;
+    for(let i=1;i<=n;i++){ const t=i/n; pts.push([x0+(xe-x0)*t+(i<n?(Math.random()-.5)*70*(1-t*.4):0), -10+(ye+10)*t]); }
+    const br=[]; for(let k=0;k<3;k++){ let [bx,by]=pts[2+Math.floor(Math.random()*7)]; const p=[[bx,by]], dir=Math.random()<.5?-1:1;
+      for(let j=0;j<4+Math.floor(Math.random()*3);j++){ bx+=dir*(12+Math.random()*26); by+=18+Math.random()*26; p.push([bx,by]); } br.push(p); }
+    return {pts,br,t0:performance.now(),end:[xe,ye],hit:false};
+  }
+  function line(p,w,col,blur){ g.save(); g.strokeStyle=col; g.lineWidth=w; g.lineJoin='round'; g.lineCap='round'; g.shadowColor='rgba(120,150,255,.95)'; g.shadowBlur=blur;
+    g.beginPath(); g.moveTo(p[0][0],p[0][1]); for(let i=1;i<p.length;i++) g.lineTo(p[i][0],p[i][1]); g.stroke(); g.restore(); }
+  const FLICK=[1,.2,.9,.05,.7,.35,.15,0];
+  function tick(now){
+    const dt=Math.min(50,now-last)/16.67; last=now; g.clearRect(0,0,W,H);
+    FX.sv*=Math.pow(.9,dt);
+    // spawn
+    if(!document.hidden){ spawn-=dt; if(spawn<=0){ spawnOne(); spawn=rnd(...RATE[season]); } }
+    // wind gusts (not summer)
+    if(now>nextGust && season!=='summer'){ gustT=(Math.random()<.5?-1:1)*rnd(1.6,3)*({winter:1.2,autumn:1.6,spring:.7}[season]); nextGust=now+rnd(6000,13000); }
+    gust+=(gustT-gust)*.02*dt; gustT*=Math.pow(.985,dt);
+    // summer storm
+    if(season==='summer' && !storm && now>nextStorm){ storm={t0:now}; bolt=makeBolt(); nextStorm=now+rnd(16000,28000); }
+    if(storm){ const e=(now-storm.t0)/1000; if(e<4.5){ if(Math.random()<.35*dt) P.push({k:'drop',x:rnd(0,W),y:-30,vy:rnd(3,5),r:rnd(2.8,5),L:Math.floor(Math.random()*4),drift:-.4}); } else storm=null; }
+    if(bolt){ const e=(now-bolt.t0)/1000;
+      FX.K = e<.45 ? e/.45 : Math.max(0,1-(e-.45)/1.3);
+      const f = e<.45 ? 0 : (FLICK[Math.floor((e-.45)/.07)]||0); FX.L=f;
+      if(f>0){ line(bolt.pts,10,`rgba(108,140,255,${.45*f})`,40); line(bolt.pts,2.6,`rgba(255,255,255,${f})`,20); bolt.br.forEach(b=>line(b,1.4,`rgba(230,238,255,${.85*f})`,14)); }
+      if(e>.45 && !bolt.hit){ bolt.hit=true; splash(bolt.end[0],bolt.end[1],true); }
+      if(e>1.8){ bolt=null; FX.K=0; FX.L=0; } }
+    // particles
+    for(let i=P.length-1;i>=0;i--){ const p=P[i];
+      if(p.k==='spark'){ p.t+=dt; if(p.t>p.dur){ P.splice(i,1); continue; } spark(p.x,waveY(p.x,p.L)-2,p.r*Math.sin(Math.PI*p.t/p.dur)); continue; }
+      if(p.k==='drop'){ p.vy+=.11*dt; p.y+=p.vy*dt; p.x+=p.drift*dt; const ty=waveY(p.x,p.L); if(p.y>=ty){ splash(p.x,ty,false); P.splice(i,1); continue; } DRAW.drop(p); continue; }
+      p.ph+=.03*dt;
+      if(!p.landed){
+        const sw=p.k==='snow'?.45:p.k==='leaf'?1.3:.9;
+        let ax=(p.vx+Math.sin(p.ph)*sw+gust*(p.k==='snow'?.7:1))*dt, ay=(p.vy*(p.k==='leaf'?.6+.4*Math.abs(Math.cos(p.ph)):1)-FX.sv*.5)*dt;
+        const dx=p.x-FX.px, dy=p.y-FX.py, d=Math.hypot(dx,dy);
+        if(d<140){ const f=(1-d/140)*(1.6+FX.energy*3); ax+=dx/(d||1)*f*dt; ay+=dy/(d||1)*f*dt; p.vr+=(Math.random()-.5)*.01; }
+        p.x+=ax; p.y+=ay; p.rot+=p.vr*dt;
+        const ty=waveY(p.x,p.L); if(p.y>=ty){ p.landed=true; p.y=ty; if(p.k!=='snow') rings.push({x:p.x,y:ty,a:0,big:false}); }
+      } else { p.x+=(.25+gust*.2)*dt; p.y=waveY(p.x,p.L)-p.r*.2; p.life-=(p.k==='snow'?.03:.006)*dt; }
+      if(p.life<=0||p.y>H+60||p.x<-90||p.x>W+90||p.y<-260){ P.splice(i,1); continue; }
+      g.globalAlpha=Math.max(0,Math.min(1,p.life)); DRAW[p.k](p); g.globalAlpha=1;
+    }
+    // agents
+    for(let i=agents.length-1;i>=0;i--){ const a=agents[i];
+      if(a.k==='fly'){ a.ph+=.35*dt;
+        if(a.leave){ a.tx=a.x; a.ty=-200; } else if(Math.hypot(a.tx-a.x,a.ty-a.y)<40){ a.tx=rnd(W*.06,W*.94); a.ty=rnd(H*.1,H*.65); }
+        a.vx+=(a.tx-a.x)*.0007*dt; a.vy+=(a.ty-a.y)*.0007*dt;
+        const dx=a.x-FX.px, dy=a.y-FX.py, d=Math.hypot(dx,dy); if(d<160){ a.vx+=dx/(d||1)*.5*dt; a.vy+=dy/(d||1)*.5*dt; }
+        a.vx*=Math.pow(.96,dt); a.vy*=Math.pow(.96,dt); a.x+=a.vx*dt; a.y+=(a.vy+Math.sin(a.ph*.25)*.7)*dt;
+        if(a.leave && a.y<-60){ agents.splice(i,1); continue; }
+        const f=.25+.75*Math.abs(Math.sin(a.ph)); g.save(); g.translate(a.x,a.y); g.rotate(Math.max(-.5,Math.min(.5,a.vx*.15)));
+        [-1,1].forEach(s=>{ g.fillStyle=a.col[0]; g.beginPath(); g.ellipse(s*9*f,-3,9*f+.5,7,s*.3,0,7); g.fill(); g.fillStyle=a.col[1]; g.beginPath(); g.ellipse(s*6*f,6,6*f+.5,5,-s*.3,0,7); g.fill(); });
+        g.fillStyle='#1f2937'; g.beginPath(); g.ellipse(0,1,2,8,0,0,7); g.fill(); g.restore();
+      } else { a.ph+=dt; a.x+=a.vx*dt; a.y+=Math.sin(a.ph*.04)*.35*dt;
+        if(a.x>W+90){ if(a.leave){ agents.splice(i,1); continue; } a.x=-90; a.y=rnd(H*.06,H*.28); }
+        const w=Math.sin(a.ph*.14)*4*a.s, s=a.s; g.save(); g.translate(a.x,a.y); g.strokeStyle='rgba(30,41,59,.75)'; g.lineWidth=2; g.lineCap='round';
+        g.beginPath(); g.moveTo(-13*s,-2*s+w); g.quadraticCurveTo(-6*s,-9*s+w,0,0); g.quadraticCurveTo(6*s,-9*s+w,13*s,-2*s+w); g.stroke(); g.restore(); }
+    }
+    // splashes
+    for(let i=rings.length-1;i>=0;i--){ const s=rings[i]; s.a+=dt/(s.big?80:50); if(s.a>=1){ rings.splice(i,1); continue; } const R=(s.big?110:30)*s.a;
+      g.strokeStyle=`rgba(255,255,255,${.85*(1-s.a)})`; g.lineWidth=s.big?2.2:1.4; g.beginPath(); g.ellipse(s.x,s.y,R,R*.26,0,0,7); g.stroke(); }
+    for(let i=bits.length-1;i>=0;i--){ const b=bits[i]; b.vy+=.24*dt; b.x+=b.vx*dt; b.y+=b.vy*dt; b.life-=.024*dt;
+      if(b.life<=0){ bits.splice(i,1); continue; } g.fillStyle=`rgba(255,255,255,${.9*b.life})`; g.beginPath(); g.arc(b.x,b.y,b.r,0,7); g.fill(); }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  return { set(s){ if(s===season) return; season=s; ensureAgents(); spawn=0; if(s==='summer') nextStorm=performance.now()+rnd(5000,9000); } };
+})();
+
+/* ============ Seasonal 3D objects (Three.js) ============ */
+const BG3D = (function(){
+  const none={set(){}};
+  if(!window.THREE) return none;
+  let R; try{ R=new THREE.WebGLRenderer({canvas:$('#bgobj'),alpha:true,antialias:true}); }catch(e){ return none; }
+  R.setPixelRatio(Math.min(devicePixelRatio,1.5));
+  const scene=new THREE.Scene(), cam=new THREE.PerspectiveCamera(50,1,.1,100); cam.position.z=16;
+  scene.add(new THREE.HemisphereLight(0xffffff,0x9ec5d8,.9)); const dl=new THREE.DirectionalLight(0xffffff,.75); dl.position.set(5,8,7); scene.add(dl);
+  const M=(c,o={})=>new THREE.MeshStandardMaterial({color:c,roughness:o.r??.6,metalness:o.m??0,flatShading:o.f??true,transparent:o.op!=null,opacity:o.op??1,emissive:o.e??0,emissiveIntensity:o.ei??1,side:o.ds?THREE.DoubleSide:THREE.FrontSide});
+  const ms=(geo,m,x=0,y=0,z=0)=>{ const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); return o; };
+  const grp=a=>{ const g=new THREE.Group(); g.userData.a=a; return g; };
+  const B={
+    snowflake(){ const m=M(0xffffff,{e:0xcfe8ff,ei:.45,r:.3}), g=grp('spinZ');
+      for(let i=0;i<6;i++){ const arm=new THREE.Group(); arm.add(ms(new THREE.BoxGeometry(.14,1.9,.08),m,0,.95,0));
+        [[.7,.5],[1.25,.36]].forEach(([y,s])=>[-1,1].forEach(sg=>{ const b=ms(new THREE.BoxGeometry(.1,s,.07),m,sg*s*.34,y+s*.37,0); b.rotation.z=-sg*.75; arm.add(b); }));
+        arm.rotation.z=i*Math.PI/3; g.add(arm); }
+      const hx=ms(new THREE.CylinderGeometry(.3,.3,.1,6),m); hx.rotation.x=Math.PI/2; g.add(hx); return g; },
+    crystal(){ const g=grp('float'), m=M(0xbfe3ff,{op:.75,r:.08,m:.3,e:0x9fd0ff,ei:.25});
+      [[0,0,0,1,0],[.55,-.35,.1,.55,.5],[-.5,-.4,0,.5,-.45]].forEach(([x,y,z,s,r])=>{ const o=ms(new THREE.OctahedronGeometry(1,0),m,x,y,z); o.scale.set(.5*s,1.5*s,.5*s); o.rotation.z=r; g.add(o); }); return g; },
+    pine(){ const g=grp('sway'); g.add(ms(new THREE.CylinderGeometry(.16,.22,.7,6),M(0x8b5a3c),0,.35,0));
+      const green=M(0x2f7d6d), snow=M(0xffffff,{e:0xe6f2ff,ei:.3});
+      [[1.15,1.3,1.05],[.9,1.1,1.75],[.62,.9,2.35]].forEach(([r,h,y])=>{ g.add(ms(new THREE.ConeGeometry(r,h,7),green,0,y,0)); g.add(ms(new THREE.ConeGeometry(r*.52,h*.44,7),snow,0,y+h*.29,0)); }); return g; },
+    snowman(){ const w=M(0xffffff,{e:0xeaf4ff,ei:.25,f:false}), k=M(0x1f2937), g=grp('sway');
+      g.add(ms(new THREE.SphereGeometry(.85,16,12),w), ms(new THREE.SphereGeometry(.62,16,12),w,0,1.15,0), ms(new THREE.SphereGeometry(.44,16,12),w,0,2.05,0));
+      g.add(ms(new THREE.SphereGeometry(.06,8,6),k,-.15,2.15,.4), ms(new THREE.SphereGeometry(.06,8,6),k,.15,2.15,.4));
+      const n=ms(new THREE.ConeGeometry(.08,.45,8),M(0xf97316),0,2.05,.62); n.rotation.x=Math.PI/2; g.add(n);
+      g.add(ms(new THREE.CylinderGeometry(.5,.5,.06,16),k,0,2.42,0), ms(new THREE.CylinderGeometry(.3,.32,.45,16),k,0,2.68,0));
+      const sc=ms(new THREE.TorusGeometry(.42,.09,8,20),M(0xef4444),0,1.68,0); sc.rotation.x=Math.PI/2; g.add(sc);
+      [-1,1].forEach(s=>{ const a=ms(new THREE.CylinderGeometry(.03,.04,.9,5),M(0x7c4a2d),s*.8,1.35,0); a.rotation.z=-s; g.add(a); }); return g; },
+    leaf(c){ const s=new THREE.Shape(); s.moveTo(0,-1.2); s.bezierCurveTo(1.05,-.7,.9,.7,0,1.25); s.bezierCurveTo(-.9,.7,-1.05,-.7,0,-1.2);
+      const g=grp('tumble'); g.add(ms(new THREE.ExtrudeGeometry(s,{depth:.05,bevelEnabled:false}),M(c,{ds:true,r:.7})));
+      g.add(ms(new THREE.CylinderGeometry(.04,.04,.7,5),M(0x7c3f1d),0,-1.45,.02), ms(new THREE.BoxGeometry(.04,2.2,.08),M(0x9a3412),0,0,.04)); return g; },
+    pumpkin(){ const g=grp('float'), m=M(0xf08c00,{f:false,r:.5});
+      for(let i=0;i<8;i++){ const a=i/8*Math.PI*2, l=ms(new THREE.SphereGeometry(.7,14,10),m,Math.cos(a)*.38,0,Math.sin(a)*.38); l.scale.set(.6,.82,.6); g.add(l); }
+      const st=ms(new THREE.CylinderGeometry(.07,.11,.45,6),M(0x4d7c0f),0,.72,0); st.rotation.z=.25; g.add(st); return g; },
+    tree(){ const g=grp('sway'); g.add(ms(new THREE.CylinderGeometry(.18,.26,1.6,6),M(0x7c4a2d),0,.8,0));
+      [[1.15,0,2.2,0xf76707],[.85,.7,2.75,0xc92a2a],[.75,-.75,2.6,0xfab005],[.6,.1,3.3,0xe8590c]].forEach(([r,x,y,c])=>g.add(ms(new THREE.IcosahedronGeometry(r,0),M(c),x,y,0))); return g; },
+    mushroom(){ const g=grp('float'); g.add(ms(new THREE.CylinderGeometry(.22,.3,.8,10),M(0xfff4e0,{f:false}),0,.4,0));
+      g.add(ms(new THREE.SphereGeometry(.75,16,10,0,Math.PI*2,0,Math.PI/2),M(0xe03131,{f:false}),0,.75,0));
+      for(let i=0;i<5;i++){ const a=i*1.3; g.add(ms(new THREE.SphereGeometry(.09,8,6),M(0xffffff),Math.cos(a)*.42,1.37,Math.sin(a)*.42)); } return g; },
+    flower(c){ const g=grp('sway'), pm=M(c,{f:false,r:.5});
+      for(let i=0;i<6;i++){ const a=i/6*Math.PI*2, p=ms(new THREE.SphereGeometry(.42,12,8),pm,Math.cos(a)*.48,Math.sin(a)*.48,0); p.scale.set(1,.55,.28); p.rotation.z=a; g.add(p); }
+      g.add(ms(new THREE.SphereGeometry(.3,12,10),M(0xfacc15,{f:false}),0,0,.08), ms(new THREE.CylinderGeometry(.05,.06,2.2,6),M(0x4d9a4d),0,-1.2,-.05));
+      const lf=ms(new THREE.SphereGeometry(.35,10,6),M(0x5cb85c),.3,-1.3,0); lf.scale.set(1,.3,.5); lf.rotation.z=.6; g.add(lf); return g; },
+    blossom(){ const g=grp('sway'); g.add(ms(new THREE.CylinderGeometry(.16,.24,1.8,6),M(0x6b4226),0,.9,0));
+      [[1,0,2.3,0xf9a8d4],[.75,.75,2.7,0xfbcfe8],[.7,-.7,2.6,0xf472b6],[.55,.15,3.25,0xfce7f3]].forEach(([r,x,y,c])=>g.add(ms(new THREE.IcosahedronGeometry(r,1),M(c),x,y,0))); return g; },
+    butterfly(c){ const g=grp('flap'), m=M(c,{ds:true,f:false,r:.4}); g.add(ms(new THREE.CylinderGeometry(.06,.06,.9,6),M(0x1f2937)));
+      const wing=s=>{ const w=new THREE.Group(), up=ms(new THREE.CircleGeometry(.55,16),m,s*.55,.2,0), lo=ms(new THREE.CircleGeometry(.38,16),m,s*.4,-.3,0); up.scale.set(1,.8,1); w.add(up,lo); return w; };
+      g.userData.wl=wing(-1); g.userData.wr=wing(1); g.add(g.userData.wl,g.userData.wr); return g; },
+    rainbow(){ const g=grp('still'); [0xff6b6b,0xffa94d,0xffd43b,0x69db7c,0x4dabf7,0x9775fa].forEach((c,i)=>g.add(ms(new THREE.TorusGeometry(2.4-i*.17,.09,6,48,Math.PI),M(c,{f:false,op:.85,e:c,ei:.2})))); return g; },
+    sun(){ const g=grp('sun'); g.add(ms(new THREE.SphereGeometry(1,20,16),M(0xffd43b,{e:0xffb703,ei:.9,f:false})));
+      for(let i=0;i<12;i++){ const a=i/12*Math.PI*2, r=ms(new THREE.ConeGeometry(.16,.6,6),M(0xffc300,{e:0xffa200,ei:.7}),Math.cos(a)*1.45,Math.sin(a)*1.45,0); r.rotation.z=a-Math.PI/2; g.add(r); } return g; },
+    palm(){ const g=grp('sway'), tm=M(0xa47148); let x=0;
+      for(let i=0;i<6;i++){ const s=ms(new THREE.CylinderGeometry(.17-i*.012,.2-i*.012,.55,7),tm,x,i*.5,0); s.rotation.z=-.08*i; g.add(s); x+=.06*i; }
+      const top=new THREE.Group(); top.position.set(x,3,0); const lm=M(0x2f9e44,{ds:true});
+      for(let i=0;i<7;i++){ const l=new THREE.Group(), bl=ms(new THREE.SphereGeometry(1,10,4),lm,.85,-.2,0); bl.scale.set(1,.08,.22); l.add(bl); l.rotation.set(0,i/7*Math.PI*2,-.4); top.add(l); }
+      [[.2,-.15,.1],[-.1,-.2,.15],[.05,-.25,-.18]].forEach(([a,b,c])=>top.add(ms(new THREE.SphereGeometry(.15,8,6),M(0x6b4226),a,b,c))); g.add(top); return g; },
+    ball(){ const g=grp('spin'); [0xef4444,0xffffff,0x3b82f6,0xfacc15,0xffffff,0x22c55e].forEach((c,i)=>g.add(ms(new THREE.SphereGeometry(.85,12,12,i*Math.PI/3,Math.PI/3),M(c,{f:false,r:.35})))); return g; },
+    starfish(){ const s=new THREE.Shape(); for(let i=0;i<10;i++){ const a=i/10*Math.PI*2+Math.PI/2, r=i%2?.45:1.1; i?s.lineTo(Math.cos(a)*r,Math.sin(a)*r):s.moveTo(Math.cos(a)*r,Math.sin(a)*r); } s.closePath();
+      const g=grp('spinZ'); g.add(ms(new THREE.ExtrudeGeometry(s,{depth:.18,bevelEnabled:true,bevelSize:.08,bevelThickness:.08,bevelSegments:2}),M(0xff8c69))); return g; }
+  };
+  const LAYOUT={
+    winter:[['snowflake',-.8,.6,-1,1],['pine',.83,-.62,-1,1.1],['snowman',-.86,-.58,0,.85],['crystal',.82,.48,-2,.9],['snowflake',.3,.82,-9,1.4],['crystal',-.35,-.8,-8,1.3],['pine',-.55,.05,-13,1.6],['snowflake',.55,-.2,-12,1.8]],
+    autumn:[['leaf:e8590c',-.82,.55,-1,1],['tree',.84,-.62,-1,1.1],['pumpkin',-.84,-.62,0,1.1],['mushroom',.83,.42,-2,1.1],['leaf:c92a2a',.3,.8,-8,1.4],['leaf:fab005',-.4,-.75,-7,1.3],['tree',-.6,0,-13,1.6],['leaf:a0522d',.6,-.15,-11,1.6]],
+    spring:[['flower:f472b6',-.82,.5,-1,1],['blossom',.84,-.62,-1,1.1],['butterfly:60a5fa',-.75,-.4,0,1],['flower:fde047',.84,.42,-2,1],['rainbow',.05,.72,-14,1.4],['butterfly:f472b6',.5,.2,-8,1.3],['blossom',-.6,-.12,-13,1.5],['flower:c084fc',-.35,-.82,-6,1.3]],
+    summer:[['sun',.78,.68,-6,1.5],['palm',-.84,-.64,-1,1.1],['ball',.84,-.55,0,1],['starfish',-.82,.5,-1,.9],['ball',-.3,.8,-9,1.3],['starfish',.45,-.82,-7,1.4],['palm',.62,-.12,-13,1.6],['ball',-.6,.1,-12,1.5]]
+  };
+  const groups={}, leaving=[]; let cur=null, curS=null; const TAN=Math.tan(25*Math.PI/180);
+  function build(s){ const G=new THREE.Group(); LAYOUT[s].forEach(([k,sx,sy,z,sc],i)=>{ const [n,col]=k.split(':'); const o=B[n](col?parseInt(col,16):undefined); o.userData.L={sx,sy,z,sc,ph:Math.random()*6,i}; o.scale.setScalar(.001); G.add(o); }); return G; }
+  function set(s){ if(s===curS) return; if(cur){ cur.userData.out=performance.now(); leaving.push(cur); }
+    curS=s; cur=groups[s]||(groups[s]=build(s)); const li=leaving.indexOf(cur); if(li>=0) leaving.splice(li,1);
+    if(!cur.parent) scene.add(cur); cur.userData.out=0; cur.userData.inn=performance.now(); }
+  const size=()=>{ R.setSize(innerWidth,innerHeight,false); cam.aspect=innerWidth/innerHeight; cam.updateProjectionMatrix(); }; size(); addEventListener('resize',size);
+  function tick(ms_){
+    const t=ms_*.001, now=performance.now(), mot=reduced?0:1;
+    [cur,...leaving].forEach(G=>{ if(!G) return; const out=G.userData.out; let done=true;
+      G.children.forEach(o=>{ const L=o.userData.L, ua=o.userData;
+        let k = out ? 1-Math.min(1,Math.max(0,(now-out-L.i*40)/700)) : Math.min(1,Math.max(0,(now-G.userData.inn-L.i*90)/900));
+        if(k>0) done=false; const e = out ? k*k : 1-Math.pow(1-k,3);
+        const hh=(16-L.z)*TAN, hw=hh*cam.aspect;
+        o.position.set(L.sx*hw, L.sy*hh+Math.sin(t*.6+L.ph)*.35*mot+FX.s*5*(1+L.z/24)-(out?(1-k)*2:(1-e)*1.5), L.z);
+        o.scale.setScalar(Math.max(.001,L.sc*e));
+        const a=ua.a, tt=t*mot;
+        if(a==='spinZ'){ o.rotation.z=tt*.3+L.ph; o.rotation.y=Math.sin(tt*.4+L.ph)*.5; }
+        else if(a==='float'){ o.rotation.y=tt*.25+L.ph; }
+        else if(a==='tumble'){ o.rotation.x=tt*.7+L.ph; o.rotation.y=tt*.5; o.rotation.z=Math.sin(tt+L.ph)*.6; }
+        else if(a==='flap'){ o.rotation.y=Math.sin(tt*.5+L.ph)*.6; o.rotation.x=-.5; ua.wl.rotation.y=Math.sin(tt*9)*.9; ua.wr.rotation.y=-Math.sin(tt*9)*.9; }
+        else if(a==='sun'){ o.rotation.z=tt*.15; }
+        else if(a==='spin'){ o.rotation.y=tt*.8; o.rotation.x=tt*.3; }
+        else if(a==='sway'){ o.rotation.z=Math.sin(tt*.8+L.ph)*.08+(FX.mx-.5)*.15; o.rotation.y=Math.sin(tt*.3+L.ph)*.4; }
+      });
+      if(out && done){ scene.remove(G); leaving.splice(leaving.indexOf(G),1); }
+    });
+    cam.position.x+=((FX.mx-.5)*2.6-cam.position.x)*.04; cam.position.y+=((FX.my-.5)*1.8-cam.position.y)*.04; cam.lookAt(0,0,-4);
+    R.render(scene,cam); requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  return {set};
+})();
+
+/* ============ Mouse spotlight on glass ============ */
+addEventListener('pointermove',e=>{
+  $$('.tab,.window').forEach(el=>{
+    const r=el.getBoundingClientRect(), inside=e.clientX>=r.left-60&&e.clientX<=r.right+60&&e.clientY>=r.top-60&&e.clientY<=r.bottom+60;
+    el.style.setProperty('--mx',(e.clientX-r.left)+'px'); el.style.setProperty('--my',(e.clientY-r.top)+'px'); el.style.setProperty('--spot',inside?1:0);
+  });
+},{passive:true});
+
+/* ============ Scroll reveal ============ */
+const RIO = ('IntersectionObserver' in window) ? new IntersectionObserver(es=>es.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); RIO.unobserve(en.target); } }),{threshold:.08,rootMargin:'0px 0px -30px 0px'}) : null;
+function reveal(){
+  if(!RIO || reduced) return;
+  $$('#win .content > *, #win .quiz, #win .navrow, #win .task, #win #exbody, #win .exbtns, #win .done-banner').forEach((el,i)=>{
+    if(el.classList.contains('rv')) return;
+    el.classList.add('rv'); el.style.transitionDelay=Math.min(i*60,300)+'ms'; RIO.observe(el);
+  });
+  onScroll();
+}
+
+/* ============ Start ============ */
+updateHUD();
+go(W[location.hash.slice(1)] ? location.hash.slice(1) : (P.w||'fm-learn'));
+</script>
+</body>
+</html>
